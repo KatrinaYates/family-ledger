@@ -1,112 +1,17 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#f7efe5" />
-  <title>The Family Ledger</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <main class="app-shell">
-    <header class="book-cover" aria-labelledby="app-title">
-      <p class="eyebrow">Yates Family · 2026</p>
-      <h1 id="app-title">The Family Ledger</h1>
-      <p class="cover-copy">A living record of where our money went, what we learned, and what we decided together.</p>
-      <div class="cover-stamp" aria-label="Current chapter">July Chapter</div>
-    </header>
-
-    <nav class="month-tabs" aria-label="Ledger chapters">
-      <button class="month-tab active" data-month="july" aria-current="page">July</button>
-      <button class="month-tab locked" data-month="august">August <span>Up next ✦</span></button>
-      <button class="month-tab locked" data-month="september">September <span>Waiting in the wings</span></button>
-      <button class="month-tab locked" data-month="october">October <span>Almost our turn</span></button>
-      <button class="month-tab locked" data-month="november">November <span>Saved for later</span></button>
-      <button class="month-tab locked" data-month="december">December <span>Year-end sparkle</span></button>
-    </nav>
-
-    <section id="chapter" class="chapter" aria-live="polite">
-      <div class="chapter-heading">
-        <div>
-          <p class="eyebrow">Chapter Seven</p>
-          <h2>July Money Meeting</h2>
-          <p>Review the month, capture decisions, and leave with a realistic plan.</p>
-        </div>
-        <button id="reset-data" class="text-button" type="button">Reset July notes</button>
-      </div>
-
-      <section class="snapshot-grid" aria-label="Monthly snapshot">
-        <article class="metric-card accent-yellow">
-          <label for="overall-score">Financial pulse</label>
-          <input id="overall-score" data-save="overallScore" value="Steady" aria-label="Financial pulse" />
-        </article>
-        <article class="metric-card accent-pink">
-          <label for="biggest-win">Biggest win</label>
-          <textarea id="biggest-win" data-save="biggestWin" rows="2" placeholder="What went especially well?"></textarea>
-        </article>
-        <article class="metric-card accent-blue">
-          <label for="biggest-challenge">Biggest challenge</label>
-          <textarea id="biggest-challenge" data-save="biggestChallenge" rows="2" placeholder="What made the month harder?"></textarea>
-        </article>
-      </section>
-
-      <div class="section-grid">
-        <section class="paper-card">
-          <div class="section-title">
-            <span class="section-number">01</span>
-            <div><h3>What happened?</h3><p>Facts first. No guilt, no spin.</p></div>
-          </div>
-          <textarea class="lined-notes" data-save="monthStory" rows="9" placeholder="Summarize the month in plain language..."></textarea>
-        </section>
-
-        <section class="paper-card">
-          <div class="section-title">
-            <span class="section-number">02</span>
-            <div><h3>Patterns we noticed</h3><p>Good, bad, surprising, or worth watching.</p></div>
-          </div>
-          <textarea class="lined-notes" data-save="patterns" rows="9" placeholder="Example: Eating out climbed during busy work weeks..."></textarea>
-        </section>
-
-        <section class="paper-card full-width">
-          <div class="section-title">
-            <span class="section-number">03</span>
-            <div><h3>Decisions we made</h3><p>The living record for next month.</p></div>
-          </div>
-          <div id="decision-list" class="checklist"></div>
-          <form id="decision-form" class="add-row">
-            <input id="decision-input" type="text" placeholder="Add a decision or commitment" aria-label="New decision" />
-            <button type="submit">Add decision</button>
-          </form>
-        </section>
-
-        <section class="paper-card full-width">
-          <div class="section-title">
-            <span class="section-number">04</span>
-            <div><h3>Next best moves</h3><p>Keep it small enough to actually happen.</p></div>
-          </div>
-          <div id="action-list" class="checklist"></div>
-          <form id="action-form" class="add-row">
-            <input id="action-input" type="text" placeholder="Add an action item" aria-label="New action item" />
-            <button type="submit">Add action</button>
-          </form>
-        </section>
-
-        <section class="paper-card full-width closing-note">
-          <p class="eyebrow">Close the chapter</p>
-          <h3>What do we want future-us to remember?</h3>
-          <textarea class="lined-notes" data-save="futureUs" rows="5" placeholder="A note for the next meeting..."></textarea>
-        </section>
-      </div>
-    </section>
-
-    <footer>
-      <p>Saved automatically in this browser · Phase 2 foundation</p>
-    </footer>
-  </main>
-
-  <script src="app.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f7efe5" />
+    <meta name="description" content="The Family Ledger monthly money meeting app" />
+    <title>The Family Ledger</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
