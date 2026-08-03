@@ -1,102 +1,55 @@
-import React, { useState } from 'react';
+import React from 'react';
 
-export function BookCover({ monthLabel }) {
-  return (
-    <header className="book-cover" aria-labelledby="app-title">
-      <p className="eyebrow">Yates Family · 2026</p>
-      <h1 id="app-title">The Family Ledger</h1>
-      <p className="cover-copy">A living record of where our money went, what we learned, and what we decided together.</p>
-      <div className="cover-stamp">{monthLabel} Chapter</div>
-    </header>
-  );
+export const sectionTabs = [
+  ['snapshot','Snapshot'],['story','Monthly Story'],['spending','Spending'],['cfo','CFO Recommendations'],
+  ['future','Retirement & Future'],['meeting','Money Meeting'],['actions','Action Plan'],['celebrate','Celebrate'],['handoff','CFO Handoff'],
+];
+
+export function SpiralBinding() {
+  return <div className="spiral" aria-hidden="true">{Array.from({length:9},(_,i)=><span key={i}/>)}</div>;
 }
 
 export function MonthTabs({ months, activeMonth, onSelect }) {
-  return (
-    <nav className="month-tabs" aria-label="Ledger chapters">
-      {months.map((month) => (
-        <button
-          key={month.id}
-          className={`month-tab ${activeMonth === month.id ? 'active' : ''} ${month.status === 'locked' ? 'locked' : ''}`}
-          onClick={() => onSelect(month)}
-          aria-current={activeMonth === month.id ? 'page' : undefined}
-        >
-          {month.label}
-          {month.teaser && <span>{month.teaser}</span>}
-        </button>
-      ))}
-    </nav>
-  );
+  return <nav className="month-tabs" aria-label="Month chapters">{months.map((month)=><button key={month.id} className={`month-tab ${month.id} ${activeMonth===month.id?'active':''} ${month.status==='locked'?'future':''}`} onClick={()=>onSelect(month.id)} aria-current={activeMonth===month.id?'page':undefined}>{month.short}</button>)}</nav>;
 }
 
-export function MetricCard({ label, tone, value, onChange, multiline = false, placeholder }) {
-  const fieldProps = { value, onChange: (event) => onChange(event.target.value), placeholder, 'aria-label': label };
-  return (
-    <article className={`metric-card accent-${tone}`}>
-      <label>{label}</label>
-      {multiline ? <textarea rows="2" {...fieldProps} /> : <input {...fieldProps} />}
-    </article>
-  );
+export function SectionTabs({ activeSection, onSelect }) {
+  return <nav className="section-tabs" aria-label="Sections">{sectionTabs.map(([id,label],index)=><button key={id} className={`section-tab st${index+1} ${activeSection===id?'active':''}`} onClick={()=>onSelect(id)}>{label}</button>)}</nav>;
 }
 
-export function PaperSection({ number, title, subtitle, children, fullWidth = false, className = '' }) {
-  return (
-    <section className={`paper-card ${fullWidth ? 'full-width' : ''} ${className}`}>
-      <div className="section-title">
-        {number && <span className="section-number">{number}</span>}
-        <div><h3>{title}</h3>{subtitle && <p>{subtitle}</p>}</div>
-      </div>
-      {children}
-    </section>
-  );
+export function NotebookShell({ children, months, activeMonth, onMonthSelect, activeSection, onSectionSelect, showSections=false }) {
+  return <div className="stage"><div className="notebook"><div className="paper-edge"/><SpiralBinding/>{showSections&&<SectionTabs activeSection={activeSection} onSelect={onSectionSelect}/>}<MonthTabs months={months} activeMonth={activeMonth} onSelect={onMonthSelect}/>{children}</div></div>;
 }
 
-export function NotesField({ value, onChange, placeholder, rows = 9 }) {
-  return <textarea className="lined-notes" value={value} onChange={(event) => onChange(event.target.value)} rows={rows} placeholder={placeholder} />;
+export function StickyNote({ children, tone='yellow', className='' }) {
+  return <aside className={`sticky-note ${tone} ${className}`}><span className="tape" aria-hidden="true"/>{children}</aside>;
 }
 
-export function EditableChecklist({ items, onChange, inputLabel, buttonLabel }) {
-  const [draft, setDraft] = useState('');
-
-  function addItem(event) {
-    event.preventDefault();
-    const text = draft.trim();
-    if (!text) return;
-    onChange([...items, { id: crypto.randomUUID(), text, complete: false }]);
-    setDraft('');
-  }
-
-  function updateItem(id, patch) {
-    onChange(items.map((item) => item.id === id ? { ...item, ...patch } : item));
-  }
-
-  return (
-    <>
-      <div className="checklist">
-        {items.length === 0 && <p className="empty-state">Nothing added yet. Keep it realistic and specific.</p>}
-        {items.map((item) => (
-          <div className="checklist-item" key={item.id}>
-            <input type="checkbox" checked={item.complete} onChange={(event) => updateItem(item.id, { complete: event.target.checked })} aria-label={`Complete ${item.text}`} />
-            <input className={item.complete ? 'completed' : ''} value={item.text} onChange={(event) => updateItem(item.id, { text: event.target.value })} />
-            <button type="button" className="delete-button" onClick={() => onChange(items.filter((candidate) => candidate.id !== item.id))} aria-label={`Delete ${item.text}`}>×</button>
-          </div>
-        ))}
-      </div>
-      <form className="add-row" onSubmit={addItem}>
-        <input value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={inputLabel} aria-label={inputLabel} />
-        <button type="submit">{buttonLabel}</button>
-      </form>
-    </>
-  );
+export function AnnualCover({ onOpen }) {
+  return <div className="cover-page"><span className="cover-doodle leaf">🌿</span><span className="cover-doodle sun">☀️</span><div className="cover-label"><p>THE FAMILY</p><h1>The Family<br/>Ledger</h1><strong>2026 EDITION</strong></div><StickyNote className="motto">Financial Motto<br/><b>Progress over perfection.</b></StickyNote><StickyNote tone="pink" className="joy">A joyful place for our monthly money meetings. ♡</StickyNote><button className="open-cover" onClick={onOpen}>Open the ledger <span>→</span></button></div>;
 }
 
-export function ComingSoon({ month }) {
-  return (
-    <section className="chapter coming-soon">
-      <p className="eyebrow">{month.chapter}</p>
-      <h2>{month.title}</h2>
-      <p>This chapter is tucked away until it is time to fill it with real numbers, notes, and decisions.</p>
-      <div className="sparkle">✦</div>
-    </section>
-  );
+export function InsideCover({ onContinue }) {
+  return <div className="inside-cover"><span className="season-doodle top">🌻</span><span className="season-doodle bottom">☀️</span><div className="season-badge">JULY • SUNSHINE EDITION</div><div className="inside-panel"><h1>This Ledger Belongs To</h1><p>A shared place for honest conversations, clear decisions, and steady progress.</p>{[['Names','Katrina & Tyler'],['Started','July 2026'],['Our Financial Motto','Progress over perfection.'],['Why We Meet','To stay informed, make intentional decisions, and build the future we want together.']].map(([label,value])=><div className="belong-line" key={label}><b>{label}</b><span>{value}</span></div>)}<StickyNote className="inside-note">A little clarity today makes next month easier. ♡</StickyNote><button className="continue-button" onClick={onContinue}>Turn the page →</button></div></div>;
 }
+
+export function MonthChapterPage({ month, onEnter }) {
+  if(month.status==='locked') return <FutureMonthPage month={month}/>;
+  return <div className="month-chapter" style={{'--month-a':month.colors[0],'--month-b':month.colors[1],'--month-c':month.colors[2]}}><div className="month-band"/><div className="month-content"><p>CHAPTER {month.number}</p><h1>{month.label}<br/>2026</h1><div className="chapter-sub">A fresh monthly reset for our money, goals, decisions, and future.</div><div className="chapter-meta"><span>📅 July 5, 2026</span><span>⏱ 55 minutes</span><span>{month.icon} {month.season}</span></div></div><div className="month-sticker">{month.sticker}</div><StickyNote className="chapter-note">This month’s intention:<br/><b>Be curious, not critical.</b></StickyNote><div className="folder-pocket"><b>{month.label} Focus</b><br/>Debt down.<br/>Savings up.<br/>Keep momentum gentle.</div><button className="enter-chapter" onClick={onEnter}>Enter {month.label} chapter →</button></div>;
+}
+
+export function FutureMonthPage({ month }) {
+  return <div className="future-month" style={{'--month-a':month.colors[0],'--month-b':month.colors[1],'--month-c':month.colors[2]}}><div className="month-band"/><div className="month-content"><p>CHAPTER {month.number}</p><h1>{month.label}<br/>2026</h1><div className="chapter-sub">This month’s pages are already waiting inside The Family Ledger. All that’s missing is your real story.</div></div><div className="month-sticker">{month.sticker}</div><StickyNote className="chapter-note">{month.message}<br/><b>{month.promise}</b></StickyNote><div className="folder-pocket"><b>{month.label} Preview</b><br/>{month.preview.map((line)=><React.Fragment key={line}>{line}<br/></React.Fragment>)}</div></div>;
+}
+
+export function SectionDivider({ section, onOpen }) {
+  return <div className="subchapter"><div className="margin-line"/><div className={`subchapter-ribbon ${section.tone}`}>SECTION {section.number}</div><StickyNote tone={section.noteTone} className="subchapter-note">{section.prompt}</StickyNote><div className="subchapter-content"><p>JULY 2026</p><h1>{section.title}</h1><div className="subchapter-intro">{section.description}</div><div className="preview-grid"><div className="preview-card"><h3>Inside this section</h3><p>{section.inside}</p></div><div className="preview-card"><h3>How to use it</h3><p>{section.how}</p></div></div><button className="open-section" onClick={onOpen}>Turn to the working page →</button></div><div className="subchapter-doodle">{section.icon}</div></div>;
+}
+
+export function WorkingPage({ section, children }) {
+  return <div className="working-page"><div className="margin-line"/><div className="working-content"><header><div><h1>{section.title}</h1><span className="month-chip">JULY 2026</span></div><span className="season-badge">JULY • SUNSHINE EDITION</span></header>{children}</div><span className="page-number">July • working page</span></div>;
+}
+
+export function KpiCard({ icon, label, value, status, tone='good', note }) { return <article className="card kpi"><div className="kpi-top"><span>{icon} {label}</span><span>↗</span></div><strong className="kpi-value">{value}</strong><span className={`chip ${tone}`}>{status}</span><p>{note}</p></article>; }
+export function NoteCard({ title, children }) { return <article className="card note-card"><h3>{title}</h3>{children}</article>; }
+export function WritingArea({ label, value, onChange, placeholder }) { return <label className="writing-area"><span>{label}</span><textarea value={value} onChange={(e)=>onChange(e.target.value)} placeholder={placeholder}/></label>; }
