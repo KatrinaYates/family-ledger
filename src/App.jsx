@@ -53,7 +53,105 @@ function isTypingTarget(target) {
 
 function pageFromHash() {
   const id = window.location.hash.replace('#/', '');
-  return julyPages.some((page) => page.id === id) ? id : 'cover';
+  if (julyPages.some((page) => page.id === id)) return id;
+  if (id.startsWith('future-') && months.some((month) => month.id === id.replace('future-', ''))) return id;
+  return 'cover';
+}
+
+function buildBreadcrumbs(page, pageId) {
+  const root = { label: 'The Family Ledger', pageId: 'cover' };
+
+  if (pageId.startsWith('future-')) {
+    const futureMonth = months.find((candidate) => candidate.id === pageId.replace('future-', ''));
+    return [
+      root,
+      { label: futureMonth ? `${futureMonth.label} Preview` : 'Preview', pageId: null },
+    ];
+  }
+
+  if (page.type === 'cover') {
+    return [{ label: 'The Family Ledger', pageId: null }];
+  }
+
+  const crumbs = [root];
+
+  if (page.type === 'inside') {
+    crumbs.push({ label: 'Inside Cover', pageId: null });
+    return crumbs;
+  }
+
+  const monthData = months.find((candidate) => candidate.id === page.monthId);
+  const monthLabel = monthData?.label || 'Month';
+  const monthPageId = page.monthId;
+
+  if (page.type === 'month') {
+    crumbs.push({ label: monthLabel, pageId: null });
+    return crumbs;
+  }
+
+  if (page.monthId) {
+    crumbs.push({
+      label: monthLabel,
+      pageId: monthPageId,
+    });
+  }
+
+  if (page.sectionId) {
+    const sectionTitle = sections[page.sectionId]?.title || page.sectionId;
+    const dividerPageId = `${page.monthId}-${page.sectionId}`;
+
+    if (page.type === 'divider') {
+      crumbs.push({ label: sectionTitle, pageId: null });
+      return crumbs;
+    }
+
+    crumbs.push({ label: sectionTitle, pageId: dividerPageId });
+  }
+
+  if (page.type === 'working') {
+    crumbs.push({ label: 'Working Page', pageId: null });
+  }
+
+  return crumbs;
+}
+
+function parentPageId(page, pageId) {
+  if (pageId.startsWith('future-')) return 'cover';
+  if (page.type === 'working') return `${page.monthId}-${page.sectionId}`;
+  if (page.type === 'divider') return page.monthId;
+  if (page.type === 'month' || page.type === 'inside') return 'cover';
+  return null;
+}
+
+function BreadcrumbNav({ crumbs, onNavigate }) {
+  return (
+    <nav className="breadcrumb" aria-label="Breadcrumb">
+      <ol className="breadcrumb-list">
+        {crumbs.map((crumb, index) => {
+          const isLast = index === crumbs.length - 1;
+          const isLink = Boolean(crumb.pageId);
+
+          return (
+            <li key={`${crumb.label}-${index}`} className="breadcrumb-item">
+              {isLink ? (
+                <a
+                  href={`#/${crumb.pageId}`}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    onNavigate(crumb.pageId);
+                  }}
+                >
+                  {crumb.label}
+                </a>
+              ) : (
+                <span aria-current={isLast ? 'page' : undefined}>{crumb.label}</span>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  );
 }
 
 export default function App(){
@@ -74,9 +172,6 @@ export default function App(){
     if (nextPage.monthId) setActiveMonth(nextPage.monthId);
     const method = replace ? 'replaceState' : 'pushState';
     window.history[method]({}, '', `#/${nextId}`);
-    window.requestAnimationFrame(() => {
-      document.querySelector('.notebook-page-title, .cover-label h1')?.focus({ preventScroll: true });
-    });
   }, []);
 
   const goPrevious = useCallback(() => {
@@ -87,9 +182,31 @@ export default function App(){
     if (pageIndex < julyPages.length - 1) navigateTo(julyPages[pageIndex + 1].id);
   }, [navigateTo, pageIndex]);
 
+  const navigateToMonth = useCallback((id) => {
+    setActiveMonth(id);
+    if (id === 'july') {
+      navigateTo('july');
+      return;
+    }
+    const nextPageId = `future-${id}`;
+    setPageId(nextPageId);
+    window.history.pushState({}, '', `#/${nextPageId}`);
+  }, [navigateTo]);
+
+  const goUpBreadcrumb = useCallback(() => {
+    const parentId = parentPageId(page, pageId);
+    if (parentId) navigateTo(parentId);
+  }, [navigateTo, page, pageId]);
+
   useEffect(() => {
     if (!window.location.hash) navigateTo('cover', { replace: true });
-    const handlePopState = () => setPageId(pageFromHash());
+    const handlePopState = () => {
+      const id = pageFromHash();
+      setPageId(id);
+      const historyPage = julyPages.find((candidate) => candidate.id === id);
+      if (historyPage?.monthId) setActiveMonth(historyPage.monthId);
+      else if (id.startsWith('future-')) setActiveMonth(id.replace('future-', ''));
+    };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, [navigateTo]);
@@ -99,27 +216,24 @@ export default function App(){
       if (isTypingTarget(event.target) || event.altKey || event.ctrlKey || event.metaKey) return;
       if (event.key === 'ArrowLeft') { event.preventDefault(); goPrevious(); }
       if (event.key === 'ArrowRight') { event.preventDefault(); goNext(); }
-      if (event.key === 'Home') { event.preventDefault(); navigateTo('cover'); }
-      if (event.key === 'Escape') { event.preventDefault(); navigateTo(activeMonth); }
+      if (event.key === 'Escape') { event.preventDefault(); goUpBreadcrumb(); }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeMonth, goNext, goPrevious, navigateTo]);
+  }, [goNext, goPrevious, goUpBreadcrumb]);
 
-  const chooseMonth=(id)=>{
-    setActiveMonth(id);
-    if(id==='july') navigateTo('july');
-    else setPageId(`future-${id}`);
-  };
+  const chooseMonth = navigateToMonth;
   const chooseSection=(id)=>navigateTo(`july-${id}`);
   const saveNotes=(value)=>{setNotes(value);localStorage.setItem('family-ledger-july-notes',value)};
 
+  const hasNotebookNav = !pageId.startsWith('future-');
+
   let content;
-  if(page.type==='cover') content=<AnnualCover onOpen={()=>navigateTo('inside')}/>;
-  else if(page.type==='inside') content=<InsideCover onContinue={()=>navigateTo('july')}/>;
-  else if(page.type==='month') content=<MonthChapterPage month={month} onEnter={()=>navigateTo('july-snapshot')}/>;
-  else if(page.type==='divider') content=<SectionDivider section={section} onOpen={()=>navigateTo(`july-${activeSection}-work`)}/>;
-  else content=<WorkingPage section={section}>{activeSection==='snapshot'?<SnapshotContent/>:<div className="working-grid"><NoteCard title={`${section.title} workspace`}><p>This working page will use the same calm, writable planner system as the approved prototype while its detailed data components are added.</p></NoteCard><WritingArea label="Meeting notes" value={notes} onChange={saveNotes} placeholder="Write together here..."/></div>}</WorkingPage>;
+  if(page.type==='cover') content=<AnnualCover/>;
+  else if(page.type==='inside') content=<InsideCover month={month}/>;
+  else if(page.type==='month') content=<MonthChapterPage month={month}/>;
+  else if(page.type==='divider') content=<SectionDivider section={section} month={month}/>;
+  else content=<WorkingPage section={section} month={month}>{activeSection==='snapshot'?<SnapshotContent/>:<div className="working-grid"><NoteCard title={`${section.title} workspace`}><p>This working page will use the same calm, writable planner system as the approved prototype while its detailed data components are added.</p></NoteCard><WritingArea label="Meeting notes" value={notes} onChange={saveNotes} placeholder="Write together here..."/></div>}</WorkingPage>;
 
   if(pageId.startsWith('future-')) {
     const futureId = pageId.replace('future-', '');
@@ -128,16 +242,26 @@ export default function App(){
   }
 
   const showSections = page.type === 'divider' || page.type === 'working';
-  const pageLabel = pageId.startsWith('future-') ? `${month.label} Preview` : page.label;
+  const breadcrumbs = useMemo(() => buildBreadcrumbs(page, pageId), [page, pageId]);
 
   return <main>
     <a className="skip-link" href="#notebook-content">Skip to notebook page</a>
     <div className="site-toolbar" aria-label="Notebook navigation">
-      <button className="home-button" onClick={()=>navigateTo('cover')} aria-label="Go to front cover">⌂ <span>Cover</span></button>
-      <div className="breadcrumb" aria-live="polite"><span>The Family Ledger</span><b>{pageLabel}</b></div>
-      <span className="keyboard-help" title="Keyboard shortcuts">← → pages · Home cover · Esc month</span>
+      <BreadcrumbNav crumbs={breadcrumbs} onNavigate={navigateTo} />
+      <span className="keyboard-help" title="Keyboard shortcuts">← → pages · Esc up a level</span>
     </div>
-    <NotebookShell months={months} activeMonth={activeMonth} onMonthSelect={chooseMonth} activeSection={activeSection} onSectionSelect={chooseSection} showSections={showSections}>
+    <NotebookShell
+      months={months}
+      activeMonth={activeMonth}
+      onMonthSelect={chooseMonth}
+      activeSection={activeSection}
+      onSectionSelect={chooseSection}
+      showSections={showSections}
+      onPagePrevious={goPrevious}
+      onPageNext={goNext}
+      hasPrevious={hasNotebookNav && pageIndex > 0}
+      hasNext={hasNotebookNav && pageIndex < julyPages.length - 1}
+    >
       <div id="notebook-content">{content}</div>
     </NotebookShell>
     {!pageId.startsWith('future-') && <PageControls
