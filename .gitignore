@@ -1,4 +1,19 @@
 node_modules/
 dist/
 .DS_Store
+
+# Personal / local financial data — NEVER commit
 *.local
+*.local.js
+src/data/july2026.local.js
+src/data/*.local.js
+
+# Secrets and environment
+.env
+.env.*
+!.env.example
+
+# Editor / OS
+*.swp
+*~
+Thumbs.db

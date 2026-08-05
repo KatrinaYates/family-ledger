@@ -25,3 +25,32 @@ Then open [http://localhost:4173/family-ledger/](http://localhost:4173/family-le
 The public sample-data version deploys to GitHub Pages through GitHub Actions.
 
 > Do not commit real financial data while this repository is public.
+
+## Personal data safety
+
+| File | Purpose | Committed? |
+|------|---------|------------|
+| `src/data/july2026.local.js` | Your real July numbers | **No** — gitignored |
+| `src/data/july2026.sample.js` | Rounded demo data for GitHub Pages | Yes |
+| Browser `localStorage` (`fl-july-*`) | Meeting notes & edits | Never in git — stays on your device |
+
+**Why do I still see real numbers in dev?**  
+If `src/data/july2026.local.js` exists, it overrides the sample file. You'll see a **Local data** badge in the toolbar.
+
+- **Fake zeros for preview/commit check:** `npm run dev:sample`
+- **Your real July figures:** `npm run dev` (with `july2026.local.js` present)
+
+**Before you commit**, run:
+
+```bash
+npm run precommit
+```
+
+To auto-block local data on every commit (one-time setup):
+
+```bash
+chmod +x .githooks/pre-commit scripts/check-no-personal-data.sh
+git config core.hooksPath .githooks
+```
+
+The pre-commit hook refuses any staged `*.local.js`, `.env`, or sample files that contain exact-cent fields like `totalExact`.

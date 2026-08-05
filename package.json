@@ -5,8 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:sample": "VITE_USE_SAMPLE_DATA=true vite",
     "build": "GITHUB_PAGES=true vite build",
-    "preview": "GITHUB_PAGES=true vite preview"
+    "preview": "GITHUB_PAGES=true vite preview",
+    "precommit": "bash scripts/check-no-personal-data.sh"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",

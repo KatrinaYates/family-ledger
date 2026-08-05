@@ -10,7 +10,6 @@ import washiTape from "../assets/illustrations/washi-tape.svg";
 
 const illustrations = {
     sunflower,
-    sunflower,
     pencil,
     ghost,
     turkey,
@@ -20,15 +19,15 @@ const illustrations = {
 };
 
 export const sectionTabs = [
-    ["snapshot", "Snapshot"],
-    ["story", "Monthly Story"],
-    ["spending", "Spending"],
-    ["cfo", "CFO Recommendations"],
-    ["future", "Retirement & Future"],
-    ["meeting", "Money Meeting"],
-    ["actions", "Action Plan"],
-    ["celebrate", "Celebrate"],
-    ["handoff", "CFO Handoff"],
+    ["snapshot", "Snapshot", "Snap"],
+    ["story", "Monthly Story", "Story"],
+    ["spending", "Spending", "Spend"],
+    ["cfo", "CFO Recs", "CFO"],
+    ["future", "Retirement & Future", "Future"],
+    ["meeting", "Money Meeting", "Meet"],
+    ["actions", "Action Plan", "Actions"],
+    ["celebrate", "Celebrate", "Win"],
+    ["handoff", "CFO Handoff", "Handoff"],
 ];
 
 export function Illustration({name, className = ""}) {
@@ -86,9 +85,10 @@ export function MonthTabs({ months, activeMonth, onSelect }) {
 export function SectionTabs({ activeSection, onSelect }) {
   return (
       <nav className="section-tabs" aria-label="Sections">
-          {sectionTabs.map(([id, label], index) => (
-              <button key={id} className={`section-tab st${index + 1} ${activeSection === id ? "active" : ""}`} onClick={() => onSelect(id)} aria-current={activeSection === id ? "page" : undefined}>
-                  {label}
+          {sectionTabs.map(([id, label, shortLabel], index) => (
+              <button key={id} className={`section-tab st${index + 1} ${activeSection === id ? "active" : ""}`} onClick={() => onSelect(id)} aria-current={activeSection === id ? "page" : undefined} title={label}>
+                  <span className="section-tab-label-full">{label}</span>
+                  <span className="section-tab-label-short">{shortLabel}</span>
               </button>
           ))}
       </nav>
@@ -118,7 +118,7 @@ export function NotebookShell({children, months, activeMonth, onMonthSelect, act
     return (
         <div className="desk-scene">
             <div className="stage">
-                <div className="notebook">
+                <div className={`notebook${showSections ? " has-section-tabs" : ""}`}>
                     <div className="page-stack-edge" aria-hidden="true" />
                     <SpiralBinding />
                     {showSections && <SectionTabs activeSection={activeSection} onSelect={onSectionSelect} />}
@@ -128,36 +128,6 @@ export function NotebookShell({children, months, activeMonth, onMonthSelect, act
                 </div>
             </div>
         </div>
-    );
-}
-
-export function PageControls({previous, next, current, total, onPrevious, onNext}) {
-    return (
-        <nav className="page-controls" aria-label="Page navigation">
-            <button type="button" onClick={onPrevious} disabled={!previous} aria-label={previous ? `Previous page: ${previous.label}` : "No previous page"}>
-                <span className="arrow" aria-hidden="true">
-                    ←
-                </span>
-                <span className="control-copy">
-                    <small>Previous</small>
-                    <b>{previous?.label || "Beginning"}</b>
-                </span>
-            </button>
-            <div className="page-position" aria-live="polite">
-                <b>{current}</b>
-                <span>of</span>
-                <b>{total}</b>
-            </div>
-            <button type="button" onClick={onNext} disabled={!next} aria-label={next ? `Next page: ${next.label}` : "No next page"}>
-                <span className="control-copy align-right">
-                    <small>Next</small>
-                    <b>{next?.label || "End of ledger"}</b>
-                </span>
-                <span className="arrow" aria-hidden="true">
-                    →
-                </span>
-            </button>
-        </nav>
     );
 }
 
@@ -199,7 +169,9 @@ export function AnnualCover() {
     );
 }
 
-export function InsideCover({month}) {
+export function InsideCover({month, meta}) {
+    const motto = meta?.motto || 'Progress over perfection.';
+    const names = meta?.names || 'Person A & Person B';
     return (
         <div className="inside-cover">
             <Illustration name="sunflower" className="season-doodle top" />
@@ -211,10 +183,10 @@ export function InsideCover({month}) {
                 </h1>
                 <p>A shared place for honest conversations, clear decisions, and steady progress.</p>
                 {[
-                    ["Names", "Katrina & Tyler"],
-                    ["Started", "July 2026"],
-                    ["Our Financial Motto", "Progress over perfection."],
-                    ["Why We Meet", "To stay informed, make intentional decisions, and build the future we want together."],
+                    ['Names', names],
+                    ['Started', 'July 2026'],
+                    ['Our Financial Motto', motto],
+                    ['Why We Meet', 'To stay informed, make intentional decisions, and build the future we want together.'],
                 ].map(([label, value]) => (
                     <div className="belong-line" key={label}>
                         <b>{label}</b>
@@ -239,8 +211,12 @@ export function FocusPocket({title, children}) {
     );
 }
 
-export function MonthChapterPage({month}) {
+export function MonthChapterPage({month, chapterMeta}) {
     if (month.status === "locked") return <FutureMonthPage month={month} />;
+    const meetingDate = chapterMeta?.meetingDate || 'July 5, 2026';
+    const meetingLength = chapterMeta?.meetingLength || '55 minutes';
+    const intention = chapterMeta?.intention || chapterMeta?.motto || 'Be curious, not critical.';
+    const focus = chapterMeta?.focus || 'Debt down. Savings up. Keep momentum gentle.';
     return (
         <div className="month-chapter" style={{"--month-a": month.colors[0], "--month-b": month.colors[1], "--month-c": month.colors[2]}}>
             <div className="month-band" />
@@ -253,27 +229,19 @@ export function MonthChapterPage({month}) {
                 </h1>
                 <div className="chapter-sub">A fresh monthly reset for our money, goals, decisions, and future.</div>
                 <div className="chapter-meta">
-                    <span>📅 July 5, 2026</span>
-                    <span>⏱ 55 minutes</span>
-                    <span>
-                        {month.icon} {month.season}
-                    </span>
+                    <span>📅 {meetingDate}</span>
+                    <span>⏱ {meetingLength}</span>
+                    <span>{month.icon} {month.season}</span>
                 </div>
             </div>
             <Polaroid month={month} className="chapter-polaroid" />
             <StickyNote className="chapter-note">
-                This month’s intention:
+                Financial motto:
                 <br />
-                <b>Be curious, not critical.</b>
+                <b>{intention}</b>
             </StickyNote>
             <FocusPocket title={`${month.label} Focus`}>
-                <p>
-                    Debt down.
-                    <br />
-                    Savings up.
-                    <br />
-                    Keep momentum gentle.
-                </p>
+                <p>{focus}</p>
             </FocusPocket>
         </div>
     );
@@ -334,7 +302,7 @@ export function SectionDivider({section, month}) {
                     </div>
                 </div>
             </div>
-            <div className="subchapter-doodle">{section.icon}</div>
+            <Illustration name={month.illustration} className="subchapter-doodle" />
         </div>
     );
 }
@@ -351,6 +319,17 @@ export function WorkingPage({section, month, children}) {
                     <MonthDateBadge month={month} />
                 </header>
                 {children}
+            </div>
+        </div>
+    );
+}
+
+export function ContentShell({ children, className = '' }) {
+    return (
+        <div className={`working-page content-shell ${className}`.trim()}>
+            <div className="margin-line" />
+            <div className="working-content content-shell-inner">
+                <div className="content-body">{children}</div>
             </div>
         </div>
     );
