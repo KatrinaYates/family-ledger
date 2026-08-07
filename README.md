@@ -30,15 +30,15 @@ The public sample-data version deploys to GitHub Pages through GitHub Actions.
 
 | File | Purpose | Committed? |
 |------|---------|------------|
-| `src/data/july2026.local.js` | Your real July numbers | **No** — gitignored |
-| `src/data/july2026.sample.js` | Rounded demo data for GitHub Pages | Yes |
-| Browser `localStorage` (`fl-july-*`) | Meeting notes & edits | Never in git — stays on your device |
+| `src/data/months/YYYY-MM.local.js` | Your real month numbers | **No** — gitignored |
+| `src/data/months/YYYY-MM.sample.js` | Rounded demo data for GitHub Pages | Yes |
+| Browser `localStorage` (`fl-{monthId}-*`) | Meeting notes & edits | Never in git — stays on your device |
 
 **Why do I still see real numbers in dev?**  
-If `src/data/july2026.local.js` exists, it overrides the sample file. You'll see a **Local data** badge in the toolbar.
+If `src/data/months/2026-07.local.js` exists, it overrides the sample file. You'll see a **Local data** badge in the toolbar.
 
 - **Fake zeros for preview/commit check:** `npm run dev:sample`
-- **Your real July figures:** `npm run dev` (with `july2026.local.js` present)
+- **Your real figures:** `npm run dev` (with a gitignored `*.local.js` file present)
 
 **Before you commit**, run:
 

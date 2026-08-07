@@ -8,14 +8,33 @@ import {
   createActionFromSeed,
 } from '../utils/actionUtils';
 import { dispatchActionsUpdated, ACTIONS_UPDATED_EVENT } from '../utils/meetingEvents';
+import { getErrorMessage } from '../utils/getErrorMessage';
+import { useAsyncGuard } from './useAsyncGuard';
 
 export function useActions() {
-  const { monthId } = useMonthContext();
-  const [actions, setActions] = useState(() => ledgerRepository.listActionsForMonth(monthId));
+  const { monthId, workflow } = useMonthContext();
+  const isLocked = workflow.status === 'locked';
+  const { run } = useAsyncGuard();
+  const [actions, setActions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(null);
 
-  const refresh = useCallback(() => {
-    setActions(ledgerRepository.listActionsForMonth(monthId));
-  }, [monthId]);
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const rows = await run(() => ledgerRepository.listActionsForMonth(monthId));
+      if (rows != null) {
+        setActions(rows);
+      }
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  }, [monthId, run]);
 
   useEffect(() => {
     refresh();
@@ -28,44 +47,82 @@ export function useActions() {
   }, [refresh]);
 
   const seedIfEmpty = useCallback(
-    (seeds = []) => {
-      const existing = ledgerRepository.listActions({ originMonthId: monthId });
-      if (existing.length > 0 || !seeds.length) return;
-      for (const seed of seeds) {
-        ledgerRepository.saveAction(createActionFromSeed(seed, monthId));
+    async (seeds = []) => {
+      if (!seeds.length) return;
+      setSaving(true);
+      setSaveError(null);
+      try {
+        const existing = await ledgerRepository.listActions({ originMonthId: monthId });
+        if (existing.length > 0) return;
+        for (const seed of seeds) {
+          await ledgerRepository.saveAction(createActionFromSeed(seed, monthId));
+        }
+        dispatchActionsUpdated();
+        await refresh();
+      } catch (err) {
+        setSaveError(getErrorMessage(err));
+      } finally {
+        setSaving(false);
       }
-      dispatchActionsUpdated();
-      refresh();
     },
     [monthId, refresh],
   );
 
-  const addAction = useCallback(() => {
-    ledgerRepository.saveAction(createActionEntity({ originMonthId: monthId }));
-    dispatchActionsUpdated();
-    refresh();
+  const addAction = useCallback(async () => {
+    setSaving(true);
+    setSaveError(null);
+    try {
+      await ledgerRepository.saveAction(createActionEntity({ originMonthId: monthId }));
+      dispatchActionsUpdated();
+      await refresh();
+    } catch (err) {
+      setSaveError(getErrorMessage(err));
+    } finally {
+      setSaving(false);
+    }
   }, [monthId, refresh]);
 
   const updateAction = useCallback(
-    (id, patch) => {
-      ledgerRepository.updateAction(id, patch);
-      dispatchActionsUpdated();
-      refresh();
+    async (id, patch) => {
+      setSaving(true);
+      setSaveError(null);
+      try {
+        await ledgerRepository.updateAction(id, patch);
+        dispatchActionsUpdated();
+        await refresh();
+      } catch (err) {
+        setSaveError(getErrorMessage(err));
+      } finally {
+        setSaving(false);
+      }
     },
     [refresh],
   );
 
   const removeAction = useCallback(
-    (id) => {
-      ledgerRepository.deleteAction(id);
-      dispatchActionsUpdated();
-      refresh();
+    async (id) => {
+      setSaving(true);
+      setSaveError(null);
+      try {
+        await ledgerRepository.deleteAction(id);
+        dispatchActionsUpdated();
+        await refresh();
+      } catch (err) {
+        setSaveError(getErrorMessage(err));
+      } finally {
+        setSaving(false);
+      }
     },
     [refresh],
   );
 
   return {
     actions,
+    loading,
+    error,
+    saving,
+    saveError,
+    isLocked,
     seedIfEmpty,
     addAction,
     updateAction,

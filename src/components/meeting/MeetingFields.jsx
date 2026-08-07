@@ -40,9 +40,18 @@ function seedBulletItems(seeds) {
   }));
 }
 
+function FieldSaveError({ message }) {
+  if (!message) return null;
+  return (
+    <p className="field-save-error" role="alert">
+      {message}
+    </p>
+  );
+}
+
 export function SectionNotes({ pageId, label = 'Meeting notes' }) {
   const { monthId } = useMonthContext();
-  const [notes, setNotes, isLocked] = useMeetingNotes(pageNotesKey(monthId, pageId));
+  const { value: notes, setValue: setNotes, isLocked, saveError } = useMeetingNotes(pageNotesKey(monthId, pageId));
   const hasNotes = notes.trim().length > 0;
 
   return (
@@ -60,6 +69,7 @@ export function SectionNotes({ pageId, label = 'Meeting notes' }) {
         readOnly={isLocked}
         aria-readonly={isLocked}
       />
+      <FieldSaveError message={saveError} />
     </details>
   );
 }
@@ -71,7 +81,7 @@ export function EditableChecklist({
   allowEdit = true,
   allowRemove = true,
 }) {
-  const [items, setItems, isLocked] = useMeetingJson(storageKey, () => seedChecklistItems(seedItems));
+  const { value: items, setValue: setItems, isLocked, saveError } = useMeetingJson(storageKey, () => seedChecklistItems(seedItems));
 
   const toggle = (id) => {
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, checked: !item.checked } : item)));
@@ -141,7 +151,7 @@ export function EditableChecklist({
 }
 
 export function EditableQuestions({ storageKey, seedQuestions = [] }) {
-  const [items, setItems, isLocked] = useMeetingJson(storageKey, () => seedQuestionItems(seedQuestions));
+  const { value: items, setValue: setItems, isLocked, saveError } = useMeetingJson(storageKey, () => seedQuestionItems(seedQuestions));
 
   const updateAnswer = (id, answer) => {
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, answer } : item)));
@@ -207,9 +217,10 @@ export function EditableQuestions({ storageKey, seedQuestions = [] }) {
 }
 
 export function EditableDecisionList({ storageKey, seedDecisions = [] }) {
-  const [items, setItems, isLocked] = useMeetingJson(storageKey, () => seedChecklistItems(seedDecisions));
-  const [decision, setDecision, isOutcomeLocked] = useMeetingNotes(`${storageKey}-outcome`);
+  const { value: items, setValue: setItems, isLocked, saveError: listSaveError } = useMeetingJson(storageKey, () => seedChecklistItems(seedDecisions));
+  const { value: decision, setValue: setDecision, isLocked: isOutcomeLocked, saveError: outcomeSaveError } = useMeetingNotes(`${storageKey}-outcome`);
   const readOnly = isLocked || isOutcomeLocked;
+  const saveError = listSaveError || outcomeSaveError;
 
   const toggle = (id) => {
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, checked: !item.checked } : item)));
@@ -285,7 +296,7 @@ export function EditableDecisionList({ storageKey, seedDecisions = [] }) {
 }
 
 export function EditableActionPlan({ storageKey, seedRows = [] }) {
-  const [rows, setRows, isLocked] = useMeetingJson(storageKey, () => seedActionRows(seedRows));
+  const { value: rows, setValue: setRows, isLocked, saveError } = useMeetingJson(storageKey, () => seedActionRows(seedRows));
 
   const updateRow = (id, field, value) => {
     setRows((prev) => prev.map((row) => (row.id === id ? { ...row, [field]: value } : row)));
@@ -375,7 +386,7 @@ export function EditableActionPlan({ storageKey, seedRows = [] }) {
 }
 
 export function EditableBulletList({ storageKey, seedItems = [], title }) {
-  const [items, setItems, isLocked] = useMeetingJson(storageKey, () => seedBulletItems(seedItems));
+  const { value: items, setValue: setItems, isLocked, saveError } = useMeetingJson(storageKey, () => seedBulletItems(seedItems));
 
   const updateText = (id, text) => {
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, text } : item)));

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   PanelCard,
   PromptField,
@@ -14,11 +14,11 @@ export function MeetingPages({ page, totalInSection, data, month }) {
   const monthLabel = month?.label || 'July';
   const year = meta?.year || 2026;
 
-  const [surprised, setSurprised] = useMeetingNotes(meetingConversationKey(month.id, 'surprised'));
-  const [feltGood, setFeltGood] = useMeetingNotes(meetingConversationKey(month.id, 'feltGood'));
-  const [feltStressful, setFeltStressful] = useMeetingNotes(meetingConversationKey(month.id, 'feltStressful'));
-  const [decisions, setDecisions] = useMeetingNotes(meetingConversationKey(month.id, 'decisions'));
-  const [parkingLot, setParkingLot] = useMeetingNotes(meetingConversationKey(month.id, 'parkingLot'));
+  const surprisedField = useMeetingNotes(meetingConversationKey(month.id, 'surprised'));
+  const feltGoodField = useMeetingNotes(meetingConversationKey(month.id, 'feltGood'));
+  const feltStressfulField = useMeetingNotes(meetingConversationKey(month.id, 'feltStressful'));
+  const decisionsField = useMeetingNotes(meetingConversationKey(month.id, 'decisions'));
+  const parkingLotField = useMeetingNotes(meetingConversationKey(month.id, 'parkingLot'));
 
   if (page === 1) {
     return (
@@ -32,11 +32,11 @@ export function MeetingPages({ page, totalInSection, data, month }) {
             badgeVariant="talk"
           />
           <div className="meeting-prompt-grid">
-            <PromptField label="What surprised us?" value={surprised} onChange={setSurprised} />
-            <PromptField label="What felt good?" value={feltGood} onChange={setFeltGood} />
-            <PromptField label="What felt stressful?" value={feltStressful} onChange={setFeltStressful} />
-            <PromptField label="Decisions we made" value={decisions} onChange={setDecisions} />
-            <PromptField label="Parking lot" value={parkingLot} onChange={setParkingLot} />
+            <PromptField label="What surprised us?" value={surprisedField.value} onChange={surprisedField.setValue} />
+            <PromptField label="What felt good?" value={feltGoodField.value} onChange={feltGoodField.setValue} />
+            <PromptField label="What felt stressful?" value={feltStressfulField.value} onChange={feltStressfulField.setValue} />
+            <PromptField label="Decisions we made" value={decisionsField.value} onChange={decisionsField.setValue} />
+            <PromptField label="Parking lot" value={parkingLotField.value} onChange={parkingLotField.setValue} />
           </div>
         </PageWithNotes>
       </div>

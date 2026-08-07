@@ -35,6 +35,8 @@ export function normalizeToContract(raw, monthId) {
         return {
             schemaVersion: 1,
             monthId: raw.monthId ?? monthId,
+            version: raw.version ?? 1,
+            updatedAt: raw.updatedAt ?? null,
             workflow: {
                 status: 'draft',
                 sourceAsOf: null,
@@ -58,6 +60,8 @@ export function normalizeToContract(raw, monthId) {
     return {
         schemaVersion: 1,
         monthId,
+        version: raw.version ?? 1,
+        updatedAt: raw.updatedAt ?? null,
         workflow: {
             status: 'draft',
             sourceAsOf: null,

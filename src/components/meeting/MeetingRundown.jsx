@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { ScrollBody } from '../content/NotebookPrimitives';
 import { useMonthContext } from '../../context/MonthContext';
-import { collectMeetingRundown, formatRundownAsText } from '../../utils/collectMeetingRundown';
-import { MEETING_UPDATED_EVENT, ACTIONS_UPDATED_EVENT } from '../../utils/meetingEvents';
+import { useMeetingRundown } from '../../hooks/useMeetingRundown';
+import { formatRundownAsText } from '../../utils/collectMeetingRundown';
 
 function countRundownItems(rundown) {
   return rundown.sections.reduce((sum, section) => sum + section.items.length, 0);
@@ -10,34 +10,8 @@ function countRundownItems(rundown) {
 
 export function MeetingRundown() {
   const { monthId } = useMonthContext();
-  const [rundown, setRundown] = useState(() => collectMeetingRundown(monthId));
+  const { rundown, loading, error, refresh } = useMeetingRundown(monthId);
   const [copied, setCopied] = useState(false);
-
-  const refresh = useCallback(() => {
-    setRundown(collectMeetingRundown(monthId));
-    setCopied(false);
-  }, [monthId]);
-
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
-
-  useEffect(() => {
-    const prefix = `fl-${monthId}-`;
-    const onStorage = (event) => {
-      if (event.key?.startsWith(prefix) || event.key === 'fl-actions') refresh();
-    };
-    const onMeetingUpdated = () => refresh();
-    const onActionsUpdated = () => refresh();
-    window.addEventListener('storage', onStorage);
-    window.addEventListener(MEETING_UPDATED_EVENT, onMeetingUpdated);
-    window.addEventListener(ACTIONS_UPDATED_EVENT, onActionsUpdated);
-    return () => {
-      window.removeEventListener('storage', onStorage);
-      window.removeEventListener(MEETING_UPDATED_EVENT, onMeetingUpdated);
-      window.removeEventListener(ACTIONS_UPDATED_EVENT, onActionsUpdated);
-    };
-  }, [monthId, refresh]);
 
   const handleCopy = async () => {
     try {
@@ -75,7 +49,13 @@ export function MeetingRundown() {
       </div>
       <ScrollBody label="Compiled meeting rundown" className="meeting-rundown-scroll">
         <div className="meeting-rundown">
-          {isEmpty ? (
+          {loading && (
+            <p className="meeting-rundown-empty">Loading rundown…</p>
+          )}
+          {error && (
+            <p className="field-save-error" role="alert">{error}</p>
+          )}
+          {!loading && !error && isEmpty ? (
             <p className="meeting-rundown-empty">
               Nothing captured yet — your notes and lists from earlier sections will appear here.
             </p>

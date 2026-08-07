@@ -1,15 +1,15 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useMonthContext } from '../context/MonthContext';
 import { collectDataQualityItems } from '../data/normalizeDataQuality';
-import { ledgerRepository } from '../repository';
+import { useLedgerRecord } from '../hooks/useLedgerRecord';
 
 export function DataQualityBanner() {
   const { monthId } = useMonthContext();
-  const items = useMemo(() => {
-    const record = ledgerRepository.getLedgerRecord(monthId);
-    return collectDataQualityItems(record?.dataQuality);
-  }, [monthId]);
+  const { record, loading, error } = useLedgerRecord(monthId);
 
+  if (loading || error || !record) return null;
+
+  const items = collectDataQualityItems(record.dataQuality);
   if (!items.length) return null;
 
   return (

@@ -6,6 +6,8 @@ export function createBlankLedgerMonth(monthId) {
     return {
         schemaVersion: 1,
         monthId,
+        version: 1,
+        updatedAt: null,
         workflow: {
             status: 'draft',
             sourceAsOf: null,

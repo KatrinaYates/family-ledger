@@ -1,4 +1,3 @@
-import { months } from '../data/months.js';
 import {
     loadLedgerMonth,
     listAvailableMonthIds,
@@ -8,6 +7,14 @@ import { mergeMonthView } from '../data/normalizeLedgerMonth.js';
 import { enrichLedgerMonth } from '../data/enrichLedgerMonth.js';
 import { createBlankLedgerMonth } from './createBlankLedgerMonth.js';
 import { LedgerRepository } from './LedgerRepository.js';
+import {
+    ConflictError,
+    LedgerNotFoundError,
+    LockedMonthError,
+    StorageError,
+    ValidationError,
+} from './errors.js';
+import { dispatchLedgerMonthsUpdated } from '../utils/meetingEvents.js';
 
 const ACTIONS_KEY = 'fl-actions';
 const WORKFLOW_KEY_PREFIX = 'fl-ledger-workflow-';
@@ -24,7 +31,11 @@ function readJson(key, fallback) {
 }
 
 function writeJson(key, value) {
-    localStorage.setItem(key, JSON.stringify(value));
+    try {
+        localStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+        throw new StorageError('Could not save. Try again.', { key, cause: error });
+    }
 }
 
 function readWorkflowOverride(monthId) {
@@ -33,6 +44,29 @@ function readWorkflowOverride(monthId) {
 
 function writeWorkflowOverride(monthId, workflow) {
     writeJson(`${WORKFLOW_KEY_PREFIX}${monthId}`, workflow);
+}
+
+/** @param {import('./types.js').Action} action @param {string} monthId */
+function actionBelongsToMonth(action, monthId) {
+    return action.originMonthId === monthId || action.carriedToMonthId === monthId;
+}
+
+/** @param {import('./types.js').LedgerMonth} record @param {import('./types.js').WriteOptions} [options] */
+function assertExpectedVersion(record, options) {
+    if (options?.expectedVersion == null) return;
+    const currentVersion = record.version ?? 1;
+    if (currentVersion !== options.expectedVersion) {
+        throw new ConflictError(record.monthId, options.expectedVersion, currentVersion);
+    }
+}
+
+/** @param {import('./types.js').LedgerMonth} record */
+function bumpRecordVersion(record) {
+    return {
+        ...record,
+        version: (record.version ?? 1) + 1,
+        updatedAt: new Date().toISOString(),
+    };
 }
 
 export class LocalLedgerRepository extends LedgerRepository {
@@ -79,6 +113,8 @@ export class LocalLedgerRepository extends LedgerRepository {
             record = {
                 ...fromFile,
                 ...overlay,
+                version: overlay.version ?? fromFile.version ?? 1,
+                updatedAt: overlay.updatedAt ?? fromFile.updatedAt ?? null,
                 workflow: { ...fromFile.workflow, ...(overlay.workflow ?? {}) },
                 generation: { ...fromFile.generation, ...(overlay.generation ?? {}) },
                 dataQuality: overlay.dataQuality ?? fromFile.dataQuality,
@@ -111,61 +147,95 @@ export class LocalLedgerRepository extends LedgerRepository {
         return null;
     }
 
-    /** @param {import('./types.js').LedgerMonth} record */
-    persistRecord(record) {
-        this.records.set(record.monthId, record);
-        writeJson(`${CREATED_RECORD_PREFIX}${record.monthId}`, {
-            schemaVersion: record.schemaVersion,
-            monthId: record.monthId,
-            workflow: record.workflow,
-            generation: record.generation,
-            dataQuality: record.dataQuality,
-            sourceData: record.sourceData,
-            generatedAnalysis: record.generatedAnalysis,
-            meetingData: record.meetingData,
-        });
+    /** @param {string} monthId */
+    requireRecord(monthId) {
+        const record = this.getRecord(monthId);
+        if (!record) {
+            throw new LedgerNotFoundError(monthId);
+        }
+        return record;
     }
 
-    listMonths() {
+    /** @param {string} monthId */
+    assertMeetingWritable(monthId) {
+        const record = this.requireRecord(monthId);
+        if (record.workflow.status === 'locked') {
+            throw new LockedMonthError(monthId);
+        }
+    }
+
+    /** @param {import('./types.js').LedgerMonth} record @param {import('./types.js').WriteOptions} [options] */
+    persistRecord(record, options) {
+        assertExpectedVersion(record, options);
+        const next = bumpRecordVersion(record);
+        this.records.set(next.monthId, next);
+        writeJson(`${CREATED_RECORD_PREFIX}${next.monthId}`, {
+            schemaVersion: next.schemaVersion,
+            monthId: next.monthId,
+            version: next.version,
+            updatedAt: next.updatedAt,
+            workflow: next.workflow,
+            generation: next.generation,
+            dataQuality: next.dataQuality,
+            sourceData: next.sourceData,
+            generatedAnalysis: next.generatedAnalysis,
+            meetingData: next.meetingData,
+        });
+        return next;
+    }
+
+    async listMonths() {
         return [...this.records.values()].map((record) => ({
             monthId: record.monthId,
             workflow: record.workflow,
             generation: record.generation,
+            version: record.version ?? 1,
         }));
     }
 
-    getMonth(monthId) {
+    async listNavigableMonthIds() {
+        const fromFiles = listAvailableMonthIds();
+        const fromRecords = (await this.listMonths()).map((entry) => entry.monthId);
+        return [...new Set([...fromFiles, ...fromRecords])].sort();
+    }
+
+    async hasLedgerData(monthId) {
+        return Boolean(this.getRecord(monthId)) || listAvailableMonthIds().includes(monthId);
+    }
+
+    async getWorkflow(monthId) {
         const record = this.getRecord(monthId);
-        if (!record) {
-            throw new Error(`No ledger data found for month "${monthId}".`);
-        }
+        return record?.workflow ?? null;
+    }
+
+    async getMonth(monthId) {
+        const record = this.requireRecord(monthId);
         return mergeMonthView(record);
     }
 
-    createMonth(month) {
+    async createMonth(month) {
         const monthId = month.monthId;
+        if (!monthId) {
+            throw new ValidationError('monthId is required to create a month.');
+        }
         if (this.getRecord(monthId)) {
-            throw new Error(`Month "${monthId}" already exists.`);
+            throw new ValidationError(`Month "${monthId}" already exists.`, { monthId });
         }
         const record = month.schemaVersion ? month : createBlankLedgerMonth(monthId);
-        this.persistRecord(record);
-        return record;
+        const persisted = this.persistRecord(record);
+        dispatchLedgerMonthsUpdated();
+        return persisted;
     }
 
-    getMonthSource(monthId) {
-        const record = this.getRecord(monthId);
-        if (!record) {
-            throw new Error(`No ledger data found for month "${monthId}".`);
-        }
+    async getMonthSource(monthId) {
+        const record = this.requireRecord(monthId);
         return structuredClone(record.sourceData);
     }
 
-    updateMonthSource(monthId, sourceData) {
-        const record = this.getRecord(monthId);
-        if (!record) {
-            throw new Error(`No ledger data found for month "${monthId}".`);
-        }
-        const updated = {
+    async updateMonthSource(monthId, sourceData, options) {
+        const record = this.requireRecord(monthId);
+        assertExpectedVersion(record, options);
+        const withSource = {
             ...record,
             sourceData,
             workflow: {
@@ -173,15 +243,20 @@ export class LocalLedgerRepository extends LedgerRepository {
                 sourceAsOf: new Date().toISOString(),
             },
         };
-        this.persistRecord(updated);
-        return this.regenerateAnalysis(monthId);
+        const enriched = enrichLedgerMonth(withSource, { touchGeneration: true });
+        const updated = {
+            ...withSource,
+            sourceData: enriched.sourceData,
+            generatedAnalysis: enriched.generatedAnalysis,
+            generation: enriched.generation,
+        };
+        const persisted = this.persistRecord(updated, options);
+        return mergeMonthView(persisted);
     }
 
-    regenerateAnalysis(monthId) {
-        const record = this.getRecord(monthId);
-        if (!record) {
-            throw new Error(`No ledger data found for month "${monthId}".`);
-        }
+    async regenerateAnalysis(monthId, options) {
+        const record = this.requireRecord(monthId);
+        assertExpectedVersion(record, options);
 
         const enriched = enrichLedgerMonth(record, { touchGeneration: true });
         const updated = {
@@ -191,32 +266,38 @@ export class LocalLedgerRepository extends LedgerRepository {
             generation: enriched.generation,
         };
 
-        this.persistRecord(updated);
-        return mergeMonthView(updated);
+        const persisted = this.persistRecord(updated, options);
+        return mergeMonthView(persisted);
     }
 
-    getLedgerRecord(monthId) {
+    async getLedgerRecord(monthId) {
         const record = this.getRecord(monthId);
         if (!record) return null;
         return {
             monthId: record.monthId,
             schemaVersion: record.schemaVersion,
+            version: record.version ?? 1,
+            updatedAt: record.updatedAt ?? null,
             workflow: structuredClone(record.workflow),
             generation: structuredClone(record.generation),
             dataQuality: structuredClone(record.dataQuality),
         };
     }
 
-    saveMeetingEntry(monthId, key, value) {
+    async saveMeetingEntry(monthId, key, value) {
+        this.assertMeetingWritable(monthId);
         if (typeof value === 'string') {
-            localStorage.setItem(key, value);
+            try {
+                localStorage.setItem(key, value);
+            } catch (error) {
+                throw new StorageError('Could not save. Try again.', { key, cause: error });
+            }
         } else {
             writeJson(key, value);
         }
     }
 
-    getMeetingEntry(monthId, key) {
-        void monthId;
+    async getMeetingEntry(_monthId, key) {
         const raw = localStorage.getItem(key);
         if (raw == null) return null;
         try {
@@ -226,28 +307,32 @@ export class LocalLedgerRepository extends LedgerRepository {
         }
     }
 
-    listActions(filters = {}) {
+    async listActions(filters = {}) {
         const actions = readJson(ACTIONS_KEY, []);
         return actions.filter((action) => {
             if (filters.status && action.status !== filters.status) return false;
             if (filters.originMonthId && action.originMonthId !== filters.originMonthId) return false;
             if (filters.carriedToMonthId && action.carriedToMonthId !== filters.carriedToMonthId) return false;
             if (filters.forMonthId) {
-                const monthId = filters.forMonthId;
-                const isOpen = action.status !== 'done';
-                const onOrigin = action.originMonthId === monthId;
-                const carriedHere = action.carriedToMonthId === monthId;
-                if (!isOpen || (!onOrigin && !carriedHere)) return false;
+                if (!actionBelongsToMonth(action, filters.forMonthId)) return false;
+            }
+            if (filters.forMonthIdOpen) {
+                if (!actionBelongsToMonth(action, filters.forMonthIdOpen)) return false;
+                if (action.status === 'done') return false;
             }
             return true;
         });
     }
 
-    listActionsForMonth(monthId) {
+    async listActionsForMonth(monthId) {
         return this.listActions({ forMonthId: monthId });
     }
 
-    listCarryForwardCandidates(monthId) {
+    async listOpenActionsForMonth(monthId) {
+        return this.listActions({ forMonthIdOpen: monthId });
+    }
+
+    async listCarryForwardCandidates(monthId) {
         return readJson(ACTIONS_KEY, []).filter(
             (action) =>
                 action.originMonthId === monthId &&
@@ -256,18 +341,18 @@ export class LocalLedgerRepository extends LedgerRepository {
         );
     }
 
-    saveAction(action) {
+    async saveAction(action) {
         const actions = readJson(ACTIONS_KEY, []);
         actions.push(action);
         writeJson(ACTIONS_KEY, actions);
         return action;
     }
 
-    updateAction(id, patch) {
+    async updateAction(id, patch) {
         const actions = readJson(ACTIONS_KEY, []);
         const index = actions.findIndex((action) => action.id === id);
         if (index < 0) {
-            throw new Error(`Action "${id}" not found.`);
+            throw new ValidationError(`Action "${id}" not found.`, { id });
         }
         const merged = {
             ...actions[index],
@@ -285,64 +370,48 @@ export class LocalLedgerRepository extends LedgerRepository {
         return actions[index];
     }
 
-    carryForwardAction(id, targetMonthId) {
+    async carryForwardAction(id, targetMonthId) {
         return this.updateAction(id, { carriedToMonthId: targetMonthId });
     }
 
-    deleteAction(id) {
+    async deleteAction(id) {
         const actions = readJson(ACTIONS_KEY, []).filter((action) => action.id !== id);
         writeJson(ACTIONS_KEY, actions);
     }
 
-    updateWorkflow(monthId, patch) {
-        const record = this.getRecord(monthId);
-        if (!record) {
-            throw new Error(`No ledger data found for month "${monthId}".`);
-        }
+    async updateWorkflow(monthId, patch, options) {
+        const record = this.requireRecord(monthId);
         const workflow = { ...record.workflow, ...patch };
         writeWorkflowOverride(monthId, workflow);
         const updated = { ...record, workflow };
         this.records.set(monthId, updated);
-        if (localStorage.getItem(`${CREATED_RECORD_PREFIX}${monthId}`)) {
-            const record = this.getRecord(monthId);
-            if (record) this.persistRecord({ ...record, workflow });
-        }
-        return workflow;
+        const persisted = this.persistRecord(updated, options);
+        return persisted.workflow;
     }
 
-    lockMonth(monthId) {
-        return this.updateWorkflow(monthId, {
-            status: 'locked',
-            lockedAt: new Date().toISOString(),
-        });
+    async lockMonth(monthId, options) {
+        return this.updateWorkflow(
+            monthId,
+            {
+                status: 'locked',
+                lockedAt: new Date().toISOString(),
+            },
+            options,
+        );
     }
 
-    /** @param {string} monthId */
-    isUsingLocalData(monthId) {
+    async unlockMonth(monthId, reason, options) {
+        const record = this.requireRecord(monthId);
+        const nextStatus = record.workflow.reviewedAt ? 'meeting_ready' : 'draft';
+        const patch = {
+            status: nextStatus,
+            lockedAt: null,
+            unlockReason: reason?.trim() ? reason.trim() : null,
+        };
+        return this.updateWorkflow(monthId, patch, options);
+    }
+
+    async isUsingLocalData(monthId) {
         return isUsingLocalData(monthId);
     }
-
-    /** Catalog months that have ledger records. */
-    listAvailableMonthIds() {
-        return listAvailableMonthIds();
-    }
-
-    /** @param {string} monthId */
-    hasLedgerData(monthId) {
-        return Boolean(this.getRecord(monthId)) || listAvailableMonthIds().includes(monthId);
-    }
-
-    getWorkflow(monthId) {
-        const record = this.getRecord(monthId);
-        return record?.workflow ?? null;
-    }
 }
-
-/** @param {string} monthId */
-export function listNavigableMonthIds(repo) {
-    const fromFiles = repo.listAvailableMonthIds();
-    const fromRecords = repo.listMonths().map((entry) => entry.monthId);
-    return [...new Set([...fromFiles, ...fromRecords])].sort();
-}
-
-export { months };

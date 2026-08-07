@@ -3,7 +3,6 @@ import { enrichLedgerMonth } from './enrichLedgerMonth.js';
 
 const sampleModules = import.meta.glob('./months/*.sample.js', { eager: true });
 const localModules = import.meta.glob('./months/*.local.js', { eager: true });
-const legacyLocalModules = import.meta.glob('./july2026.local.js', { eager: true });
 
 const forceSample = import.meta.env.VITE_USE_SAMPLE_DATA === 'true';
 
@@ -28,14 +27,6 @@ function resolveMonthRaw(monthId) {
     if (sample) {
         dataSourceByMonth.set(monthId, 'sample');
         return { raw: sample, source: 'sample' };
-    }
-
-    if (monthId === '2026-07') {
-        const legacyLocal = legacyLocalModules['./july2026.local.js']?.default;
-        if (legacyLocal && !forceSample) {
-            dataSourceByMonth.set(monthId, 'local');
-            return { raw: legacyLocal, source: 'local' };
-        }
     }
 
     throw new Error(

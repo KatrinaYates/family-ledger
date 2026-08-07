@@ -68,20 +68,21 @@ function parseEntry(entry, raw) {
   }
 }
 
-function repositoryActionItems(monthId) {
-  return ledgerRepository.listActionsForMonth(monthId).map((action) => ({
+async function repositoryActionItems(monthId) {
+  const actions = await ledgerRepository.listActionsForMonth(monthId);
+  return actions.map((action) => ({
     label: 'Action plan',
     text: formatActionSummary(action),
   }));
 }
 
 /** @param {string} monthId */
-export function collectMeetingRundown(monthId) {
+export async function collectMeetingRundown(monthId) {
   const registry = getMeetingDataRegistry(monthId);
   const grouped = {};
 
   for (const entry of registry) {
-    const raw = ledgerRepository.getMeetingEntry(monthId, entry.key);
+    const raw = await ledgerRepository.getMeetingEntry(monthId, entry.key);
     const items = parseEntry(entry, raw);
     if (!items.length) continue;
 
@@ -89,7 +90,7 @@ export function collectMeetingRundown(monthId) {
     grouped[entry.group].push(...items);
   }
 
-  const actionItems = repositoryActionItems(monthId);
+  const actionItems = await repositoryActionItems(monthId);
   if (actionItems.length) {
     if (!grouped.actions) grouped.actions = [];
     grouped.actions.push(...actionItems);

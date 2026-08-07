@@ -24,7 +24,37 @@ check_absent "No fl-july-* storage keys" 'fl-july-' src
 check_absent "No buildJulyPages" 'buildJulyPages' src
 check_absent "No loadJuly2026" 'loadJuly2026' src
 check_absent "No enrichJulyData" 'enrichJulyData' src
+check_absent "No july2026.local loader" 'july2026\.local' src
+check_absent "No exported listNavigableMonthIds(repo)" 'listNavigableMonthIds\(repo\)' src
 check_absent "No months[].status in catalog" 'status:\s*"(active|locked)"' src/data/months.js
+
+if rg -q 'async listNavigableMonthIds' src/repository/LocalLedgerRepository.js 2>/dev/null; then
+  echo "OK: LocalLedgerRepository.listNavigableMonthIds is async"
+else
+  echo "FAIL: LocalLedgerRepository.listNavigableMonthIds should be async"
+  fail=1
+fi
+
+if rg -q 'class ConflictError' src/repository/errors.js 2>/dev/null; then
+  echo "OK: Typed ConflictError exists"
+else
+  echo "FAIL: Missing ConflictError in repository/errors.js"
+  fail=1
+fi
+
+if rg -q 'useLedgerMonths' src/App.jsx 2>/dev/null; then
+  echo "OK: App uses reactive useLedgerMonths"
+else
+  echo "FAIL: App.jsx should use useLedgerMonths for month discovery"
+  fail=1
+fi
+
+if rg -q 'const notebookPages = useMemo' src/App.jsx 2>/dev/null; then
+  echo "OK: App builds notebookPages reactively"
+else
+  echo "FAIL: App.jsx should build notebookPages via useMemo + useLedgerMonths"
+  fail=1
+fi
 
 # Month-specific conditionals outside data/catalog are forbidden.
 if rg -q '2026-09' src \

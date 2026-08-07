@@ -1,8 +1,6 @@
 /**
- * Smoke tests for month loading and blank-month enrichment.
+ * Smoke tests for month loading, async repository, and versioning.
  * Run: npm run smoke:months
- *
- * Uses direct sample imports (Node has no import.meta.glob).
  */
 import fs from 'fs';
 import path from 'path';
@@ -13,6 +11,12 @@ import sample202609 from '../src/data/months/2026-09.sample.js';
 import { normalizeToContract, mergeMonthView } from '../src/data/normalizeLedgerMonth.js';
 import { enrichLedgerMonth } from '../src/data/enrichLedgerMonth.js';
 import { createBlankLedgerMonth } from '../src/repository/createBlankLedgerMonth.js';
+import {
+  ConflictError,
+  LedgerNotFoundError,
+  LockedMonthError,
+  LedgerRepositoryError,
+} from '../src/repository/errors.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const monthsDir = path.join(__dirname, '../src/data/months');
@@ -21,6 +25,22 @@ const errors = [];
 
 function assert(condition, message) {
   if (!condition) errors.push(message);
+}
+
+function assertExpectedVersion(record, options) {
+  if (options?.expectedVersion == null) return;
+  const currentVersion = record.version ?? 1;
+  if (currentVersion !== options.expectedVersion) {
+    throw new ConflictError(record.monthId, options.expectedVersion, currentVersion);
+  }
+}
+
+function bumpRecordVersion(record) {
+  return {
+    ...record,
+    version: (record.version ?? 1) + 1,
+    updatedAt: new Date().toISOString(),
+  };
 }
 
 function loadSampleRecord(raw, monthId) {
@@ -56,6 +76,7 @@ try {
     assert(record.schemaVersion === 1, `${monthId} should use schemaVersion 1`);
     assert(record.generation, `${monthId} should include generation block`);
     assert(record.dataQuality, `${monthId} should include dataQuality block`);
+    assert(typeof record.version === 'number', `${monthId} should include version after normalize`);
   }
 
   assert(samples['2026-07'].workflow.status === 'meeting_ready', 'July should start meeting_ready for lock workflow test');
@@ -63,9 +84,43 @@ try {
   assert(samples['2026-09'].workflow.status === 'draft', 'September should start draft');
 
   const blank = createBlankLedgerMonth('2026-08');
+  assert(blank.version === 1, 'blank month should start at version 1');
+  assert(blank.updatedAt === null, 'blank month updatedAt should be null');
   mergeMonthView(enrichLedgerMonth(blank));
 
   assert(!fs.existsSync(path.join(monthsDir, '2026-10.sample.js')), 'October sample file should be absent');
+
+  assert(typeof LedgerRepositoryError === 'function', 'LedgerRepositoryError class exists');
+  assert(typeof LedgerNotFoundError === 'function', 'LedgerNotFoundError class exists');
+  assert(typeof LockedMonthError === 'function', 'LockedMonthError class exists');
+  assert(typeof ConflictError === 'function', 'ConflictError class exists');
+
+  const blankRecord = createBlankLedgerMonth('2026-07');
+  const bumped = bumpRecordVersion(blankRecord);
+  assert(bumped.version === 2, 'bumpRecordVersion increments version');
+  assert(typeof bumped.updatedAt === 'string', 'bumpRecordVersion sets updatedAt');
+
+  let conflictThrown = false;
+  try {
+    assertExpectedVersion(bumped, { expectedVersion: 1 });
+  } catch (error) {
+    conflictThrown = error instanceof ConflictError;
+  }
+  assert(conflictThrown, 'expectedVersion mismatch should throw ConflictError');
+
+  const localRepoSource = fs.readFileSync(
+    path.join(__dirname, '../src/repository/LocalLedgerRepository.js'),
+    'utf8',
+  );
+  assert(localRepoSource.includes('async listNavigableMonthIds'), 'listNavigableMonthIds is async');
+  assert(localRepoSource.includes('async unlockMonth'), 'unlockMonth is async');
+  assert(localRepoSource.includes('async deleteAction'), 'deleteAction is async');
+  assert(localRepoSource.includes('LockedMonthError'), 'repository throws LockedMonthError');
+
+  const notFound = new LedgerNotFoundError('2099-01');
+  assert(notFound instanceof LedgerRepositoryError, 'LedgerNotFoundError extends base error');
+  const locked = new LockedMonthError('2026-07');
+  assert(locked.code === 'LOCKED', 'LockedMonthError exposes code');
 } catch (error) {
   errors.push(`Unexpected error: ${error.message}`);
 }

@@ -21,12 +21,12 @@ export function HandoffPages({ page, totalInSection, data, month }) {
   const monthLabel = month?.label || 'July';
   const year = meta?.year || 2026;
 
-  const [decisionsMade, setDecisionsMade] = useMeetingNotes(handoffKey(month.id, 'decisions'));
-  const [openActionItems, setOpenActionItems] = useMeetingNotes(handoffKey(month.id, 'open-actions'));
-  const [helpful, setHelpful] = useMeetingNotes(handoffKey(month.id, 'helpful'));
-  const [repetitive, setRepetitive] = useMeetingNotes(handoffKey(month.id, 'repetitive'));
-  const [missing, setMissing] = useMeetingNotes(handoffKey(month.id, 'missing'));
-  const [ideas, setIdeas, isIdeasLocked] = useMeetingNotes(handoffKey(month.id, 'ideas'));
+  const decisionsMadeField = useMeetingNotes(handoffKey(month.id, 'decisions'));
+  const openActionItemsField = useMeetingNotes(handoffKey(month.id, 'open-actions'));
+  const helpfulField = useMeetingNotes(handoffKey(month.id, 'helpful'));
+  const repetitiveField = useMeetingNotes(handoffKey(month.id, 'repetitive'));
+  const missingField = useMeetingNotes(handoffKey(month.id, 'missing'));
+  const ideasField = useMeetingNotes(handoffKey(month.id, 'ideas'));
 
   const carryForwardSeeds = [...handoff.carryForward, ...handoff.revisit];
 
@@ -62,14 +62,14 @@ export function HandoffPages({ page, totalInSection, data, month }) {
             <aside className="snapshot-side handoff-final-edits">
               <PromptField
                 label="Final edits (optional) — Decisions made this meeting"
-                value={decisionsMade}
-                onChange={setDecisionsMade}
+                value={decisionsMadeField.value}
+                onChange={decisionsMadeField.setValue}
                 placeholder="Document what you agreed to..."
               />
               <PromptField
                 label="Final edits (optional) — Open action items"
-                value={openActionItems}
-                onChange={setOpenActionItems}
+                value={openActionItemsField.value}
+                onChange={openActionItemsField.setValue}
                 placeholder="What is still in progress?"
               />
             </aside>
@@ -93,20 +93,20 @@ export function HandoffPages({ page, totalInSection, data, month }) {
           <ScrollBody label="Ledger feedback">
             <PromptField
               label="What was helpful?"
-              value={helpful}
-              onChange={setHelpful}
+              value={helpfulField.value}
+              onChange={helpfulField.setValue}
               placeholder="Sections, data, or prompts that worked..."
             />
             <PromptField
               label="What felt repetitive?"
-              value={repetitive}
-              onChange={setRepetitive}
+              value={repetitiveField.value}
+              onChange={repetitiveField.setValue}
               placeholder="Skip or shorten next time..."
             />
             <PromptField
               label="What was missing?"
-              value={missing}
-              onChange={setMissing}
+              value={missingField.value}
+              onChange={missingField.setValue}
               placeholder="Data or topics to add..."
             />
           </ScrollBody>
@@ -114,12 +114,15 @@ export function HandoffPages({ page, totalInSection, data, month }) {
         <StickyCard label="Ideas for the next ledger" tone="default">
           <textarea
             className="inline-notes-area"
-            value={ideas}
-            onChange={(e) => setIdeas(e.target.value)}
+            value={ideasField.value}
+            onChange={(e) => ideasField.setValue(e.target.value)}
             placeholder="Layout, sections, or data you'd change next month..."
             rows={6}
-            readOnly={isIdeasLocked}
+            readOnly={ideasField.isLocked}
           />
+          {ideasField.saveError && (
+            <p className="field-save-error" role="alert">{ideasField.saveError}</p>
+          )}
         </StickyCard>
       </div>
     </div>

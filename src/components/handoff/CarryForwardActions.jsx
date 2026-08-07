@@ -1,9 +1,11 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { months } from '../../data/months';
 import { useMonthContext } from '../../context/MonthContext';
 import { ledgerRepository } from '../../repository';
 import { actionStatusLabel } from '../../utils/actionUtils';
 import { dispatchActionsUpdated, ACTIONS_UPDATED_EVENT } from '../../utils/meetingEvents';
+import { getErrorMessage } from '../../utils/getErrorMessage';
+import { useAsyncGuard } from '../../hooks/useAsyncGuard';
 
 function getNextMonthId(monthId) {
   const index = months.findIndex((month) => month.id === monthId);
@@ -14,28 +16,52 @@ export function CarryForwardActions() {
   const { monthId, month } = useMonthContext();
   const nextMonthId = getNextMonthId(monthId);
   const nextMonth = months.find((entry) => entry.id === nextMonthId);
-  const [candidates, setCandidates] = useState(() => ledgerRepository.listCarryForwardCandidates(monthId));
+  const { run } = useAsyncGuard();
+  const [candidates, setCandidates] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(null);
 
-  const refresh = useCallback(() => {
-    setCandidates(ledgerRepository.listCarryForwardCandidates(monthId));
-  }, [monthId]);
+  const refresh = async () => {
+    setLoading(true);
+    try {
+      const rows = await run(() => ledgerRepository.listCarryForwardCandidates(monthId));
+      if (rows != null) {
+        setCandidates(rows);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     refresh();
-  }, [refresh]);
+  }, [monthId]);
 
   useEffect(() => {
     const handleUpdate = () => refresh();
     window.addEventListener(ACTIONS_UPDATED_EVENT, handleUpdate);
     return () => window.removeEventListener(ACTIONS_UPDATED_EVENT, handleUpdate);
-  }, [refresh]);
+  }, [monthId]);
 
-  const carryForward = (actionId) => {
+  const carryForward = async (actionId) => {
     if (!nextMonthId) return;
-    ledgerRepository.carryForwardAction(actionId, nextMonthId);
-    dispatchActionsUpdated();
-    refresh();
+    setSaving(true);
+    setSaveError(null);
+    try {
+      await ledgerRepository.carryForwardAction(actionId, nextMonthId);
+      dispatchActionsUpdated();
+      await refresh();
+    } catch (err) {
+      setSaveError(getErrorMessage(err));
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return <p className="carry-forward-empty">Loading carry-forward items…</p>;
+  }
 
   if (!candidates.length) {
     return (
@@ -50,6 +76,7 @@ export function CarryForwardActions() {
       <p className="carry-forward-intro">
         Carry open actions into {nextMonth?.label ?? 'the next month'} explicitly — they will not appear there automatically.
       </p>
+      {saveError && <p className="field-save-error" role="alert">{saveError}</p>}
       <ul className="carry-forward-list">
         {candidates.map((action) => (
           <li key={action.id} className="carry-forward-item">
@@ -65,6 +92,7 @@ export function CarryForwardActions() {
                 type="button"
                 className="meeting-add-btn"
                 onClick={() => carryForward(action.id)}
+                disabled={saving}
               >
                 Carry to {nextMonth?.label ?? nextMonthId}
               </button>

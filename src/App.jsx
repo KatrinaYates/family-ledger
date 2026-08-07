@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { months, getMonthCatalogEntry } from './data/months';
-import { DEFAULT_WORKFLOW } from './data/defaultWorkflow';
 import { ledgerRepository } from './repository';
-import { listNavigableMonthIds } from './repository/LocalLedgerRepository';
 import { MonthProvider } from './context/MonthContext';
-import { WORKFLOW_UPDATED_EVENT } from './utils/meetingEvents';
+import { useLedgerMonths } from './hooks/useLedgerMonths';
+import { useLedgerMonth } from './hooks/useLedgerMonth';
+import { useWorkflow } from './hooks/useWorkflow';
 import {
   buildNotebookPages,
   isPreviewPageId,
@@ -42,23 +42,6 @@ const sections = {
   celebrate:{number:'08',title:'Celebrate',description:'Pause long enough to notice the progress we made.',inside:'Wins • gratitude • milestones • proud moments',how:'Celebrate effort and direction, not only perfect results.',prompt:'We are building this together!',noteTone:'green',tone:'green'},
   handoff:{number:'09',title:'CFO Handoff',description:'Leave a clean record for next month and future-us.',inside:'Carryovers • reminders • watch items • next-month context',how:'Write what we will be glad to remember later.',prompt:'What should the next month know?',noteTone:'blue',tone:'slate'},
 };
-
-const availableMonthIds = listNavigableMonthIds(ledgerRepository);
-const notebookPages = buildNotebookPages(availableMonthIds, sections);
-const DEFAULT_MONTH_ID = availableMonthIds[0] ?? '2026-07';
-
-function tryGetMonthData(monthId) {
-  if (!monthId || !ledgerRepository.hasLedgerData(monthId)) return null;
-  try {
-    return ledgerRepository.getMonth(monthId);
-  } catch {
-    return null;
-  }
-}
-
-function getWorkflow(monthId) {
-  return ledgerRepository.getWorkflow(monthId) ?? DEFAULT_WORKFLOW;
-}
 
 function isTypingTarget(target) {
   return target instanceof HTMLElement && (
@@ -177,15 +160,44 @@ function MonthNotebookShell({ children }) {
 }
 
 export default function App() {
-  const [pageId, setPageId] = useState(() => pageFromHash(notebookPages));
-  const [activeMonth, setActiveMonth] = useState(DEFAULT_MONTH_ID);
-  const [workflowTick, setWorkflowTick] = useState(0);
+  const { monthIds, loading: monthsLoading, error: monthsError } = useLedgerMonths();
+  const notebookPages = useMemo(
+    () => buildNotebookPages(monthIds, sections),
+    [monthIds],
+  );
+
+  const defaultMonthId = monthIds[0] ?? months[0]?.id ?? '2026-07';
+
+  const [pageId, setPageId] = useState(() => {
+    const rawId = window.location.hash.replace('#/', '');
+    return normalizePageId(rawId) || 'cover';
+  });
+  const [activeMonth, setActiveMonth] = useState(defaultMonthId);
+  const [usingLocalData, setUsingLocalData] = useState(false);
+  const [hasLedgerDataMap, setHasLedgerDataMap] = useState({});
 
   useEffect(() => {
-    const handleWorkflowUpdated = () => setWorkflowTick((tick) => tick + 1);
-    window.addEventListener(WORKFLOW_UPDATED_EVENT, handleWorkflowUpdated);
-    return () => window.removeEventListener(WORKFLOW_UPDATED_EVENT, handleWorkflowUpdated);
-  }, []);
+    if (monthIds.length && !monthIds.includes(activeMonth)) {
+      setActiveMonth(defaultMonthId);
+    }
+  }, [monthIds, activeMonth, defaultMonthId]);
+
+  useEffect(() => {
+    if (monthsLoading || !notebookPages.length) return;
+    const validId = pageFromHash(notebookPages);
+    setPageId(validId);
+    const historyPage = notebookPages.find((candidate) => candidate.id === validId);
+    if (historyPage?.monthId) setActiveMonth(historyPage.monthId);
+    else if (isPreviewPageId(validId)) setActiveMonth(previewMonthIdFromPageId(validId));
+  }, [monthsLoading, notebookPages]);
+
+  useEffect(() => {
+    let cancelled = false;
+    ledgerRepository.isUsingLocalData(activeMonth).then((value) => {
+      if (!cancelled) setUsingLocalData(value);
+    });
+    return () => { cancelled = true; };
+  }, [activeMonth]);
 
   const isPreview = isPreviewPageId(pageId);
   const pageIndex = isPreview ? -1 : notebookPages.findIndex((candidate) => candidate.id === pageId);
@@ -194,23 +206,41 @@ export default function App() {
     () => getMonthCatalogEntry(activeMonth) || months[0],
     [activeMonth],
   );
-  const activeSection = page.sectionId || 'snapshot';
+  const activeSection = page?.sectionId || 'snapshot';
   const section = sections[activeSection];
 
+  const contextMonthId = page?.monthId || activeMonth;
+  const { workflow } = useWorkflow(contextMonthId);
+
   const monthContextValue = useMemo(() => {
-    const contextMonthId = page.monthId || activeMonth;
     const contextMonth = getMonthCatalogEntry(contextMonthId) || month;
     return {
       monthId: contextMonthId,
       month: contextMonth,
-      workflow: getWorkflow(contextMonthId),
+      workflow,
     };
-  }, [page.monthId, activeMonth, month, workflowTick]);
+  }, [contextMonthId, month, workflow]);
 
-  const resolvedMonthId = page.monthId || activeMonth;
-  const monthData = useMemo(() => tryGetMonthData(resolvedMonthId), [resolvedMonthId]);
-  const monthLoadError = page.monthId && ledgerRepository.hasLedgerData(page.monthId) && !monthData;
-  const showLocalDataBadge = ledgerRepository.isUsingLocalData(activeMonth);
+  const resolvedMonthId = page?.monthId || activeMonth;
+  const { data: monthData, loading: monthLoading, error: monthError } = useLedgerMonth(resolvedMonthId);
+
+  const monthLoadError = Boolean(
+    page?.monthId &&
+    !monthLoading &&
+    !monthData &&
+    (monthError || hasLedgerDataMap[page.monthId]),
+  );
+
+  useEffect(() => {
+    if (!page?.monthId) return;
+    let cancelled = false;
+    ledgerRepository.hasLedgerData(page.monthId).then((hasData) => {
+      if (!cancelled) {
+        setHasLedgerDataMap((prev) => ({ ...prev, [page.monthId]: hasData }));
+      }
+    });
+    return () => { cancelled = true; };
+  }, [page?.monthId]);
 
   const navigateTo = useCallback((nextId, { replace = false } = {}) => {
     const normalizedId = normalizePageId(nextId);
@@ -228,21 +258,22 @@ export default function App() {
     setPageId(normalizedId);
     if (nextPage.monthId) setActiveMonth(nextPage.monthId);
     window.history[replace ? 'replaceState' : 'pushState']({}, '', `#/${normalizedId}`);
-  }, []);
+  }, [notebookPages]);
 
   const goPrevious = useCallback(() => {
     if (isPreview || pageIndex <= 0) return;
     navigateTo(notebookPages[pageIndex - 1].id);
-  }, [isPreview, navigateTo, pageIndex]);
+  }, [isPreview, navigateTo, pageIndex, notebookPages]);
 
   const goNext = useCallback(() => {
     if (isPreview || pageIndex < 0 || pageIndex >= notebookPages.length - 1) return;
     navigateTo(notebookPages[pageIndex + 1].id);
-  }, [isPreview, navigateTo, pageIndex]);
+  }, [isPreview, navigateTo, pageIndex, notebookPages]);
 
-  const navigateToMonth = useCallback((monthId) => {
+  const navigateToMonth = useCallback(async (monthId) => {
     setActiveMonth(monthId);
-    if (ledgerRepository.hasLedgerData(monthId)) {
+    const hasData = await ledgerRepository.hasLedgerData(monthId);
+    if (hasData) {
       navigateTo(monthId);
       return;
     }
@@ -271,6 +302,7 @@ export default function App() {
   }, [isPreview, navigateTo, page]);
 
   useEffect(() => {
+    if (monthsLoading) return;
     if (!window.location.hash) navigateTo('cover', { replace: true });
     const handlePopState = () => {
       const id = pageFromHash(notebookPages);
@@ -281,7 +313,7 @@ export default function App() {
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [navigateTo]);
+  }, [navigateTo, monthsLoading, notebookPages]);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -297,6 +329,22 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [goNext, goNextMonth, goPrevious, goPreviousMonth, goUpBreadcrumb, isPreview]);
 
+  if (monthsLoading) {
+    return (
+      <main>
+        <p className="ledger-loading">Loading ledger months…</p>
+      </main>
+    );
+  }
+
+  if (monthsError) {
+    return (
+      <main>
+        <p className="field-save-error" role="alert">{monthsError}</p>
+      </main>
+    );
+  }
+
   const hasNotebookNav = !isPreview;
 
   let content;
@@ -304,16 +352,16 @@ export default function App() {
     const previewMonthId = previewMonthIdFromPageId(pageId);
     const previewMonth = getMonthCatalogEntry(previewMonthId) || months[1];
     content = <MonthChapterPage month={previewMonth} hasLedgerData={false} />;
-  } else if (page.type === 'cover') {
+  } else if (page?.type === 'cover') {
     content = <AnnualCover />;
-  } else if (page.type === 'inside') {
+  } else if (page?.type === 'inside') {
     content = <InsideCover month={month} meta={monthData?.meta} />;
-  } else if (page.type === 'month') {
+  } else if (page?.type === 'month') {
     content = (
       <MonthChapterPage
         month={month}
         chapterMeta={monthData?.meta}
-        hasLedgerData={ledgerRepository.hasLedgerData(page.monthId) && Boolean(monthData)}
+        hasLedgerData={Boolean(hasLedgerDataMap[page.monthId] && monthData)}
       />
     );
   } else if (monthLoadError) {
@@ -328,57 +376,63 @@ export default function App() {
         </div>
       </ContentShell>
     );
-  } else if (page.type === 'divider') {
+  } else if (monthLoading && page?.type === 'content') {
+    content = (
+      <ContentShell>
+        <p className="ledger-loading">Loading {month.label}…</p>
+      </ContentShell>
+    );
+  } else if (page?.type === 'divider') {
     content = <SectionDivider section={section} month={month} />;
-  } else if (page.type === 'content' && activeSection === 'snapshot') {
+  } else if (page?.type === 'content' && activeSection === 'snapshot') {
     content = (
       <MonthNotebookShell>
         <SnapshotPages {...contentPageProps(page, month, monthData)} />
       </MonthNotebookShell>
     );
-  } else if (page.type === 'content' && activeSection === 'story') {
+  } else if (page?.type === 'content' && activeSection === 'story') {
     content = (
       <MonthNotebookShell>
         <StoryPages {...contentPageProps(page, month, monthData)} />
       </MonthNotebookShell>
     );
-  } else if (page.type === 'content' && activeSection === 'spending') {
+  } else if (page?.type === 'content' && activeSection === 'spending') {
     content = (
       <MonthNotebookShell>
         <SpendingPages {...contentPageProps(page, month, monthData)} />
       </MonthNotebookShell>
     );
-  } else if (page.type === 'content' && activeSection === 'cfo') {
+  } else if (page?.type === 'content' && activeSection === 'cfo') {
     content = (
       <MonthNotebookShell>
         <CfoPages {...contentPageProps(page, month, monthData)} />
       </MonthNotebookShell>
     );
-  } else if (page.type === 'content' && activeSection === 'future') {
+  } else if (page?.type === 'content' && activeSection === 'future') {
     content = (
       <MonthNotebookShell>
         <FuturePages {...contentPageProps(page, month, monthData)} />
       </MonthNotebookShell>
     );
-  } else if (page.type === 'content' && activeSection === 'meeting') {
+  } else if (page?.type === 'content' && activeSection === 'meeting') {
     content = (
       <MonthNotebookShell>
         <MeetingPages {...contentPageProps(page, month, monthData)} />
       </MonthNotebookShell>
     );
-  } else if (page.type === 'content' && activeSection === 'actions') {
+  } else if (page?.type === 'content' && activeSection === 'actions') {
     content = (
       <MonthNotebookShell>
         <ActionsPages {...contentPageProps(page, month, monthData)} />
       </MonthNotebookShell>
     );
-  } else if (page.type === 'content' && activeSection === 'celebrate') {
+  } else if (page?.type === 'content' && activeSection === 'celebrate') {
     content = (
       <MonthNotebookShell>
         <CelebratePages {...contentPageProps(page, month, monthData)} />
       </MonthNotebookShell>
     );
-  } else if (page.type === 'content' && activeSection === 'handoff') {
+  } else if (page?.type === 'content' && activeSection === 'handoff') {
     content = (
       <MonthNotebookShell>
         <HandoffPages {...contentPageProps(page, month, monthData)} />
@@ -386,10 +440,10 @@ export default function App() {
     );
   }
 
-  const showSections = !isPreview && (page.type === 'divider' || page.type === 'content');
+  const showSections = !isPreview && (page?.type === 'divider' || page?.type === 'content');
   const breadcrumbs = useMemo(() => buildBreadcrumbs(page, pageId), [page, pageId]);
 
-  const wrappedContent = page.monthId || page.type === 'inside' ? (
+  const wrappedContent = page?.monthId || page?.type === 'inside' ? (
     <MonthProvider
       monthId={monthContextValue.monthId}
       month={monthContextValue.month}
@@ -405,7 +459,7 @@ export default function App() {
       <div className="site-toolbar" aria-label="Notebook navigation">
         <BreadcrumbNav crumbs={breadcrumbs} onNavigate={navigateTo} />
         <span className="keyboard-help" title="Keyboard shortcuts">
-          {showLocalDataBadge && (
+          {usingLocalData && (
             <span className="data-source-badge" title={`Loaded from local data for ${activeMonth} (gitignored)`}>
               Local data
             </span>
@@ -415,13 +469,13 @@ export default function App() {
       </div>
       <NotebookShell
         months={months}
-        availableMonthIds={availableMonthIds}
+        availableMonthIds={monthIds}
         activeMonth={activeMonth}
         onMonthSelect={navigateToMonth}
         activeSection={activeSection}
         onSectionSelect={(id) => navigateTo(`${activeMonth}-${id}-1`)}
         showSections={showSections}
-        showLeftPage={page.type !== 'cover'}
+        showLeftPage={page?.type !== 'cover'}
         onPagePrevious={goPrevious}
         onPageNext={goNext}
         hasPrevious={hasNotebookNav && pageIndex > 0}

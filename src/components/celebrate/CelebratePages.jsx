@@ -15,8 +15,8 @@ export function CelebratePages({ page, totalInSection, data, month }) {
   const monthLabel = month?.label || 'July';
   const year = meta?.year || 2026;
 
-  const [familyReward, setFamilyReward] = useMeetingNotes(celebrateKey(month.id, 'reward'));
-  const [gratitude, setGratitude] = useMeetingNotes(celebrateKey(month.id, 'gratitude'));
+  const familyRewardField = useMeetingNotes(celebrateKey(month.id, 'reward'));
+  const gratitudeField = useMeetingNotes(celebrateKey(month.id, 'gratitude'));
 
   const winRows = [
     { label: 'Biggest win', value: celebrate.biggestWin },
@@ -44,14 +44,14 @@ export function CelebratePages({ page, totalInSection, data, month }) {
             </StickyCard>
             <PromptField
               label="Family reward"
-              value={familyReward}
-              onChange={setFamilyReward}
+              value={familyRewardField.value}
+              onChange={familyRewardField.setValue}
               placeholder="How should we celebrate this month?"
             />
             <PromptField
               label="Gratitude"
-              value={gratitude}
-              onChange={setGratitude}
+              value={gratitudeField.value}
+              onChange={gratitudeField.setValue}
               placeholder="What are we thankful for?"
             />
           </aside>

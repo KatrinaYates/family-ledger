@@ -1,5 +1,6 @@
 /**
  * Ledger repository interface — implemented by LocalLedgerRepository and future SupabaseLedgerRepository.
+ * All I/O boundary methods return Promises.
  * @interface
  */
 export class LedgerRepository {
@@ -7,7 +8,23 @@ export class LedgerRepository {
         throw new Error('Not implemented');
     }
 
+    listNavigableMonthIds() {
+        throw new Error('Not implemented');
+    }
+
+    hasLedgerData(_monthId) {
+        throw new Error('Not implemented');
+    }
+
+    getWorkflow(_monthId) {
+        throw new Error('Not implemented');
+    }
+
     getMonth(_monthId) {
+        throw new Error('Not implemented');
+    }
+
+    getLedgerRecord(_monthId) {
         throw new Error('Not implemented');
     }
 
@@ -19,15 +36,11 @@ export class LedgerRepository {
         throw new Error('Not implemented');
     }
 
-    updateMonthSource(_monthId, _sourceData) {
+    updateMonthSource(_monthId, _sourceData, _options) {
         throw new Error('Not implemented');
     }
 
-    regenerateAnalysis(_monthId) {
-        throw new Error('Not implemented');
-    }
-
-    getLedgerRecord(_monthId) {
+    regenerateAnalysis(_monthId, _options) {
         throw new Error('Not implemented');
     }
 
@@ -44,6 +57,10 @@ export class LedgerRepository {
     }
 
     listActionsForMonth(_monthId) {
+        throw new Error('Not implemented');
+    }
+
+    listOpenActionsForMonth(_monthId) {
         throw new Error('Not implemented');
     }
 
@@ -67,11 +84,19 @@ export class LedgerRepository {
         throw new Error('Not implemented');
     }
 
-    updateWorkflow(_monthId, _patch) {
+    updateWorkflow(_monthId, _patch, _options) {
         throw new Error('Not implemented');
     }
 
-    lockMonth(_monthId) {
+    lockMonth(_monthId, _options) {
+        throw new Error('Not implemented');
+    }
+
+    unlockMonth(_monthId, _reason, _options) {
+        throw new Error('Not implemented');
+    }
+
+    isUsingLocalData(_monthId) {
         throw new Error('Not implemented');
     }
 }

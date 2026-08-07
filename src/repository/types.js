@@ -6,6 +6,7 @@
  * @property {string | null} sourceAsOf
  * @property {string | null} reviewedAt
  * @property {string | null} lockedAt
+ * @property {string | null} [unlockReason]
  */
 
 /**
@@ -44,12 +45,30 @@
  * @typedef {Object} LedgerMonth
  * @property {number} schemaVersion
  * @property {string} monthId
+ * @property {number} version
+ * @property {string | null} updatedAt
  * @property {Workflow} workflow
  * @property {Generation} generation
  * @property {DataQuality} dataQuality
  * @property {object} sourceData
  * @property {object} generatedAnalysis
  * @property {object} meetingData
+ */
+
+/**
+ * @typedef {Object} LedgerRecordMeta
+ * @property {string} monthId
+ * @property {number} schemaVersion
+ * @property {number} version
+ * @property {string | null} updatedAt
+ * @property {Workflow} workflow
+ * @property {Generation} generation
+ * @property {DataQuality} dataQuality
+ */
+
+/**
+ * @typedef {Object} WriteOptions
+ * @property {number} [expectedVersion]
  */
 
 /**
