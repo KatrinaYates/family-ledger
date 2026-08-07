@@ -1,37 +1,43 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ScrollBody } from '../content/NotebookPrimitives';
+import { useMonthContext } from '../../context/MonthContext';
 import { collectMeetingRundown, formatRundownAsText } from '../../utils/collectMeetingRundown';
-import { MEETING_UPDATED_EVENT } from '../../utils/meetingEvents';
+import { MEETING_UPDATED_EVENT, ACTIONS_UPDATED_EVENT } from '../../utils/meetingEvents';
 
 function countRundownItems(rundown) {
   return rundown.sections.reduce((sum, section) => sum + section.items.length, 0);
 }
 
 export function MeetingRundown() {
-  const [rundown, setRundown] = useState(() => collectMeetingRundown());
+  const { monthId } = useMonthContext();
+  const [rundown, setRundown] = useState(() => collectMeetingRundown(monthId));
   const [copied, setCopied] = useState(false);
 
   const refresh = useCallback(() => {
-    setRundown(collectMeetingRundown());
+    setRundown(collectMeetingRundown(monthId));
     setCopied(false);
-  }, []);
+  }, [monthId]);
 
   useEffect(() => {
     refresh();
   }, [refresh]);
 
   useEffect(() => {
+    const prefix = `fl-${monthId}-`;
     const onStorage = (event) => {
-      if (event.key?.startsWith('fl-july-')) refresh();
+      if (event.key?.startsWith(prefix) || event.key === 'fl-actions') refresh();
     };
     const onMeetingUpdated = () => refresh();
+    const onActionsUpdated = () => refresh();
     window.addEventListener('storage', onStorage);
     window.addEventListener(MEETING_UPDATED_EVENT, onMeetingUpdated);
+    window.addEventListener(ACTIONS_UPDATED_EVENT, onActionsUpdated);
     return () => {
       window.removeEventListener('storage', onStorage);
       window.removeEventListener(MEETING_UPDATED_EVENT, onMeetingUpdated);
+      window.removeEventListener(ACTIONS_UPDATED_EVENT, onActionsUpdated);
     };
-  }, [refresh]);
+  }, [monthId, refresh]);
 
   const handleCopy = async () => {
     try {

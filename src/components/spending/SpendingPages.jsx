@@ -13,8 +13,8 @@ import {
   EditableBulletList,
   EditableQuestions,
   PageWithNotes,
-  meetingKey,
 } from '../meeting/MeetingFields';
+import { meetingKey } from '../../utils/meetingKeys';
 
 export function SpendingPages({ page, totalInSection, data, month }) {
   const { spending, meta } = data;
@@ -23,7 +23,7 @@ export function SpendingPages({ page, totalInSection, data, month }) {
 
   if (page === 1) {
     const { overview, topCategories } = spending;
-    const categoryRows = topCategories.map((cat) => ({
+    const categoryRows = (topCategories ?? []).map((cat) => ({
       key: cat.name,
       cells: [cat.rank, cat.name, cat.amount],
     }));
@@ -68,7 +68,7 @@ export function SpendingPages({ page, totalInSection, data, month }) {
             <aside className="snapshot-side">
               <StickyCard label="Likely unexpected" tone="focus">
                 <EditableBulletList
-                  storageKey={meetingKey('spending', 1, 'unexpected')}
+                  storageKey={meetingKey(month.id, 'spending', 1, 'unexpected')}
                   seedItems={spending.unexpected}
                 />
               </StickyCard>
@@ -100,7 +100,7 @@ export function SpendingPages({ page, totalInSection, data, month }) {
             </PanelCard>
             <PanelCard title="Discussion questions" scrollLabel="Discussion questions" className="spending-questions-panel">
               <EditableQuestions
-                storageKey={meetingKey('spending', 2, 'questions')}
+                storageKey={meetingKey(month.id, 'spending', 2, 'questions')}
                 seedQuestions={questions}
               />
             </PanelCard>

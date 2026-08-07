@@ -1,11 +1,12 @@
 /** Derives snapshot page presentation data from core financial figures. */
-export function enrichSnapshot(snapshot, meta) {
-  const cashAccounts = snapshot.cash.accounts.map((account) => ({
+export function enrichSnapshot(snapshot = {}, meta) {
+  const monthName = meta?.month?.trim() || 'the month';
+  const cashAccounts = (snapshot.cash?.accounts ?? []).map((account) => ({
     ...account,
     ...cashAccountMeta(account.name),
   }));
 
-  const retirementSorted = [...snapshot.retirement.accounts].sort(
+  const retirementSorted = [...(snapshot.retirement?.accounts ?? [])].sort(
     (a, b) => parseAmount(b.amount) - parseAmount(a.amount),
   );
 
@@ -17,21 +18,21 @@ export function enrichSnapshot(snapshot, meta) {
         {
           icon: '📈',
           label: 'Connected Net Worth',
-          value: snapshot.netWorth.value,
+          value: snapshot.netWorth?.value ?? '—',
           chip: { text: 'Positive', tone: 'green' },
           note: 'Cash plus retirement minus connected debt.',
         },
         {
           icon: '💵',
           label: 'Connected Cash',
-          value: snapshot.cash.total,
+          value: snapshot.cash?.total ?? '—',
           chip: { text: 'Mostly assigned', tone: 'blue' },
           note: 'Most cash is reserved for bills or children\'s savings.',
         },
         {
           icon: '🛟',
           label: 'Emergency Fund',
-          value: snapshot.emergencyFund.value,
+          value: snapshot.emergencyFund?.value ?? '—',
           chip: { text: 'Needs definition', tone: 'yellow' },
           note: 'No account is clearly designated as the emergency fund.',
           indicator: '!',
@@ -39,9 +40,9 @@ export function enrichSnapshot(snapshot, meta) {
         {
           icon: '🌱',
           label: 'Retirement',
-          value: snapshot.retirement.total,
+          value: snapshot.retirement?.total ?? '—',
           chip: { text: 'Strongest area', tone: 'purple' },
-          note: `About ${snapshot.retirement.julyContributions} was contributed during July.`,
+          note: `About ${snapshot.retirement?.monthContributions ?? snapshot.retirement?.julyContributions ?? '—'} was contributed during ${meta?.month ?? 'the month'}.`,
         },
       ],
       summaryRows: [
@@ -62,7 +63,7 @@ export function enrichSnapshot(snapshot, meta) {
         },
       ],
       pulseInsight: 'income remained strong and retirement kept growing, but high-interest debt and limited unassigned cash reduce flexibility.',
-      biggestWin: `We still invested about ${snapshot.retirement.julyContributions} for retirement during an expensive month. ✨`,
+      biggestWin: `We still invested about ${snapshot.retirement?.monthContributions ?? snapshot.retirement?.julyContributions ?? '—'} for retirement during an expensive month. ✨`,
       biggestFocus: 'Stop high-interest card growth and define a real emergency fund.',
       missingBeforeLock: [
         'Home value and mortgage',
@@ -73,22 +74,25 @@ export function enrichSnapshot(snapshot, meta) {
       continuedText: 'Cash and retirement continue on the next page →',
     },
     cash: {
-      ...snapshot.cash,
-      totalExact: snapshot.cash.totalExact || snapshot.cash.total,
+      ...(snapshot.cash ?? {}),
+      total: snapshot.cash?.total ?? '—',
+      totalExact: snapshot.cash?.totalExact || snapshot.cash?.total || '—',
       accounts: cashAccounts,
       betterKpiInsight: 'separate bills funded, available spending, emergency savings, children\'s savings, and sinking funds.',
       continuedText: 'Debt details and final status continue on the next page →',
     },
     retirement: {
-      ...snapshot.retirement,
-      totalExact: snapshot.retirement.totalExact || snapshot.retirement.total,
+      ...(snapshot.retirement ?? {}),
+      total: snapshot.retirement?.total ?? '—',
+      totalExact: snapshot.retirement?.totalExact || snapshot.retirement?.total || '—',
       accountsSorted: retirementSorted,
       contributionNote: 'Employee contributions, employer match, profit-sharing, and after-tax contributions.',
     },
     emergencyFund: {
-      ...snapshot.emergencyFund,
+      ...(snapshot.emergencyFund ?? {}),
+      value: snapshot.emergencyFund?.value ?? '—',
       headline: 'Needs a household definition',
-      description: snapshot.emergencyFund.description || `The only clearly identifiable general savings balance is ${snapshot.emergencyFund.value}, but the Bills account may contain additional cushion.`,
+      description: snapshot.emergencyFund?.description || `The only clearly identifiable general savings balance is ${snapshot.emergencyFund?.value ?? '—'}, but the Bills account may contain additional cushion.`,
       checks: [
         'Choose the account',
         'Confirm the balance',
@@ -97,10 +101,10 @@ export function enrichSnapshot(snapshot, meta) {
       ],
     },
     debtPage: {
-      subtitle: 'A complete view of connected debt, key risks, and what must be decided before July is locked.',
+      subtitle: `A complete view of connected debt, key risks, and what must be decided before ${monthName} is locked.`,
       overallStatus: {
         title: 'Positive, but debt-heavy',
-        text: snapshot.netWorth.insight,
+        text: snapshot.netWorth?.insight ?? '',
       },
       healthScore: {
         title: 'Not included yet',
@@ -112,7 +116,7 @@ export function enrichSnapshot(snapshot, meta) {
         'Card rates are confirmed',
         'Brokerage link is current',
       ],
-      finalInsight: 'July\'s strongest foundation is retirement. July\'s clearest risk is expensive revolving debt.',
+      finalInsight: `${monthName}'s strongest foundation is retirement. ${monthName}'s clearest risk is expensive revolving debt.`,
       footerText: 'End of Financial Snapshot · Next: Monthly Story',
     },
   };

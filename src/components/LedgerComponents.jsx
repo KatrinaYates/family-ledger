@@ -50,7 +50,7 @@ export function Polaroid({month, className = ""}) {
             <div className="polaroid-photo" style={{background: photoBackground}}>
                 <Illustration name={month.illustration} className="polaroid-photo-art" />
             </div>
-            <figcaption className="polaroid-caption">{month.label} 2026</figcaption>
+            <figcaption className="polaroid-caption">{month.label} {month.year ?? 2026}</figcaption>
         </figure>
     );
 }
@@ -75,19 +75,23 @@ export function SpiralBinding() {
   );
 }
 
-export function MonthTabs({ months, activeMonth, onSelect }) {
+export function MonthTabs({ months, availableMonthIds = [], activeMonth, onSelect }) {
   return (
       <nav className="month-tabs" aria-label="Month chapters">
-          {months.map((month) => (
+          {months.map((month) => {
+              const hasData = availableMonthIds.includes(month.id);
+              const isPreview = !hasData;
+              return (
               <button
                   key={month.id}
-                  className={`month-tab ${month.id} ${activeMonth === month.id ? "active" : ""} ${month.status === "locked" ? "future" : ""}`}
+                  className={`month-tab ${month.slug} ${activeMonth === month.id ? "active" : ""} ${isPreview ? "future" : ""}`}
                   onClick={() => onSelect(month.id)}
                   aria-current={activeMonth === month.id ? "page" : undefined}
-                  aria-label={`${month.label} 2026${month.status === "locked" ? ", preview only" : ""}`}>
+                  aria-label={`${month.label} ${month.year ?? 2026}${isPreview ? ", preview only" : ""}`}>
                   {month.short}
               </button>
-          ))}
+              );
+          })}
       </nav>
   );
 }
@@ -124,7 +128,7 @@ export function PageTurnZones({onPrevious, onNext, hasPrevious, hasNext}) {
     );
 }
 
-export function NotebookShell({children, months, activeMonth, onMonthSelect, activeSection, onSectionSelect, showSections = false, showLeftPage = true, onPagePrevious, onPageNext, hasPrevious = false, hasNext = false}) {
+export function NotebookShell({children, months, availableMonthIds, activeMonth, onMonthSelect, activeSection, onSectionSelect, showSections = false, showLeftPage = true, onPagePrevious, onPageNext, hasPrevious = false, hasNext = false}) {
     return (
         <div className="desk-scene">
             <div className="stage">
@@ -133,7 +137,7 @@ export function NotebookShell({children, months, activeMonth, onMonthSelect, act
                     <div className="page-stack-edge" aria-hidden="true" />
                     <SpiralBinding />
                     {showSections && <SectionTabs activeSection={activeSection} onSelect={onSectionSelect} />}
-                    <MonthTabs months={months} activeMonth={activeMonth} onSelect={onMonthSelect} />
+                    <MonthTabs months={months} availableMonthIds={availableMonthIds} activeMonth={activeMonth} onSelect={onMonthSelect} />
                     {children}
                     {(hasPrevious || hasNext) && <PageTurnZones onPrevious={onPagePrevious} onNext={onPageNext} hasPrevious={hasPrevious} hasNext={hasNext} />}
                 </div>
@@ -152,7 +156,7 @@ export function StickyNote({children, tone = "yellow", className = ""}) {
 }
 
 export function MonthDateBadge({month}) {
-    return <span className="month-date-badge">{month.label.toUpperCase()} 2026</span>;
+    return <span className="month-date-badge">{month.label.toUpperCase()} {month.year ?? 2026}</span>;
 }
 
 export function AnnualCover() {
@@ -195,7 +199,7 @@ export function InsideCover({month, meta}) {
                 <p>A shared place for honest conversations, clear decisions, and steady progress.</p>
                 {[
                     ['Names', names],
-                    ['Started', 'July 2026'],
+                    ['Started', `${month.label} ${month.year ?? 2026}`],
                     ['Our Financial Motto', motto],
                     ['Why We Meet', 'To stay informed, make intentional decisions, and build the future we want together.'],
                 ].map(([label, value]) => (
@@ -222,9 +226,9 @@ export function FocusPocket({title, children}) {
     );
 }
 
-export function MonthChapterPage({month, chapterMeta}) {
-    if (month.status === "locked") return <FutureMonthPage month={month} />;
-    const meetingDate = chapterMeta?.meetingDate || 'July 5, 2026';
+export function MonthChapterPage({month, chapterMeta, hasLedgerData = true}) {
+    if (!hasLedgerData) return <FutureMonthPage month={month} />;
+    const meetingDate = chapterMeta?.meetingDate || `${month.label} 5, ${month.year ?? 2026}`;
     const meetingLength = chapterMeta?.meetingLength || '55 minutes';
     const intention = chapterMeta?.intention || chapterMeta?.motto || 'Be curious, not critical.';
     const focus = chapterMeta?.focus || 'Debt down. Savings up. Keep momentum gentle.';
@@ -236,7 +240,7 @@ export function MonthChapterPage({month, chapterMeta}) {
                 <h1 className="notebook-page-title" tabIndex="-1">
                     {month.label}
                     <br />
-                    2026
+                    {month.year ?? 2026}
                 </h1>
                 <div className="chapter-sub">A fresh monthly reset for our money, goals, decisions, and future.</div>
                 <div className="chapter-meta">
@@ -267,9 +271,13 @@ export function FutureMonthPage({month}) {
                 <h1 className="notebook-page-title" tabIndex="-1">
                     {month.label}
                     <br />
-                    2026
+                    {month.year ?? 2026}
                 </h1>
-                <div className="chapter-sub">This month’s pages are already waiting inside The Family Ledger. All that’s missing is your real story.</div>
+                <div className="chapter-sub">This chapter is in the catalog, but no ledger data file exists yet.</div>
+                <p className="ledger-preview-notice">
+                    No ledger data found for <code>{month.id}</code>. Add{' '}
+                    <code>{`src/data/months/${month.id}.sample.js`}</code> or a gitignored local file to open the full notebook.
+                </p>
             </div>
             <Polaroid month={month} className="chapter-polaroid" />
             <StickyNote className="chapter-note">

@@ -18,11 +18,18 @@ function formatCurrency(amount) {
   return `$${amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
-export function enrichStory(story) {
-  const { income } = story;
-  const regularIncome = sumGroupItems(income.groups, ['Regular take-home']);
-  const benefitsIncome = sumGroupItems(income.groups, ['Benefits income']);
-  const oneTimeIncome = sumGroupItems(income.groups, ['One-time income']);
+function monthLabel(meta) {
+  return meta?.month?.trim() || 'the month';
+}
+
+export function enrichStory(story = {}, meta) {
+  const label = monthLabel(meta);
+  const income = story.income ?? { total: '—', period: '', groups: [] };
+  const endingPosition = story.endingPosition ?? { totalCash: '—', billsAccount: '—', available: '—' };
+  const explanation = story.explanation ?? { items: [], closing: '' };
+  const regularIncome = sumGroupItems(income.groups ?? [], ['Regular take-home']);
+  const benefitsIncome = sumGroupItems(income.groups ?? [], ['Benefits income']);
+  const oneTimeIncome = sumGroupItems(income.groups ?? [], ['One-time income']);
 
   return {
     ...story,
@@ -65,22 +72,22 @@ export function enrichStory(story) {
       subtitle: 'Core monthly obligations on one side, flexible lifestyle spending on the other.',
       billsInsight: 'These are the expenses the household expects each month — mortgage, utilities, loan payments, and essentials.',
       lifestyleInsight: 'Flexible categories deserve a separate conversation from fixed bills.',
-      continuedText: 'Ending position and what explains July continue on the next page →',
+      continuedText: `Ending position and what explains ${label} continue on the next page →`,
     },
     endingPage: {
       subtitle: 'Where the month left us, what moved between accounts, and what drove the story.',
       endingPills: [
-        { label: 'Connected cash', value: story.endingPosition.totalCash },
-        { label: 'Bills account', value: story.endingPosition.billsAccount },
-        { label: 'Freely available', value: story.endingPosition.available },
+        { label: 'Connected cash', value: endingPosition.totalCash },
+        { label: 'Bills account', value: endingPosition.billsAccount },
+        { label: 'Freely available', value: endingPosition.available },
       ],
-      explanationRows: story.explanation.items.map((item) => ({
+      explanationRows: (explanation.items ?? []).map((item) => ({
         icon: item.amount === '—' ? '📊' : '💸',
         title: item.name,
         text: item.amount === '—' ? 'Higher than June' : item.amount,
       })),
       footerText: 'End of Monthly Story · Next: Spending',
-      closingInsight: story.explanation.closing,
+      closingInsight: explanation.closing ?? '',
     },
   };
 }

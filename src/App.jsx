@@ -1,7 +1,16 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { months } from './data/months';
-import julyData, { isUsingLocalData } from './data/loadJuly2026';
-import { sectionPageCounts, sectionPageLabels } from './data/sectionPageCounts';
+import { months, getMonthCatalogEntry } from './data/months';
+import { DEFAULT_WORKFLOW } from './data/defaultWorkflow';
+import { ledgerRepository } from './repository';
+import { listNavigableMonthIds } from './repository/LocalLedgerRepository';
+import { MonthProvider } from './context/MonthContext';
+import { WORKFLOW_UPDATED_EVENT } from './utils/meetingEvents';
+import {
+  buildNotebookPages,
+  isPreviewPageId,
+  previewMonthIdFromPageId,
+} from './utils/notebookPages';
+import { normalizePageId } from './utils/normalizePageId';
 import { SnapshotPages } from './components/snapshot/SnapshotPages';
 import { StoryPages } from './components/story/StoryPages';
 import { SpendingPages } from './components/spending/SpendingPages';
@@ -20,6 +29,7 @@ import {
   SectionDivider,
   sectionTabs,
 } from './components/LedgerComponents';
+import { DataQualityBanner } from './components/DataQualityBanner';
 
 const sections = {
   snapshot:{number:'01',title:'Financial Snapshot',description:'A quick read on where our financial life stands.',inside:'Connected net worth • Cash • Emergency fund • Retirement • Debt',how:'Start with the big picture before diving into details.',prompt:'What changed most this month?',noteTone:'blue',tone:'teal'},
@@ -30,41 +40,25 @@ const sections = {
   meeting:{number:'06',title:'Money Meeting',description:'A guided space for the conversation itself.',inside:'Prompts • notes • decisions • open questions',how:'Talk like teammates. Capture what matters.',prompt:'Curiosity over criticism. ♡',noteTone:'blue',tone:'blue'},
   actions:{number:'07',title:'Action Plan',description:'Turn insight into a realistic set of next moves.',inside:'Owners • due dates • priorities • carryovers',how:'Make every action specific and small enough to finish.',prompt:'Tiny steps still count.',noteTone:'pink',tone:'pink'},
   celebrate:{number:'08',title:'Celebrate',description:'Pause long enough to notice the progress we made.',inside:'Wins • gratitude • milestones • proud moments',how:'Celebrate effort and direction, not only perfect results.',prompt:'We are building this together!',noteTone:'green',tone:'green'},
-  handoff:{number:'09',title:'CFO Handoff',description:'Leave a clean record for next month and future-us.',inside:'Carryovers • reminders • watch items • next-month context',how:'Write what we will be glad to remember later.',prompt:'What should August know?',noteTone:'blue',tone:'slate'},
+  handoff:{number:'09',title:'CFO Handoff',description:'Leave a clean record for next month and future-us.',inside:'Carryovers • reminders • watch items • next-month context',how:'Write what we will be glad to remember later.',prompt:'What should the next month know?',noteTone:'blue',tone:'slate'},
 };
 
-const sectionIds = sectionTabs.map(([id]) => id);
+const availableMonthIds = listNavigableMonthIds(ledgerRepository);
+const notebookPages = buildNotebookPages(availableMonthIds, sections);
+const DEFAULT_MONTH_ID = availableMonthIds[0] ?? '2026-07';
 
-function buildJulyPages() {
-  return [
-    { id: 'cover', type: 'cover', label: 'Front Cover' },
-    { id: 'inside', type: 'inside', label: 'Inside Cover' },
-    { id: 'july', type: 'month', monthId: 'july', label: 'July Chapter' },
-    ...sectionIds.flatMap((sectionId) => {
-      const count = sectionPageCounts[sectionId] ?? 1;
-      const labels = sectionPageLabels[sectionId] || [];
-      return [
-        { id: `july-${sectionId}`, type: 'divider', monthId: 'july', sectionId, label: sections[sectionId].title },
-        ...Array.from({ length: count }, (_, index) => {
-          const pageNum = index + 1;
-          const pageLabel = labels[index] || `Page ${pageNum}`;
-          return {
-            id: `july-${sectionId}-${pageNum}`,
-            type: 'content',
-            monthId: 'july',
-            sectionId,
-            pageInSection: pageNum,
-            totalInSection: count,
-            pageLabel,
-            label: `${sections[sectionId].title} — ${pageLabel}`,
-          };
-        }),
-      ];
-    }),
-  ];
+function tryGetMonthData(monthId) {
+  if (!monthId || !ledgerRepository.hasLedgerData(monthId)) return null;
+  try {
+    return ledgerRepository.getMonth(monthId);
+  } catch {
+    return null;
+  }
 }
 
-const julyPages = buildJulyPages();
+function getWorkflow(monthId) {
+  return ledgerRepository.getWorkflow(monthId) ?? DEFAULT_WORKFLOW;
+}
 
 function isTypingTarget(target) {
   return target instanceof HTMLElement && (
@@ -73,23 +67,30 @@ function isTypingTarget(target) {
   );
 }
 
-function pageFromHash() {
-  const id = window.location.hash.replace('#/', '');
-  if (julyPages.some((page) => page.id === id)) return id;
-  if (id.startsWith('future-') && months.some((month) => month.id === id.replace('future-', ''))) return id;
-  if (id.endsWith('-work')) {
-    const legacy = id.replace('-work', '-1');
-    if (julyPages.some((page) => page.id === legacy)) return legacy;
+function pageFromHash(allPages) {
+  const rawId = window.location.hash.replace('#/', '');
+  const id = normalizePageId(rawId);
+
+  if (allPages.some((page) => page.id === id)) return id;
+
+  if (isPreviewPageId(id) && months.some((month) => month.id === previewMonthIdFromPageId(id))) {
+    return id;
   }
+
+  if (id.endsWith('-work')) {
+    const legacy = normalizePageId(id.replace('-work', '-1'));
+    if (allPages.some((page) => page.id === legacy)) return legacy;
+  }
+
   return 'cover';
 }
 
 function buildBreadcrumbs(page, pageId) {
   const root = { label: 'The Family Ledger', pageId: 'cover' };
 
-  if (pageId.startsWith('future-')) {
-    const futureMonth = months.find((candidate) => candidate.id === pageId.replace('future-', ''));
-    return [root, { label: futureMonth ? `${futureMonth.label} Preview` : 'Preview', pageId: null }];
+  if (isPreviewPageId(pageId)) {
+    const previewMonth = getMonthCatalogEntry(previewMonthIdFromPageId(pageId));
+    return [root, { label: previewMonth ? `${previewMonth.label} Preview` : 'Preview', pageId: null }];
   }
 
   if (page.type === 'cover') return [{ label: 'The Family Ledger', pageId: null }];
@@ -101,7 +102,7 @@ function buildBreadcrumbs(page, pageId) {
     return crumbs;
   }
 
-  const monthData = months.find((candidate) => candidate.id === page.monthId);
+  const monthData = getMonthCatalogEntry(page.monthId);
   const monthLabel = monthData?.label || 'Month';
 
   if (page.type === 'month') {
@@ -159,52 +160,93 @@ function BreadcrumbNav({ crumbs, onNavigate }) {
   );
 }
 
-const contentPageProps = (page, month) => ({
+const contentPageProps = (page, month, monthData) => ({
   page: page.pageInSection,
   totalInSection: page.totalInSection,
-  data: julyData,
+  data: monthData,
   month,
 });
 
-export default function App() {
-  const [pageId, setPageId] = useState(pageFromHash);
-  const [activeMonth, setActiveMonth] = useState('july');
+function MonthNotebookShell({ children }) {
+  return (
+    <ContentShell>
+      <DataQualityBanner />
+      {children}
+    </ContentShell>
+  );
+}
 
-  const isFuturePreview = pageId.startsWith('future-');
-  const pageIndex = isFuturePreview ? -1 : julyPages.findIndex((candidate) => candidate.id === pageId);
-  const page = isFuturePreview ? julyPages[0] : (julyPages[pageIndex] || julyPages[0]);
-  const month = useMemo(() => months.find((m) => m.id === activeMonth) || months[0], [activeMonth]);
+export default function App() {
+  const [pageId, setPageId] = useState(() => pageFromHash(notebookPages));
+  const [activeMonth, setActiveMonth] = useState(DEFAULT_MONTH_ID);
+  const [workflowTick, setWorkflowTick] = useState(0);
+
+  useEffect(() => {
+    const handleWorkflowUpdated = () => setWorkflowTick((tick) => tick + 1);
+    window.addEventListener(WORKFLOW_UPDATED_EVENT, handleWorkflowUpdated);
+    return () => window.removeEventListener(WORKFLOW_UPDATED_EVENT, handleWorkflowUpdated);
+  }, []);
+
+  const isPreview = isPreviewPageId(pageId);
+  const pageIndex = isPreview ? -1 : notebookPages.findIndex((candidate) => candidate.id === pageId);
+  const page = isPreview ? notebookPages[0] : (notebookPages[pageIndex] || notebookPages[0]);
+  const month = useMemo(
+    () => getMonthCatalogEntry(activeMonth) || months[0],
+    [activeMonth],
+  );
   const activeSection = page.sectionId || 'snapshot';
   const section = sections[activeSection];
 
+  const monthContextValue = useMemo(() => {
+    const contextMonthId = page.monthId || activeMonth;
+    const contextMonth = getMonthCatalogEntry(contextMonthId) || month;
+    return {
+      monthId: contextMonthId,
+      month: contextMonth,
+      workflow: getWorkflow(contextMonthId),
+    };
+  }, [page.monthId, activeMonth, month, workflowTick]);
+
+  const resolvedMonthId = page.monthId || activeMonth;
+  const monthData = useMemo(() => tryGetMonthData(resolvedMonthId), [resolvedMonthId]);
+  const monthLoadError = page.monthId && ledgerRepository.hasLedgerData(page.monthId) && !monthData;
+  const showLocalDataBadge = ledgerRepository.isUsingLocalData(activeMonth);
+
   const navigateTo = useCallback((nextId, { replace = false } = {}) => {
-    if (nextId.startsWith('future-')) {
-      setPageId(nextId);
-      setActiveMonth(nextId.replace('future-', ''));
-      window.history[replace ? 'replaceState' : 'pushState']({}, '', `#/${nextId}`);
+    const normalizedId = normalizePageId(nextId);
+
+    if (isPreviewPageId(normalizedId)) {
+      setPageId(normalizedId);
+      setActiveMonth(previewMonthIdFromPageId(normalizedId));
+      window.history[replace ? 'replaceState' : 'pushState']({}, '', `#/${normalizedId}`);
       return;
     }
-    const nextPage = julyPages.find((candidate) => candidate.id === nextId);
+
+    const nextPage = notebookPages.find((candidate) => candidate.id === normalizedId);
     if (!nextPage) return;
-    setPageId(nextId);
+
+    setPageId(normalizedId);
     if (nextPage.monthId) setActiveMonth(nextPage.monthId);
-    window.history[replace ? 'replaceState' : 'pushState']({}, '', `#/${nextId}`);
+    window.history[replace ? 'replaceState' : 'pushState']({}, '', `#/${normalizedId}`);
   }, []);
 
   const goPrevious = useCallback(() => {
-    if (isFuturePreview || pageIndex <= 0) return;
-    navigateTo(julyPages[pageIndex - 1].id);
-  }, [isFuturePreview, navigateTo, pageIndex]);
+    if (isPreview || pageIndex <= 0) return;
+    navigateTo(notebookPages[pageIndex - 1].id);
+  }, [isPreview, navigateTo, pageIndex]);
 
   const goNext = useCallback(() => {
-    if (isFuturePreview || pageIndex < 0 || pageIndex >= julyPages.length - 1) return;
-    navigateTo(julyPages[pageIndex + 1].id);
-  }, [isFuturePreview, navigateTo, pageIndex]);
+    if (isPreview || pageIndex < 0 || pageIndex >= notebookPages.length - 1) return;
+    navigateTo(notebookPages[pageIndex + 1].id);
+  }, [isPreview, navigateTo, pageIndex]);
 
-  const navigateToMonth = useCallback((id) => {
-    setActiveMonth(id);
-    if (id === 'july') { navigateTo('july'); return; }
-    navigateTo(`future-${id}`);
+  const navigateToMonth = useCallback((monthId) => {
+    setActiveMonth(monthId);
+    if (ledgerRepository.hasLedgerData(monthId)) {
+      navigateTo(monthId);
+      return;
+    }
+    navigateTo(`future-${monthId}`);
   }, [navigateTo]);
 
   const goPreviousMonth = useCallback(() => {
@@ -220,22 +262,22 @@ export default function App() {
   }, [activeMonth, navigateToMonth]);
 
   const goUpBreadcrumb = useCallback(() => {
-    if (isFuturePreview) {
+    if (isPreview) {
       navigateTo('cover');
       return;
     }
     const parentId = parentPageId(page);
     if (parentId) navigateTo(parentId);
-  }, [isFuturePreview, navigateTo, page]);
+  }, [isPreview, navigateTo, page]);
 
   useEffect(() => {
     if (!window.location.hash) navigateTo('cover', { replace: true });
     const handlePopState = () => {
-      const id = pageFromHash();
+      const id = pageFromHash(notebookPages);
       setPageId(id);
-      const historyPage = julyPages.find((candidate) => candidate.id === id);
+      const historyPage = notebookPages.find((candidate) => candidate.id === id);
       if (historyPage?.monthId) setActiveMonth(historyPage.monthId);
-      else if (id.startsWith('future-')) setActiveMonth(id.replace('future-', ''));
+      else if (isPreviewPageId(id)) setActiveMonth(previewMonthIdFromPageId(id));
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
@@ -246,84 +288,116 @@ export default function App() {
       if (isTypingTarget(event.target) || event.altKey || event.ctrlKey || event.metaKey) return;
       if (event.key === 'ArrowUp') { event.preventDefault(); goPreviousMonth(); return; }
       if (event.key === 'ArrowDown') { event.preventDefault(); goNextMonth(); return; }
-      if (isFuturePreview) return;
+      if (isPreview) return;
       if (event.key === 'ArrowLeft') { event.preventDefault(); goPrevious(); }
       if (event.key === 'ArrowRight') { event.preventDefault(); goNext(); }
       if (event.key === 'Escape') { event.preventDefault(); goUpBreadcrumb(); }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [goNext, goNextMonth, goPrevious, goPreviousMonth, goUpBreadcrumb, isFuturePreview]);
+  }, [goNext, goNextMonth, goPrevious, goPreviousMonth, goUpBreadcrumb, isPreview]);
 
-  const hasNotebookNav = !isFuturePreview;
+  const hasNotebookNav = !isPreview;
 
   let content;
-  if (isFuturePreview) {
-    const futureId = pageId.replace('future-', '');
-    const futureMonth = months.find((candidate) => candidate.id === futureId) || months[1];
-    content = <MonthChapterPage month={futureMonth} />;
-  } else if (page.type === 'cover') content = <AnnualCover />;
-  else if (page.type === 'inside') content = <InsideCover month={month} meta={julyData.meta} />;
-  else if (page.type === 'month') content = <MonthChapterPage month={month} chapterMeta={julyData.meta} />;
-  else if (page.type === 'divider') content = <SectionDivider section={section} month={month} />;
-  else if (page.type === 'content' && activeSection === 'snapshot') {
+  if (isPreview) {
+    const previewMonthId = previewMonthIdFromPageId(pageId);
+    const previewMonth = getMonthCatalogEntry(previewMonthId) || months[1];
+    content = <MonthChapterPage month={previewMonth} hasLedgerData={false} />;
+  } else if (page.type === 'cover') {
+    content = <AnnualCover />;
+  } else if (page.type === 'inside') {
+    content = <InsideCover month={month} meta={monthData?.meta} />;
+  } else if (page.type === 'month') {
+    content = (
+      <MonthChapterPage
+        month={month}
+        chapterMeta={monthData?.meta}
+        hasLedgerData={ledgerRepository.hasLedgerData(page.monthId) && Boolean(monthData)}
+      />
+    );
+  } else if (monthLoadError) {
     content = (
       <ContentShell>
-        <SnapshotPages {...contentPageProps(page, month)} />
+        <div className="ledger-missing-data">
+          <h2>No ledger data found</h2>
+          <p>
+            Expected sample or local data for {page.monthId}. Add{' '}
+            <code>src/data/months/{page.monthId}.sample.js</code> or a gitignored local file.
+          </p>
+        </div>
       </ContentShell>
+    );
+  } else if (page.type === 'divider') {
+    content = <SectionDivider section={section} month={month} />;
+  } else if (page.type === 'content' && activeSection === 'snapshot') {
+    content = (
+      <MonthNotebookShell>
+        <SnapshotPages {...contentPageProps(page, month, monthData)} />
+      </MonthNotebookShell>
     );
   } else if (page.type === 'content' && activeSection === 'story') {
     content = (
-      <ContentShell>
-        <StoryPages {...contentPageProps(page, month)} />
-      </ContentShell>
+      <MonthNotebookShell>
+        <StoryPages {...contentPageProps(page, month, monthData)} />
+      </MonthNotebookShell>
     );
   } else if (page.type === 'content' && activeSection === 'spending') {
     content = (
-      <ContentShell>
-        <SpendingPages {...contentPageProps(page, month)} />
-      </ContentShell>
+      <MonthNotebookShell>
+        <SpendingPages {...contentPageProps(page, month, monthData)} />
+      </MonthNotebookShell>
     );
   } else if (page.type === 'content' && activeSection === 'cfo') {
     content = (
-      <ContentShell>
-        <CfoPages {...contentPageProps(page, month)} />
-      </ContentShell>
+      <MonthNotebookShell>
+        <CfoPages {...contentPageProps(page, month, monthData)} />
+      </MonthNotebookShell>
     );
   } else if (page.type === 'content' && activeSection === 'future') {
     content = (
-      <ContentShell>
-        <FuturePages {...contentPageProps(page, month)} />
-      </ContentShell>
+      <MonthNotebookShell>
+        <FuturePages {...contentPageProps(page, month, monthData)} />
+      </MonthNotebookShell>
     );
   } else if (page.type === 'content' && activeSection === 'meeting') {
     content = (
-      <ContentShell>
-        <MeetingPages {...contentPageProps(page, month)} />
-      </ContentShell>
+      <MonthNotebookShell>
+        <MeetingPages {...contentPageProps(page, month, monthData)} />
+      </MonthNotebookShell>
     );
   } else if (page.type === 'content' && activeSection === 'actions') {
     content = (
-      <ContentShell>
-        <ActionsPages {...contentPageProps(page, month)} />
-      </ContentShell>
+      <MonthNotebookShell>
+        <ActionsPages {...contentPageProps(page, month, monthData)} />
+      </MonthNotebookShell>
     );
   } else if (page.type === 'content' && activeSection === 'celebrate') {
     content = (
-      <ContentShell>
-        <CelebratePages {...contentPageProps(page, month)} />
-      </ContentShell>
+      <MonthNotebookShell>
+        <CelebratePages {...contentPageProps(page, month, monthData)} />
+      </MonthNotebookShell>
     );
   } else if (page.type === 'content' && activeSection === 'handoff') {
     content = (
-      <ContentShell>
-        <HandoffPages {...contentPageProps(page, month)} />
-      </ContentShell>
+      <MonthNotebookShell>
+        <HandoffPages {...contentPageProps(page, month, monthData)} />
+      </MonthNotebookShell>
     );
   }
 
-  const showSections = !isFuturePreview && (page.type === 'divider' || page.type === 'content');
+  const showSections = !isPreview && (page.type === 'divider' || page.type === 'content');
   const breadcrumbs = useMemo(() => buildBreadcrumbs(page, pageId), [page, pageId]);
+
+  const wrappedContent = page.monthId || page.type === 'inside' ? (
+    <MonthProvider
+      monthId={monthContextValue.monthId}
+      month={monthContextValue.month}
+      workflow={monthContextValue.workflow}
+    >
+      {content}
+    </MonthProvider>
+  ) : content;
 
   return (
     <main>
@@ -331,28 +405,29 @@ export default function App() {
       <div className="site-toolbar" aria-label="Notebook navigation">
         <BreadcrumbNav crumbs={breadcrumbs} onNavigate={navigateTo} />
         <span className="keyboard-help" title="Keyboard shortcuts">
-          {isUsingLocalData && (
-            <span className="data-source-badge" title="Loaded from src/data/july2026.local.js (gitignored)">
+          {showLocalDataBadge && (
+            <span className="data-source-badge" title={`Loaded from local data for ${activeMonth} (gitignored)`}>
               Local data
             </span>
           )}
-          {isFuturePreview ? 'Preview only · ↑ ↓ months' : '← → pages · ↑ ↓ months · Esc up a level'}
+          {isPreview ? 'Preview only · ↑ ↓ months' : '← → pages · ↑ ↓ months · Esc up a level'}
         </span>
       </div>
       <NotebookShell
         months={months}
+        availableMonthIds={availableMonthIds}
         activeMonth={activeMonth}
         onMonthSelect={navigateToMonth}
         activeSection={activeSection}
-        onSectionSelect={(id) => navigateTo(`july-${id}-1`)}
+        onSectionSelect={(id) => navigateTo(`${activeMonth}-${id}-1`)}
         showSections={showSections}
         showLeftPage={page.type !== 'cover'}
         onPagePrevious={goPrevious}
         onPageNext={goNext}
         hasPrevious={hasNotebookNav && pageIndex > 0}
-        hasNext={hasNotebookNav && pageIndex >= 0 && pageIndex < julyPages.length - 1}
+        hasNext={hasNotebookNav && pageIndex >= 0 && pageIndex < notebookPages.length - 1}
       >
-        <div id="notebook-content">{content}</div>
+        <div id="notebook-content">{wrappedContent}</div>
       </NotebookShell>
     </main>
   );

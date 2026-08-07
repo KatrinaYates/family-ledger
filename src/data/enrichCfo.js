@@ -1,5 +1,11 @@
-export function enrichCfo(cfo) {
-  const priorities = cfo.priorities.map((p, index, arr) => ({
+/** @param {object | undefined} meta */
+function monthLabel(meta) {
+  return meta?.month?.trim() || 'the month';
+}
+
+export function enrichCfo(cfo = {}, meta) {
+  const label = monthLabel(meta);
+  const priorities = (cfo.priorities ?? []).map((p, index, arr) => ({
     ...p,
     page: index + 1,
     totalPages: arr.length,
@@ -14,7 +20,7 @@ export function enrichCfo(cfo) {
     ...cfo,
     priorities,
     overview: {
-      subtitle: 'Three prioritized recommendations based on July\'s full financial picture.',
+      subtitle: `Three prioritized recommendations based on ${label}'s full financial picture.`,
     },
   };
 }

@@ -5,7 +5,8 @@ import {
   SectionPageHeader,
   StickyCard,
 } from '../content/NotebookPrimitives';
-import { EditableActionPlan, PageWithNotes, meetingKey } from '../meeting/MeetingFields';
+import { ActionPlan } from './ActionPlan';
+import { PageWithNotes } from '../meeting/MeetingFields';
 
 export function ActionsPages({ page, totalInSection, data, month }) {
   const { actions, meta } = data;
@@ -26,10 +27,7 @@ export function ActionsPages({ page, totalInSection, data, month }) {
         </StickyCard>
         <PanelCard title="Action plan" className="actions-table-panel" scrollLabel="Action items">
           <ScrollBody label="Action items">
-            <EditableActionPlan
-              storageKey={meetingKey('actions', 1, 'plan')}
-              seedRows={actions.items}
-            />
+            <ActionPlan seedRows={actions.items} />
           </ScrollBody>
         </PanelCard>
       </PageWithNotes>

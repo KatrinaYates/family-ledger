@@ -1,10 +1,7 @@
 import React from 'react';
-import { useLocalJson } from '../../hooks/useLocalJson';
-import { useLocalNotes } from '../../hooks/useLocalNotes';
-
-export function meetingKey(section, page, field) {
-  return `fl-july-${section}-${page}-${field}`;
-}
+import { useMeetingJson, useMeetingNotes } from '../../hooks/useMeetingField';
+import { useMonthContext } from '../../context/MonthContext';
+import { pageNotesKey } from '../../utils/meetingKeys';
 
 function newId(prefix = 'item') {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -44,7 +41,8 @@ function seedBulletItems(seeds) {
 }
 
 export function SectionNotes({ pageId, label = 'Meeting notes' }) {
-  const [notes, setNotes] = useLocalNotes(`fl-july-${pageId}-notes`);
+  const { monthId } = useMonthContext();
+  const [notes, setNotes, isLocked] = useMeetingNotes(pageNotesKey(monthId, pageId));
   const hasNotes = notes.trim().length > 0;
 
   return (
@@ -59,6 +57,8 @@ export function SectionNotes({ pageId, label = 'Meeting notes' }) {
         onChange={(e) => setNotes(e.target.value)}
         placeholder="Quick notes..."
         rows={3}
+        readOnly={isLocked}
+        aria-readonly={isLocked}
       />
     </details>
   );
@@ -71,7 +71,7 @@ export function EditableChecklist({
   allowEdit = true,
   allowRemove = true,
 }) {
-  const [items, setItems] = useLocalJson(storageKey, () => seedChecklistItems(seedItems));
+  const [items, setItems, isLocked] = useMeetingJson(storageKey, () => seedChecklistItems(seedItems));
 
   const toggle = (id) => {
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, checked: !item.checked } : item)));
@@ -99,6 +99,7 @@ export function EditableChecklist({
                 type="checkbox"
                 checked={Boolean(item.checked)}
                 onChange={() => toggle(item.id)}
+                disabled={isLocked}
                 aria-label={item.text || 'Checklist item'}
               />
               {allowEdit ? (
@@ -108,12 +109,13 @@ export function EditableChecklist({
                   value={item.text}
                   onChange={(e) => updateText(item.id, e.target.value)}
                   placeholder="Add item..."
+                  readOnly={isLocked}
                 />
               ) : (
                 <span>{item.text}</span>
               )}
             </label>
-            {allowRemove && (
+            {allowRemove && !isLocked && (
               <button
                 type="button"
                 className="meeting-remove-btn"
@@ -129,7 +131,7 @@ export function EditableChecklist({
           </li>
         ))}
       </ul>
-      {allowAdd && (
+      {allowAdd && !isLocked && (
         <button type="button" className="meeting-add-btn" onClick={addItem}>
           + Add item
         </button>
@@ -139,7 +141,7 @@ export function EditableChecklist({
 }
 
 export function EditableQuestions({ storageKey, seedQuestions = [] }) {
-  const [items, setItems] = useLocalJson(storageKey, () => seedQuestionItems(seedQuestions));
+  const [items, setItems, isLocked] = useMeetingJson(storageKey, () => seedQuestionItems(seedQuestions));
 
   const updateAnswer = (id, answer) => {
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, answer } : item)));
@@ -169,6 +171,7 @@ export function EditableQuestions({ storageKey, seedQuestions = [] }) {
               value={item.question}
               onChange={(e) => updateQuestion(item.id, e.target.value)}
               placeholder="What do we need to discuss?"
+              readOnly={isLocked}
             />
           </label>
           <textarea
@@ -177,30 +180,36 @@ export function EditableQuestions({ storageKey, seedQuestions = [] }) {
             onChange={(e) => updateAnswer(item.id, e.target.value)}
             placeholder="Your answer or notes..."
             rows={2}
+            readOnly={isLocked}
           />
-          <button
-            type="button"
-            className="meeting-remove-btn"
-            onClick={(e) => {
-              e.stopPropagation();
-              removeQuestion(item.id);
-            }}
-            aria-label="Remove question"
-          >
-            Remove question
-          </button>
+          {!isLocked && (
+            <button
+              type="button"
+              className="meeting-remove-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                removeQuestion(item.id);
+              }}
+              aria-label="Remove question"
+            >
+              Remove question
+            </button>
+          )}
         </div>
       ))}
-      <button type="button" className="meeting-add-btn" onClick={addQuestion}>
-        + Add question
-      </button>
+      {!isLocked && (
+        <button type="button" className="meeting-add-btn" onClick={addQuestion}>
+          + Add question
+        </button>
+      )}
     </div>
   );
 }
 
 export function EditableDecisionList({ storageKey, seedDecisions = [] }) {
-  const [items, setItems] = useLocalJson(storageKey, () => seedChecklistItems(seedDecisions));
-  const [decision, setDecision] = useLocalNotes(`${storageKey}-outcome`);
+  const [items, setItems, isLocked] = useMeetingJson(storageKey, () => seedChecklistItems(seedDecisions));
+  const [decision, setDecision, isOutcomeLocked] = useMeetingNotes(`${storageKey}-outcome`);
+  const readOnly = isLocked || isOutcomeLocked;
 
   const toggle = (id) => {
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, checked: !item.checked } : item)));
@@ -228,6 +237,7 @@ export function EditableDecisionList({ storageKey, seedDecisions = [] }) {
                 type="checkbox"
                 checked={Boolean(item.checked)}
                 onChange={() => toggle(item.id)}
+                disabled={readOnly}
                 aria-label={item.text || 'Decision option'}
               />
               <input
@@ -236,25 +246,30 @@ export function EditableDecisionList({ storageKey, seedDecisions = [] }) {
                 value={item.text}
                 onChange={(e) => updateText(item.id, e.target.value)}
                 placeholder="Decision option..."
+                readOnly={readOnly}
               />
             </label>
-            <button
-              type="button"
-              className="meeting-remove-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                removeOption(item.id);
-              }}
-              aria-label="Remove decision option"
-            >
-              Remove
-            </button>
+            {!readOnly && (
+              <button
+                type="button"
+                className="meeting-remove-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeOption(item.id);
+                }}
+                aria-label="Remove decision option"
+              >
+                Remove
+              </button>
+            )}
           </li>
         ))}
       </ul>
-      <button type="button" className="meeting-add-btn" onClick={addOption}>
-        + Add option
-      </button>
+      {!readOnly && (
+        <button type="button" className="meeting-add-btn" onClick={addOption}>
+          + Add option
+        </button>
+      )}
       <label className="prompt-field decision-outcome">
         <span className="prompt-field-label">What we decided</span>
         <textarea
@@ -262,6 +277,7 @@ export function EditableDecisionList({ storageKey, seedDecisions = [] }) {
           onChange={(e) => setDecision(e.target.value)}
           placeholder="Record the decision you made today..."
           rows={3}
+          readOnly={readOnly}
         />
       </label>
     </div>
@@ -269,7 +285,7 @@ export function EditableDecisionList({ storageKey, seedDecisions = [] }) {
 }
 
 export function EditableActionPlan({ storageKey, seedRows = [] }) {
-  const [rows, setRows] = useLocalJson(storageKey, () => seedActionRows(seedRows));
+  const [rows, setRows, isLocked] = useMeetingJson(storageKey, () => seedActionRows(seedRows));
 
   const updateRow = (id, field, value) => {
     setRows((prev) => prev.map((row) => (row.id === id ? { ...row, [field]: value } : row)));
@@ -304,6 +320,7 @@ export function EditableActionPlan({ storageKey, seedRows = [] }) {
               value={row.action}
               onChange={(e) => updateRow(row.id, 'action', e.target.value)}
               placeholder="What needs to happen?"
+              readOnly={isLocked}
             />
             <input
               type="text"
@@ -311,6 +328,7 @@ export function EditableActionPlan({ storageKey, seedRows = [] }) {
               value={row.owner}
               onChange={(e) => updateRow(row.id, 'owner', e.target.value)}
               placeholder="Owner"
+              readOnly={isLocked}
             />
             <input
               type="text"
@@ -318,40 +336,46 @@ export function EditableActionPlan({ storageKey, seedRows = [] }) {
               value={row.dueDate}
               onChange={(e) => updateRow(row.id, 'dueDate', e.target.value)}
               placeholder="Due date"
+              readOnly={isLocked}
             />
             <select
               className="editable-cell-input"
               value={row.status}
               onChange={(e) => updateRow(row.id, 'status', e.target.value)}
+              disabled={isLocked}
             >
               <option>Not started</option>
               <option>In progress</option>
               <option>Done</option>
               <option>Deferred</option>
             </select>
-            <button
-              type="button"
-              className="meeting-remove-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                removeRow(row.id);
-              }}
-              aria-label="Remove action item"
-            >
-              Remove
-            </button>
+            {!isLocked && (
+              <button
+                type="button"
+                className="meeting-remove-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeRow(row.id);
+                }}
+                aria-label="Remove action item"
+              >
+                Remove
+              </button>
+            )}
           </div>
         ))}
       </div>
-      <button type="button" className="meeting-add-btn" onClick={addRow}>
-        + Add action item
-      </button>
+      {!isLocked && (
+        <button type="button" className="meeting-add-btn" onClick={addRow}>
+          + Add action item
+        </button>
+      )}
     </div>
   );
 }
 
 export function EditableBulletList({ storageKey, seedItems = [], title }) {
-  const [items, setItems] = useLocalJson(storageKey, () => seedBulletItems(seedItems));
+  const [items, setItems, isLocked] = useMeetingJson(storageKey, () => seedBulletItems(seedItems));
 
   const updateText = (id, text) => {
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, text } : item)));
@@ -377,24 +401,29 @@ export function EditableBulletList({ storageKey, seedItems = [], title }) {
               value={item.text}
               onChange={(e) => updateText(item.id, e.target.value)}
               placeholder="Add item..."
+              readOnly={isLocked}
             />
-            <button
-              type="button"
-              className="meeting-remove-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                removeItem(item.id);
-              }}
-              aria-label="Remove item"
-            >
-              Remove
-            </button>
+            {!isLocked && (
+              <button
+                type="button"
+                className="meeting-remove-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeItem(item.id);
+                }}
+                aria-label="Remove item"
+              >
+                Remove
+              </button>
+            )}
           </li>
         ))}
       </ul>
-      <button type="button" className="meeting-add-btn" onClick={addItem}>
-        + Add item
-      </button>
+      {!isLocked && (
+        <button type="button" className="meeting-add-btn" onClick={addItem}>
+          + Add item
+        </button>
+      )}
     </div>
   );
 }

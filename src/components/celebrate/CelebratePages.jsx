@@ -6,7 +6,8 @@ import {
   SectionPageHeader,
   StickyCard,
 } from '../content/NotebookPrimitives';
-import { useLocalNotes } from '../../hooks/useLocalNotes';
+import { useMeetingNotes } from '../../hooks/useMeetingField';
+import { celebrateKey } from '../../utils/meetingKeys';
 import { PageWithNotes } from '../meeting/MeetingFields';
 
 export function CelebratePages({ page, totalInSection, data, month }) {
@@ -14,8 +15,8 @@ export function CelebratePages({ page, totalInSection, data, month }) {
   const monthLabel = month?.label || 'July';
   const year = meta?.year || 2026;
 
-  const [familyReward, setFamilyReward] = useLocalNotes('fl-july-celebrate-reward');
-  const [gratitude, setGratitude] = useLocalNotes('fl-july-celebrate-gratitude');
+  const [familyReward, setFamilyReward] = useMeetingNotes(celebrateKey(month.id, 'reward'));
+  const [gratitude, setGratitude] = useMeetingNotes(celebrateKey(month.id, 'gratitude'));
 
   const winRows = [
     { label: 'Biggest win', value: celebrate.biggestWin },

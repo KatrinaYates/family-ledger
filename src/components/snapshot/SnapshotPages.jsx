@@ -16,8 +16,9 @@ import {
   EditableChecklist,
   MeetingEmergencyBand,
   PageWithNotes,
-  meetingKey,
 } from '../meeting/MeetingFields';
+import { meetingKey } from '../../utils/meetingKeys';
+import { LockMonthControl } from '../handoff/LockMonthControl';
 
 export function SnapshotPages({ page, totalInSection, data, month }) {
   const { snapshot, meta } = data;
@@ -48,7 +49,7 @@ export function SnapshotPages({ page, totalInSection, data, month }) {
               </StickyCard>
               <StickyCard label="Missing before lock" tone="missing">
                 <EditableChecklist
-                  storageKey={meetingKey('snapshot', 1, 'missing-before-lock')}
+                  storageKey={meetingKey(month.id, 'snapshot', 1, 'missing-before-lock')}
                   seedItems={overview.missingBeforeLock}
                 />
               </StickyCard>
@@ -87,7 +88,7 @@ export function SnapshotPages({ page, totalInSection, data, month }) {
                 <>
                   <ContributionBlock
                     label="July contributions recorded"
-                    value={retirement.julyContributions}
+                    value={retirement.monthContributions ?? retirement.julyContributions}
                     note={retirement.contributionNote}
                   />
                   {retirement.note && <WarningBanner>{retirement.note}</WarningBanner>}
@@ -97,7 +98,7 @@ export function SnapshotPages({ page, totalInSection, data, month }) {
               <DashedList items={retirement.accountsSorted || retirement.accounts} />
             </PanelCard>
             <MeetingEmergencyBand
-              storageKey={meetingKey('snapshot', 2, 'emergency-checks')}
+              storageKey={meetingKey(month.id, 'snapshot', 2, 'emergency-checks')}
               label="Emergency fund status"
               title={emergencyFund.headline}
               description={emergencyFund.description}
@@ -141,10 +142,11 @@ export function SnapshotPages({ page, totalInSection, data, month }) {
             </StickyCard>
             <StickyCard label="Ready to lock when" tone="ready">
               <EditableChecklist
-                storageKey={meetingKey('snapshot', 3, 'ready-to-lock')}
+                storageKey={meetingKey(month.id, 'snapshot', 3, 'ready-to-lock')}
                 seedItems={debtPage.readyToLock}
               />
             </StickyCard>
+            <LockMonthControl />
           </aside>
         </div>
       </PageWithNotes>

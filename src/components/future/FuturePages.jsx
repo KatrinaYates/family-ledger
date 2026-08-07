@@ -8,8 +8,8 @@ import {
 import {
   EditableBulletList,
   PageWithNotes,
-  meetingKey,
 } from '../meeting/MeetingFields';
+import { meetingKey } from '../../utils/meetingKeys';
 
 export function FuturePages({ page, totalInSection, data, month }) {
   const { future, meta } = data;
@@ -36,8 +36,8 @@ export function FuturePages({ page, totalInSection, data, month }) {
             },
             {
               icon: '📥',
-              label: 'July contributions',
-              value: retirement.julyContributions,
+              label: `${monthLabel} contributions`,
+              value: retirement.monthContributions ?? retirement.julyContributions,
               chip: { text: 'Still investing', tone: 'green' },
             },
           ]} />
@@ -48,7 +48,7 @@ export function FuturePages({ page, totalInSection, data, month }) {
             <aside className="snapshot-side">
               <StickyCard label="Still to define" tone="missing">
                 <EditableBulletList
-                  storageKey={meetingKey('future', 1, 'still-to-define')}
+                  storageKey={meetingKey(month.id, 'future', 1, 'still-to-define')}
                   seedItems={['Target retirement age', 'Desired retirement income', 'Contribution percentages']}
                 />
               </StickyCard>
@@ -72,13 +72,13 @@ export function FuturePages({ page, totalInSection, data, month }) {
         <div className="story-split-grid">
           <PanelCard title="Shared goals" scrollLabel="Family financial goals">
             <EditableBulletList
-              storageKey={meetingKey('future', 2, 'goals')}
+              storageKey={meetingKey(month.id, 'future', 2, 'goals')}
               seedItems={future.goals}
             />
           </PanelCard>
           <PanelCard title="Upcoming expenses" scrollLabel="Upcoming expenses">
             <EditableBulletList
-              storageKey={meetingKey('future', 2, 'upcoming')}
+              storageKey={meetingKey(month.id, 'future', 2, 'upcoming')}
               seedItems={future.upcomingExpenses}
             />
           </PanelCard>

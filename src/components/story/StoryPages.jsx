@@ -13,8 +13,8 @@ import {
 import {
   EditableBulletList,
   PageWithNotes,
-  meetingKey,
 } from '../meeting/MeetingFields';
+import { meetingKey } from '../../utils/meetingKeys';
 
 export function StoryPages({ page, totalInSection, data, month }) {
   const { story, meta } = data;
@@ -94,12 +94,12 @@ export function StoryPages({ page, totalInSection, data, month }) {
           <SummaryPanel title={story.explanation.title} rows={endingPage.explanationRows} />
           <aside className="snapshot-side">
             <StickyCard label="July retirement" tone="win">
-              <p><strong>{investments.julyContributions}</strong> contributed across employee, match, profit-sharing, and after-tax.</p>
+              <p><strong>{investments.monthContributions ?? investments.julyContributions}</strong> contributed across employee, match, profit-sharing, and after-tax.</p>
             </StickyCard>
             <StickyCard label="Still unclear" tone="missing">
               <ScrollBody label="Unclear savings items" className="scroll-body-compact">
                 <EditableBulletList
-                  storageKey={meetingKey('story', 3, 'unclear-savings')}
+                  storageKey={meetingKey(month.id, 'story', 3, 'unclear-savings')}
                   seedItems={savings.missing}
                 />
               </ScrollBody>

@@ -6,25 +6,27 @@ import {
   SectionPageHeader,
   StickyCard,
 } from '../content/NotebookPrimitives';
-import { useLocalNotes } from '../../hooks/useLocalNotes';
 import {
   EditableBulletList,
   PageWithNotes,
-  meetingKey,
 } from '../meeting/MeetingFields';
+import { useMeetingNotes } from '../../hooks/useMeetingField';
+import { handoffKey, meetingKey } from '../../utils/meetingKeys';
 import { MeetingRundown } from '../meeting/MeetingRundown';
+import { CarryForwardActions } from './CarryForwardActions';
+import { LockMonthControl } from './LockMonthControl';
 
 export function HandoffPages({ page, totalInSection, data, month }) {
   const { handoff, meta } = data;
   const monthLabel = month?.label || 'July';
   const year = meta?.year || 2026;
 
-  const [decisionsMade, setDecisionsMade] = useLocalNotes('fl-july-handoff-decisions');
-  const [openActionItems, setOpenActionItems] = useLocalNotes('fl-july-handoff-open-actions');
-  const [helpful, setHelpful] = useLocalNotes('fl-july-handoff-helpful');
-  const [repetitive, setRepetitive] = useLocalNotes('fl-july-handoff-repetitive');
-  const [missing, setMissing] = useLocalNotes('fl-july-handoff-missing');
-  const [ideas, setIdeas] = useLocalNotes('fl-july-handoff-ideas');
+  const [decisionsMade, setDecisionsMade] = useMeetingNotes(handoffKey(month.id, 'decisions'));
+  const [openActionItems, setOpenActionItems] = useMeetingNotes(handoffKey(month.id, 'open-actions'));
+  const [helpful, setHelpful] = useMeetingNotes(handoffKey(month.id, 'helpful'));
+  const [repetitive, setRepetitive] = useMeetingNotes(handoffKey(month.id, 'repetitive'));
+  const [missing, setMissing] = useMeetingNotes(handoffKey(month.id, 'missing'));
+  const [ideas, setIdeas, isIdeasLocked] = useMeetingNotes(handoffKey(month.id, 'ideas'));
 
   const carryForwardSeeds = [...handoff.carryForward, ...handoff.revisit];
 
@@ -36,10 +38,10 @@ export function HandoffPages({ page, totalInSection, data, month }) {
             eyebrow={`${monthLabel} ${year} · Section 09 · Page ${page} of ${totalInSection}`}
             title="Summary & Carry Forward"
             subtitle={handoff.summaryPage.subtitle}
-            badge="For August"
+            badge="Handoff"
           />
           <div className="handoff-summary-row">
-            <PanelCard title="July summary" className="handoff-summary-panel">
+            <PanelCard title={`${monthLabel} summary`} className="handoff-summary-panel">
               <p className="panel-note">{handoff.summary}</p>
             </PanelCard>
             <MeetingRundown />
@@ -47,11 +49,17 @@ export function HandoffPages({ page, totalInSection, data, month }) {
           <div className="story-split-grid handoff-split">
             <PanelCard title="Carry forward" scrollLabel="Carry forward items">
               <EditableBulletList
-                storageKey={meetingKey('handoff', 1, 'carry-forward')}
+                storageKey={meetingKey(month.id, 'handoff', 1, 'carry-forward')}
                 seedItems={carryForwardSeeds}
               />
             </PanelCard>
-            <aside className="snapshot-side">
+            <PanelCard title="Carry forward actions" scrollLabel="Open action items">
+              <CarryForwardActions />
+            </PanelCard>
+          </div>
+          <LockMonthControl className="handoff-lock-control" />
+          <div className="story-split-grid handoff-split">
+            <aside className="snapshot-side handoff-final-edits">
               <PromptField
                 label="Final edits (optional) — Decisions made this meeting"
                 value={decisionsMade}
@@ -110,6 +118,7 @@ export function HandoffPages({ page, totalInSection, data, month }) {
             onChange={(e) => setIdeas(e.target.value)}
             placeholder="Layout, sections, or data you'd change next month..."
             rows={6}
+            readOnly={isIdeasLocked}
           />
         </StickyCard>
       </div>

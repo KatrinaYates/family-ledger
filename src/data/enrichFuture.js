@@ -1,4 +1,10 @@
-export function enrichFuture(future) {
+/** @param {object | undefined} meta */
+function monthLabel(meta) {
+  return meta?.month?.trim() || 'the month';
+}
+
+export function enrichFuture(future, meta) {
+  const label = monthLabel(meta);
   return {
     ...future,
     retirementPage: {
@@ -8,7 +14,7 @@ export function enrichFuture(future) {
     goalsPage: {
       subtitle: 'Shared goals and expenses on the horizon — balance future progress with life today.',
       footerText: 'End of Retirement & Future · Next: Money Meeting',
-      closingInsight: 'Retirement contributions stayed consistent in July. Naming goals and upcoming costs makes monthly decisions easier.',
+      closingInsight: `Retirement contributions stayed consistent in ${label}. Naming goals and upcoming costs makes monthly decisions easier.`,
     },
   };
 }

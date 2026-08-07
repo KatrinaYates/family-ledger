@@ -4,19 +4,21 @@ import {
   PromptField,
   SectionPageHeader,
 } from '../content/NotebookPrimitives';
-import { useLocalNotes } from '../../hooks/useLocalNotes';
-import { EditableQuestions, PageWithNotes, meetingKey } from './MeetingFields';
+import { useMeetingNotes } from '../../hooks/useMeetingField';
+import { meetingConversationKey } from '../../utils/meetingKeys';
+import { meetingKey } from '../../utils/meetingKeys';
+import { EditableQuestions, PageWithNotes } from './MeetingFields';
 
 export function MeetingPages({ page, totalInSection, data, month }) {
   const { meeting, meta } = data;
   const monthLabel = month?.label || 'July';
   const year = meta?.year || 2026;
 
-  const [surprised, setSurprised] = useLocalNotes('fl-july-meeting-surprised');
-  const [feltGood, setFeltGood] = useLocalNotes('fl-july-meeting-feltGood');
-  const [feltStressful, setFeltStressful] = useLocalNotes('fl-july-meeting-feltStressful');
-  const [decisions, setDecisions] = useLocalNotes('fl-july-meeting-decisions');
-  const [parkingLot, setParkingLot] = useLocalNotes('fl-july-meeting-parkingLot');
+  const [surprised, setSurprised] = useMeetingNotes(meetingConversationKey(month.id, 'surprised'));
+  const [feltGood, setFeltGood] = useMeetingNotes(meetingConversationKey(month.id, 'feltGood'));
+  const [feltStressful, setFeltStressful] = useMeetingNotes(meetingConversationKey(month.id, 'feltStressful'));
+  const [decisions, setDecisions] = useMeetingNotes(meetingConversationKey(month.id, 'decisions'));
+  const [parkingLot, setParkingLot] = useMeetingNotes(meetingConversationKey(month.id, 'parkingLot'));
 
   if (page === 1) {
     return (
@@ -29,37 +31,12 @@ export function MeetingPages({ page, totalInSection, data, month }) {
             badge="Talk together"
             badgeVariant="talk"
           />
-          <div className="prompt-grid">
-            <PromptField
-              label="What surprised us?"
-              value={surprised}
-              onChange={setSurprised}
-              placeholder="Capture reactions without blame..."
-            />
-            <PromptField
-              label="What felt good?"
-              value={feltGood}
-              onChange={setFeltGood}
-              placeholder="Wins, relief, progress..."
-            />
-            <PromptField
-              label="What felt stressful?"
-              value={feltStressful}
-              onChange={setFeltStressful}
-              placeholder="Pressure points worth naming..."
-            />
-            <PromptField
-              label="Decisions we made"
-              value={decisions}
-              onChange={setDecisions}
-              placeholder="What did we agree to today?"
-            />
-            <PromptField
-              label="Parking lot"
-              value={parkingLot}
-              onChange={setParkingLot}
-              placeholder="Topics to revisit later..."
-            />
+          <div className="meeting-prompt-grid">
+            <PromptField label="What surprised us?" value={surprised} onChange={setSurprised} />
+            <PromptField label="What felt good?" value={feltGood} onChange={setFeltGood} />
+            <PromptField label="What felt stressful?" value={feltStressful} onChange={setFeltStressful} />
+            <PromptField label="Decisions we made" value={decisions} onChange={setDecisions} />
+            <PromptField label="Parking lot" value={parkingLot} onChange={setParkingLot} />
           </div>
         </PageWithNotes>
       </div>
@@ -70,20 +47,20 @@ export function MeetingPages({ page, totalInSection, data, month }) {
     <div className="snapshot-page meeting-page-2">
       <PageWithNotes pageId="meeting-2">
         <SectionPageHeader
-          eyebrow={`${monthLabel} ${year} · Money Meeting · Page ${page} of ${totalInSection}`}
-          title="Questions & Notes"
+          eyebrow={`${monthLabel} ${year} · Section 06 · Page ${page} of ${totalInSection}`}
+          title="Open Questions"
           subtitle={meeting.questionsPage.subtitle}
-          badge="Final meeting page"
-          badgeVariant="final"
+          badge="Still thinking"
         />
-        <div className="snapshot-grid-main">
-          <PanelCard title="Open questions" scrollLabel="Meeting questions">
-            <EditableQuestions
-              storageKey={meetingKey('meeting', 2, 'questions')}
-              seedQuestions={meeting.questions}
-            />
-          </PanelCard>
-        </div>
+        <PanelCard title="Questions to revisit">
+          <EditableQuestions
+            storageKey={meetingKey(month.id, 'meeting', 2, 'questions')}
+            seedQuestions={meeting.questions}
+          />
+        </PanelCard>
+        <PanelCard title="Meeting insight">
+          <p className="panel-note">{meeting.insight}</p>
+        </PanelCard>
       </PageWithNotes>
     </div>
   );

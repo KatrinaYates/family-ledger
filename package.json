@@ -8,7 +8,9 @@
     "dev:sample": "VITE_USE_SAMPLE_DATA=true vite",
     "build": "GITHUB_PAGES=true vite build",
     "preview": "GITHUB_PAGES=true vite preview",
-    "precommit": "bash scripts/check-no-personal-data.sh"
+    "precommit": "bash scripts/check-no-personal-data.sh",
+    "verify:architecture": "bash scripts/verify-architecture.sh",
+    "smoke:months": "node scripts/smoke-ledger-months.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",

@@ -1,20 +1,6 @@
 import { getMeetingDataRegistry, RUNDOWN_GROUPS } from '../data/meetingDataRegistry';
-
-function readStorage(key) {
-  try {
-    return localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-
-function parseJson(raw) {
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
-}
+import { ledgerRepository } from '../repository';
+import { formatActionSummary } from './actionUtils';
 
 function dedupeItems(items) {
   const seen = new Set();
@@ -27,7 +13,7 @@ function dedupeItems(items) {
 }
 
 function parseText(raw, label) {
-  const text = raw?.trim();
+  const text = typeof raw === 'string' ? raw.trim() : '';
   if (!text) return [];
   return [{ label, text }];
 }
@@ -55,21 +41,6 @@ function parseQuestions(data, label) {
     });
 }
 
-function parseActions(data, label) {
-  if (!Array.isArray(data)) return [];
-  return data
-    .filter((row) => row.action?.trim() || row.owner?.trim() || row.dueDate?.trim())
-    .map((row) => {
-      const parts = [
-        row.action?.trim(),
-        row.owner?.trim() && `Owner: ${row.owner.trim()}`,
-        row.dueDate?.trim() && `Due: ${row.dueDate.trim()}`,
-        row.status?.trim() && `Status: ${row.status.trim()}`,
-      ].filter(Boolean);
-      return { label, text: parts.join(' · ') };
-    });
-}
-
 function parseBullets(data, label) {
   if (!Array.isArray(data)) return [];
   return data
@@ -84,39 +55,44 @@ function parseEntry(entry, raw) {
     case 'text':
       return parseText(raw, entry.label);
     case 'checklist': {
-      const data = parseJson(raw);
       const checkedOnly = entry.group === 'status' || entry.group === 'decisions';
-      if (data) return parseChecklist(data, entry.label, checkedOnly);
+      if (Array.isArray(raw)) return parseChecklist(raw, entry.label, checkedOnly);
       return [];
     }
-    case 'questions': {
-      const data = parseJson(raw);
-      return data ? parseQuestions(data, entry.label) : [];
-    }
-    case 'actions': {
-      const data = parseJson(raw);
-      return data ? parseActions(data, entry.label) : [];
-    }
-    case 'bullets': {
-      const data = parseJson(raw);
-      return data ? parseBullets(data, entry.label) : [];
-    }
+    case 'questions':
+      return Array.isArray(raw) ? parseQuestions(raw, entry.label) : [];
+    case 'bullets':
+      return Array.isArray(raw) ? parseBullets(raw, entry.label) : [];
     default:
       return [];
   }
 }
 
-export function collectMeetingRundown() {
-  const registry = getMeetingDataRegistry();
+function repositoryActionItems(monthId) {
+  return ledgerRepository.listActionsForMonth(monthId).map((action) => ({
+    label: 'Action plan',
+    text: formatActionSummary(action),
+  }));
+}
+
+/** @param {string} monthId */
+export function collectMeetingRundown(monthId) {
+  const registry = getMeetingDataRegistry(monthId);
   const grouped = {};
 
   for (const entry of registry) {
-    const raw = readStorage(entry.key);
+    const raw = ledgerRepository.getMeetingEntry(monthId, entry.key);
     const items = parseEntry(entry, raw);
     if (!items.length) continue;
 
     if (!grouped[entry.group]) grouped[entry.group] = [];
     grouped[entry.group].push(...items);
+  }
+
+  const actionItems = repositoryActionItems(monthId);
+  if (actionItems.length) {
+    if (!grouped.actions) grouped.actions = [];
+    grouped.actions.push(...actionItems);
   }
 
   const sections = Object.values(RUNDOWN_GROUPS)

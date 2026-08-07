@@ -1,4 +1,11 @@
 import { sectionPageCounts, sectionPageLabels } from './sectionPageCounts';
+import {
+  celebrateKey,
+  handoffKey,
+  meetingConversationKey,
+  meetingKey,
+  pageNotesKey,
+} from '../utils/meetingKeys';
 
 /** Rundown section groups shown in the UI. */
 export const RUNDOWN_GROUPS = {
@@ -31,60 +38,58 @@ function pageNoteLabel(pageId) {
   return `${sectionName} — ${sectionLabel}`;
 }
 
-function meetingKey(section, page, field) {
-  return `fl-july-${section}-${page}-${field}`;
+/** @param {string} monthId */
+function staticEntries(monthId) {
+  return [
+    { key: meetingKey(monthId, 'cfo', 1, 'decisions-outcome'), label: 'CFO Priority 1 — What we decided', group: 'decisions', type: 'text' },
+    { key: meetingKey(monthId, 'cfo', 2, 'decisions-outcome'), label: 'CFO Priority 2 — What we decided', group: 'decisions', type: 'text' },
+    { key: meetingKey(monthId, 'cfo', 3, 'decisions-outcome'), label: 'CFO Priority 3 — What we decided', group: 'decisions', type: 'text' },
+    { key: meetingConversationKey(monthId, 'decisions'), label: 'Meeting — Decisions we made', group: 'decisions', type: 'text' },
+    { key: meetingKey(monthId, 'cfo', 1, 'decisions'), label: 'CFO Priority 1 — Options considered', group: 'decisions', type: 'checklist' },
+    { key: meetingKey(monthId, 'cfo', 2, 'decisions'), label: 'CFO Priority 2 — Options considered', group: 'decisions', type: 'checklist' },
+    { key: meetingKey(monthId, 'cfo', 3, 'decisions'), label: 'CFO Priority 3 — Options considered', group: 'decisions', type: 'checklist' },
+
+    { key: meetingKey(monthId, 'snapshot', 1, 'missing-before-lock'), label: 'Snapshot — Missing before lock', group: 'status', type: 'checklist' },
+    { key: meetingKey(monthId, 'snapshot', 2, 'emergency-checks'), label: 'Snapshot — Emergency fund checks', group: 'status', type: 'checklist' },
+    { key: meetingKey(monthId, 'snapshot', 3, 'ready-to-lock'), label: 'Snapshot — Ready to lock', group: 'status', type: 'checklist' },
+
+    { key: meetingKey(monthId, 'spending', 2, 'questions'), label: 'Spending — Discussion questions', group: 'questions', type: 'questions' },
+    { key: meetingKey(monthId, 'meeting', 2, 'questions'), label: 'Meeting — Open questions', group: 'questions', type: 'questions' },
+
+    { key: meetingConversationKey(monthId, 'surprised'), label: 'What surprised us', group: 'conversation', type: 'text' },
+    { key: meetingConversationKey(monthId, 'feltGood'), label: 'What felt good', group: 'conversation', type: 'text' },
+    { key: meetingConversationKey(monthId, 'feltStressful'), label: 'What felt stressful', group: 'conversation', type: 'text' },
+    { key: meetingConversationKey(monthId, 'parkingLot'), label: 'Parking lot', group: 'conversation', type: 'text' },
+
+    { key: meetingKey(monthId, 'spending', 1, 'unexpected'), label: 'Spending — Likely unexpected', group: 'lists', type: 'bullets' },
+    { key: meetingKey(monthId, 'story', 3, 'unclear-savings'), label: 'Story — Still unclear savings', group: 'lists', type: 'bullets' },
+    { key: meetingKey(monthId, 'future', 1, 'still-to-define'), label: 'Future — Still to define', group: 'lists', type: 'bullets' },
+    { key: meetingKey(monthId, 'future', 2, 'goals'), label: 'Future — Shared goals', group: 'lists', type: 'bullets' },
+    { key: meetingKey(monthId, 'future', 2, 'upcoming'), label: 'Future — Upcoming expenses', group: 'lists', type: 'bullets' },
+    { key: meetingKey(monthId, 'handoff', 1, 'carry-forward'), label: 'Handoff — Carry forward', group: 'lists', type: 'bullets' },
+    { key: celebrateKey(monthId, 'reward'), label: 'Celebrate — Family reward', group: 'lists', type: 'text' },
+    { key: celebrateKey(monthId, 'gratitude'), label: 'Celebrate — Gratitude', group: 'lists', type: 'text' },
+
+    { key: handoffKey(monthId, 'decisions'), label: 'Handoff — Decisions made', group: 'decisions', type: 'text' },
+    { key: handoffKey(monthId, 'open-actions'), label: 'Handoff — Open action items', group: 'actions', type: 'text' },
+    { key: handoffKey(monthId, 'helpful'), label: 'Handoff — What was helpful', group: 'lists', type: 'text' },
+    { key: handoffKey(monthId, 'repetitive'), label: 'Handoff — What felt repetitive', group: 'lists', type: 'text' },
+    { key: handoffKey(monthId, 'missing'), label: 'Handoff — What was missing', group: 'lists', type: 'text' },
+    { key: handoffKey(monthId, 'ideas'), label: 'Handoff — Ideas for next month', group: 'lists', type: 'text' },
+  ];
 }
 
-/** Static registry entries (excludes dynamic page notes). */
-const staticEntries = [
-  // Decisions
-  { key: meetingKey('cfo', 1, 'decisions-outcome'), label: 'CFO Priority 1 — What we decided', group: 'decisions', type: 'text' },
-  { key: meetingKey('cfo', 2, 'decisions-outcome'), label: 'CFO Priority 2 — What we decided', group: 'decisions', type: 'text' },
-  { key: meetingKey('cfo', 3, 'decisions-outcome'), label: 'CFO Priority 3 — What we decided', group: 'decisions', type: 'text' },
-  { key: 'fl-july-meeting-decisions', label: 'Meeting — Decisions we made', group: 'decisions', type: 'text' },
-  { key: meetingKey('cfo', 1, 'decisions'), label: 'CFO Priority 1 — Options considered', group: 'decisions', type: 'checklist' },
-  { key: meetingKey('cfo', 2, 'decisions'), label: 'CFO Priority 2 — Options considered', group: 'decisions', type: 'checklist' },
-  { key: meetingKey('cfo', 3, 'decisions'), label: 'CFO Priority 3 — Options considered', group: 'decisions', type: 'checklist' },
-
-  // Actions
-  { key: meetingKey('actions', 1, 'plan'), label: 'Action plan', group: 'actions', type: 'actions' },
-
-  // Status & progress
-  { key: meetingKey('snapshot', 1, 'missing-before-lock'), label: 'Snapshot — Missing before lock', group: 'status', type: 'checklist' },
-  { key: meetingKey('snapshot', 2, 'emergency-checks'), label: 'Snapshot — Emergency fund checks', group: 'status', type: 'checklist' },
-  { key: meetingKey('snapshot', 3, 'ready-to-lock'), label: 'Snapshot — Ready to lock', group: 'status', type: 'checklist' },
-
-  // Questions
-  { key: meetingKey('spending', 2, 'questions'), label: 'Spending — Discussion questions', group: 'questions', type: 'questions' },
-  { key: meetingKey('meeting', 2, 'questions'), label: 'Meeting — Open questions', group: 'questions', type: 'questions' },
-
-  // Conversation
-  { key: 'fl-july-meeting-surprised', label: 'What surprised us', group: 'conversation', type: 'text' },
-  { key: 'fl-july-meeting-feltGood', label: 'What felt good', group: 'conversation', type: 'text' },
-  { key: 'fl-july-meeting-feltStressful', label: 'What felt stressful', group: 'conversation', type: 'text' },
-  { key: 'fl-july-meeting-parkingLot', label: 'Parking lot', group: 'conversation', type: 'text' },
-
-  // Lists & goals
-  { key: meetingKey('spending', 1, 'unexpected'), label: 'Spending — Likely unexpected', group: 'lists', type: 'bullets' },
-  { key: meetingKey('story', 3, 'unclear-savings'), label: 'Story — Still unclear savings', group: 'lists', type: 'bullets' },
-  { key: meetingKey('future', 1, 'still-to-define'), label: 'Future — Still to define', group: 'lists', type: 'bullets' },
-  { key: meetingKey('future', 2, 'goals'), label: 'Future — Shared goals', group: 'lists', type: 'bullets' },
-  { key: meetingKey('future', 2, 'upcoming'), label: 'Future — Upcoming expenses', group: 'lists', type: 'bullets' },
-  { key: meetingKey('handoff', 1, 'carry-forward'), label: 'Handoff — Carry forward', group: 'lists', type: 'bullets' },
-  { key: 'fl-july-celebrate-reward', label: 'Celebrate — Family reward', group: 'lists', type: 'text' },
-  { key: 'fl-july-celebrate-gratitude', label: 'Celebrate — Gratitude', group: 'lists', type: 'text' },
-];
-
-function pageNoteEntries() {
+/** @param {string} monthId */
+function pageNoteEntries(monthId) {
   return getAllMeetingPageIds().map((pageId) => ({
-    key: `fl-july-${pageId}-notes`,
+    key: pageNotesKey(monthId, pageId),
     label: pageNoteLabel(pageId),
     group: 'notes',
     type: 'text',
   }));
 }
 
-/** Full registry: static fields plus dynamic page-note entries. */
-export function getMeetingDataRegistry() {
-  return [...staticEntries, ...pageNoteEntries()];
+/** @param {string} monthId */
+export function getMeetingDataRegistry(monthId) {
+  return [...staticEntries(monthId), ...pageNoteEntries(monthId)];
 }

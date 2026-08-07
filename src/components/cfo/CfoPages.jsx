@@ -8,8 +8,8 @@ import {
 import {
   EditableDecisionList,
   PageWithNotes,
-  meetingKey,
 } from '../meeting/MeetingFields';
+import { meetingKey } from '../../utils/meetingKeys';
 
 export function CfoPages({ page, totalInSection, data, month }) {
   const { cfo, meta } = data;
@@ -49,7 +49,7 @@ export function CfoPages({ page, totalInSection, data, month }) {
           <aside className="snapshot-side">
             <PanelCard title="Decisions to make" scrollLabel="CFO decision options">
               <EditableDecisionList
-                storageKey={meetingKey('cfo', page, 'decisions')}
+                storageKey={meetingKey(month.id, 'cfo', page, 'decisions')}
                 seedDecisions={priority.decisions}
               />
             </PanelCard>
