@@ -207,6 +207,18 @@ export default function App() {
     navigateTo(`future-${id}`);
   }, [navigateTo]);
 
+  const goPreviousMonth = useCallback(() => {
+    const monthIndex = months.findIndex((candidate) => candidate.id === activeMonth);
+    if (monthIndex <= 0) return;
+    navigateToMonth(months[monthIndex - 1].id);
+  }, [activeMonth, navigateToMonth]);
+
+  const goNextMonth = useCallback(() => {
+    const monthIndex = months.findIndex((candidate) => candidate.id === activeMonth);
+    if (monthIndex < 0 || monthIndex >= months.length - 1) return;
+    navigateToMonth(months[monthIndex + 1].id);
+  }, [activeMonth, navigateToMonth]);
+
   const goUpBreadcrumb = useCallback(() => {
     if (isFuturePreview) {
       navigateTo('cover');
@@ -231,14 +243,17 @@ export default function App() {
 
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (isFuturePreview || isTypingTarget(event.target) || event.altKey || event.ctrlKey || event.metaKey) return;
+      if (isTypingTarget(event.target) || event.altKey || event.ctrlKey || event.metaKey) return;
+      if (event.key === 'ArrowUp') { event.preventDefault(); goPreviousMonth(); return; }
+      if (event.key === 'ArrowDown') { event.preventDefault(); goNextMonth(); return; }
+      if (isFuturePreview) return;
       if (event.key === 'ArrowLeft') { event.preventDefault(); goPrevious(); }
       if (event.key === 'ArrowRight') { event.preventDefault(); goNext(); }
       if (event.key === 'Escape') { event.preventDefault(); goUpBreadcrumb(); }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [goNext, goPrevious, goUpBreadcrumb, isFuturePreview]);
+  }, [goNext, goNextMonth, goPrevious, goPreviousMonth, goUpBreadcrumb, isFuturePreview]);
 
   const hasNotebookNav = !isFuturePreview;
 
@@ -321,7 +336,7 @@ export default function App() {
               Local data
             </span>
           )}
-          {isFuturePreview ? 'Preview only' : '← → pages · Esc up a level'}
+          {isFuturePreview ? 'Preview only · ↑ ↓ months' : '← → pages · ↑ ↓ months · Esc up a level'}
         </span>
       </div>
       <NotebookShell
@@ -331,6 +346,7 @@ export default function App() {
         activeSection={activeSection}
         onSectionSelect={(id) => navigateTo(`july-${id}-1`)}
         showSections={showSections}
+        showLeftPage={page.type !== 'cover'}
         onPagePrevious={goPrevious}
         onPageNext={goNext}
         hasPrevious={hasNotebookNav && pageIndex > 0}

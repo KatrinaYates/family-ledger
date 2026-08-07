@@ -55,6 +55,16 @@ export function Polaroid({month, className = ""}) {
     );
 }
 
+export function LeftPage() {
+  return (
+    <div className="left-page" aria-hidden="true">
+      <div className="left-page-stack-edge" />
+      <div className="left-page-margin" />
+      <div className="left-page-ghost" />
+    </div>
+  );
+}
+
 export function SpiralBinding() {
   return (
       <div className="spiral" aria-hidden="true">
@@ -114,11 +124,12 @@ export function PageTurnZones({onPrevious, onNext, hasPrevious, hasNext}) {
     );
 }
 
-export function NotebookShell({children, months, activeMonth, onMonthSelect, activeSection, onSectionSelect, showSections = false, onPagePrevious, onPageNext, hasPrevious = false, hasNext = false}) {
+export function NotebookShell({children, months, activeMonth, onMonthSelect, activeSection, onSectionSelect, showSections = false, showLeftPage = true, onPagePrevious, onPageNext, hasPrevious = false, hasNext = false}) {
     return (
         <div className="desk-scene">
             <div className="stage">
-                <div className={`notebook${showSections ? " has-section-tabs" : ""}`}>
+                <div className={`notebook${showSections ? " has-section-tabs" : ""}${showLeftPage ? "" : " is-closed"}`}>
+                    {showLeftPage && <LeftPage />}
                     <div className="page-stack-edge" aria-hidden="true" />
                     <SpiralBinding />
                     {showSections && <SectionTabs activeSection={activeSection} onSelect={onSectionSelect} />}

@@ -102,6 +102,7 @@ summary:focus-visible {
   aspect-ratio: 16 / 9;
   min-height: 650px;
   position: relative;
+  overflow: visible;
 }
 
 .notebook {
@@ -173,6 +174,103 @@ summary:focus-visible {
   box-shadow: 3px 0 8px rgba(30, 55, 60, 0.05);
 }
 
+/* Left page — open-book illusion beside the spiral */
+.left-page {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: calc(100% - -6px);
+  width: 24%;
+  min-width: 140px;
+  max-width: 280px;
+  border-radius: 28px;
+  background:
+    var(--paper-grain),
+    repeating-linear-gradient(to bottom, #FFF9ED 0, #FFF9ED 42px, #E7DED0 43px, #FFF9ED 44px);
+  background-size: 200px 200px, auto;
+  background-blend-mode: multiply, normal;
+  border: 4px solid rgba(255, 255, 255, 0.55);
+  border-right: none;
+  box-shadow:
+    -6px 0 18px rgba(30, 55, 60, 0.1),
+    inset -10px 0 20px rgba(50, 55, 72, 0.07);
+  transform-origin: right center;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.left-page::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(to right, rgba(50, 55, 72, 0.14), rgba(50, 55, 72, 0.02));
+  border-radius: 0 2px 2px 0;
+}
+
+.left-page-margin {
+  position: absolute;
+  right: 35%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(255, 142, 120, 0.22);
+}
+
+.left-page-ghost {
+  position: absolute;
+  inset: 14% 16% 12% 12%;
+  opacity: 0.4;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 17px,
+      rgba(45, 53, 72, 0.07) 18px,
+      rgba(45, 53, 72, 0.07) 21px,
+      transparent 22px,
+      transparent 36px
+    );
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.12) 75%, transparent 100%);
+}
+
+.left-page-stack-edge {
+  position: absolute;
+  top: 0;
+  left: -3px;
+  bottom: 0;
+  width: 40px;
+  background: repeating-linear-gradient(90deg, #fff9ed 0 3px, #e4d8c4 3px 6px);
+  border-radius: 22px 0 0 22px;
+  z-index: -1;
+  box-shadow: -2px 0 8px rgba(30, 55, 60, 0.1);
+}
+
+.left-page-stack-edge::before,
+.left-page-stack-edge::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  border-radius: 22px 0 0 22px;
+  z-index: -1;
+}
+
+.left-page-stack-edge::before {
+  left: -4px;
+  background: #D9CCB5;
+  box-shadow: -2px 0 5px rgba(30, 55, 60, 0.07);
+}
+
+.left-page-stack-edge::after {
+  left: 0;
+  background: #fff9ed;
+  box-shadow: -3px 0 8px rgba(30, 55, 60, 0.05);
+}
+
 /* Spiral binding */
 .spiral {
   position: absolute;
@@ -187,16 +285,53 @@ summary:focus-visible {
 }
 
 .spiral span {
+  position: relative;
   width: 52px;
   height: 16px;
   margin-top: var(--ring-offset, 0);
   border: 5px solid var(--gold-dark);
   border-right: 0;
-  border-radius: 13px 0 0 13px;
+  border-radius: 13px;
   background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 45%, var(--gold-dark) 100%);
   box-shadow:
     inset -2px 0 4px rgba(255, 255, 255, 0.45),
     2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Punch holes — ring passes through paper on both sides of the gutter */
+.spiral span::before,
+.spiral span::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: -1;
+  background:
+    radial-gradient(circle at 38% 32%, rgba(255, 255, 255, 0.18) 0%, transparent 28%),
+    radial-gradient(circle at 50% 55%, #3a3228 0%, #241e18 52%, #14110e 100%);
+  box-shadow:
+    inset 0 2px 3px rgba(0, 0, 0, 0.6),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.06),
+    0 0 0 1px rgba(100, 86, 68, 0.45),
+    0 0 0 2px rgba(210, 195, 168, 0.35);
+}
+
+/* Right page — where the ring enters the working page */
+.spiral span::after {
+  right: -1px;
+}
+
+/* Left page — where the ring loops back through */
+.spiral span::before {
+  left: -6px;
+}
+
+.notebook.is-closed .spiral span::before {
+  display: none;
 }
 
 /* Month tabs */
@@ -2615,6 +2750,11 @@ summary:focus-visible {
 
   .notebook { left: 7%; width: 84%; height: 95%; top: 2.5%; }
 
+  .left-page {
+    width: 20%;
+    min-width: 120px;
+  }
+
   /* Pages scroll when grids stack — content is not clipped */
   .cover-page,
   .inside-cover,
@@ -3049,6 +3189,10 @@ summary:focus-visible {
     height: 95%;
   }
 
+  .left-page {
+    display: none;
+  }
+
   .working-content {
     padding: 28px 32px 40px 44px;
   }
@@ -3135,6 +3279,7 @@ summary:focus-visible {
   .page-turn-next { width: 44px; height: 44px; }
   .notebook { --page-turn-right: 48px; --page-turn-bottom: 56px; }
   .page-stack-edge { width: 6px; right: -4px; }
+  .left-page-stack-edge { width: 6px; left: -4px; }
 
   .snapshot-page-header {
     flex-direction: column;
@@ -3163,6 +3308,10 @@ summary:focus-visible {
 
 @media (prefers-reduced-motion: reduce) {
   .notebook {
+    transform: none;
+  }
+
+  .left-page {
     transform: none;
   }
 
