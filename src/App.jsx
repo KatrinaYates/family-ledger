@@ -170,7 +170,7 @@ export default function App() {
 
   const defaultMonthId = monthIds[0] ?? months[0]?.id ?? '2026-07';
 
-  const [initialBootComplete, setInitialBootComplete] = useState(false);
+  const [bootComplete, setBootComplete] = useState(false);
 
   const [pageId, setPageId] = useState(() => {
     const rawId = window.location.hash.replace('#/', '');
@@ -228,14 +228,24 @@ export default function App() {
   const { data: monthData, loading: monthLoading, error: monthError } = useLedgerMonth(resolvedMonthId);
 
   const insideCoverReady = !monthsLoading && !monthLoading && Boolean(monthData);
-  const insideCover = useInsideCoverFields(monthData?.meta, { enabled: insideCoverReady });
+  const insideCoverEnabled = insideCoverReady && (!bootComplete || resolvedPage.type === 'inside');
+  const insideCover = useInsideCoverFields(monthData?.meta, { enabled: insideCoverEnabled });
 
   useEffect(() => {
-    if (!monthsLoading && monthData) setInitialBootComplete(true);
-  }, [monthsLoading, monthData]);
+    if (bootComplete) return;
+    if (
+      !monthsLoading &&
+      !monthLoading &&
+      monthData &&
+      insideCoverReady &&
+      !insideCover.loading
+    ) {
+      setBootComplete(true);
+    }
+  }, [bootComplete, monthsLoading, monthLoading, monthData, insideCoverReady, insideCover.loading]);
 
-  useBootLoading('month', !initialBootComplete && monthLoading);
-  useBootLoading('inside-cover', insideCover.loading && insideCoverReady);
+  useBootLoading('month', !bootComplete && monthLoading);
+  useBootLoading('inside-cover', !bootComplete && insideCover.loading && insideCoverReady);
 
   const monthLoadError = Boolean(
     resolvedPage.monthId &&
@@ -342,7 +352,11 @@ export default function App() {
     [resolvedPage, pageId],
   );
 
-  if (monthsLoading || (!initialBootComplete && monthLoading) || (insideCoverReady && insideCover.loading)) return null;
+  if (
+    monthsLoading ||
+    (!bootComplete && monthLoading) ||
+    (!bootComplete && insideCoverReady && insideCover.loading)
+  ) return null;
 
   if (monthsError) {
     return (
