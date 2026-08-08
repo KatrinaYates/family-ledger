@@ -5,6 +5,8 @@ import { supabase } from './client.js';
 import { getHouseholdInviteUrl } from './getAuthRedirectUrl.js';
 import { getErrorMessage } from '../utils/getErrorMessage.js';
 
+const LINK_ONLY_INVITE_EMAIL = 'invite-link@family-ledger.invalid';
+
 function invitationTokenFromValue(value) {
   const trimmed = value?.trim();
   if (!trimmed) return '';
@@ -28,7 +30,6 @@ export function HouseholdGate({ children }) {
   const [error, setError] = useState('');
   const [householdName, setHouseholdName] = useState('Our Family');
   const [joinValue, setJoinValue] = useState(inviteFromUrl);
-  const [inviteEmail, setInviteEmail] = useState('');
   const [createdInvite, setCreatedInvite] = useState(null);
   const [busy, setBusy] = useState(false);
 
@@ -117,20 +118,25 @@ export function HouseholdGate({ children }) {
     }
   };
 
-  const createInvitation = async (event) => {
-    event.preventDefault();
+  const createInvitation = async () => {
     setBusy(true);
     setError('');
     setCreatedInvite(null);
     try {
-      const invitation = await ledgerRepository.createHouseholdInvitation(inviteEmail);
+      // The repository still accepts an email argument for compatibility, but the
+      // database now issues one-time bearer links that are not tied to an email.
+      const invitation = await ledgerRepository.createHouseholdInvitation(LINK_ONLY_INVITE_EMAIL);
       setCreatedInvite({ ...invitation, url: invitationUrl(invitation.token) });
-      setInviteEmail('');
     } catch (inviteError) {
       setError(getErrorMessage(inviteError));
     } finally {
       setBusy(false);
     }
+  };
+
+  const copyInviteLink = async () => {
+    if (!createdInvite?.url) return;
+    await navigator.clipboard?.writeText(createdInvite.url);
   };
 
   const signOut = async () => {
@@ -150,44 +156,43 @@ export function HouseholdGate({ children }) {
     return (
       <AuthShell wide labelledBy="household-title">
         <p className="ledger-auth-kicker">The Family Ledger</p>
-        <h1 id="household-title">Choose your household</h1>
+        <h1 id="household-title">Open your family ledger</h1>
         <p className="ledger-auth-lead household-gate-lead">
-          Your sign-in proves who you are. Household membership decides which ledger you can open.
+          Create a new private ledger, or open an invitation link someone shared with you.
         </p>
 
-          {households.length > 1 && (
-            <div className="household-choice-list">
-              {households.map((household) => (
-                <button key={household.id} type="button" onClick={() => chooseHousehold(household.id)} disabled={busy}>
-                  <strong>{household.name}</strong>
-                  <span>{household.role === 'owner' ? 'Owner' : 'Member'}</span>
-                </button>
-              ))}
-            </div>
-          )}
+        {households.length > 1 && (
+          <div className="household-choice-list">
+            {households.map((household) => (
+              <button key={household.id} type="button" onClick={() => chooseHousehold(household.id)} disabled={busy}>
+                <strong>{household.name}</strong>
+              </button>
+            ))}
+          </div>
+        )}
 
-          {households.length === 0 && (
-            <div className="household-onboarding-grid">
-              <form onSubmit={createHousehold} className="household-onboarding-panel">
-                <h2>Create a family ledger</h2>
-                <p>Start a new private household. You’ll become its owner.</p>
-                <label htmlFor="household-name">Household name</label>
-                <input id="household-name" value={householdName} onChange={(event) => setHouseholdName(event.target.value)} required />
-                <button type="submit" disabled={busy}>Create household</button>
-              </form>
+        {households.length === 0 && (
+          <div className="household-onboarding-grid">
+            <form onSubmit={createHousehold} className="household-onboarding-panel">
+              <h2>Create a family ledger</h2>
+              <p>Start a new private household. Everyone you invite will have the same access.</p>
+              <label htmlFor="household-name">Household name</label>
+              <input id="household-name" value={householdName} onChange={(event) => setHouseholdName(event.target.value)} required />
+              <button type="submit" disabled={busy}>Create household</button>
+            </form>
 
-              <form onSubmit={joinHousehold} className="household-onboarding-panel">
-                <h2>Join a family ledger</h2>
-                <p>Paste the invitation link or code sent by a household owner.</p>
-                <label htmlFor="household-invite">Invitation</label>
-                <input id="household-invite" value={joinValue} onChange={(event) => setJoinValue(event.target.value)} required />
-                <button type="submit" disabled={busy}>Join household</button>
-              </form>
-            </div>
-          )}
+            <form onSubmit={joinHousehold} className="household-onboarding-panel">
+              <h2>Have an invite?</h2>
+              <p>Opening the invite link should bring you straight in. You can also paste it here.</p>
+              <label htmlFor="household-invite">Invitation link</label>
+              <input id="household-invite" value={joinValue} onChange={(event) => setJoinValue(event.target.value)} required />
+              <button type="submit" disabled={busy}>Open family ledger</button>
+            </form>
+          </div>
+        )}
 
-          {error && <p className="ledger-auth-error household-error" role="alert">{error}</p>}
-          <button type="button" className="household-signout" onClick={signOut}>Sign out</button>
+        {error && <p className="ledger-auth-error household-error" role="alert">{error}</p>}
+        <button type="button" className="household-signout" onClick={signOut}>Sign out</button>
       </AuthShell>
     );
   }
@@ -198,28 +203,19 @@ export function HouseholdGate({ children }) {
         <summary>{activeHousehold.name}</summary>
         <div className="household-access-panel">
           <p><strong>{activeHousehold.name}</strong></p>
-          <p className="household-access-role">{activeHousehold.role === 'owner' ? 'Household owner' : 'Household member'}</p>
+          <p className="household-access-role">Everyone with access can view and edit this ledger.</p>
 
-          {activeHousehold.role === 'owner' && (
-            <form onSubmit={createInvitation}>
-              <label htmlFor="household-invite-email">Invite a member</label>
-              <input
-                id="household-invite-email"
-                type="email"
-                value={inviteEmail}
-                onChange={(event) => setInviteEmail(event.target.value)}
-                placeholder="person@example.com"
-                required
-              />
-              <button type="submit" disabled={busy}>Create invite link</button>
-            </form>
-          )}
+          <div className="household-invite-actions">
+            <button type="button" onClick={createInvitation} disabled={busy}>
+              {busy ? 'Creating link…' : 'Create invite link'}
+            </button>
+          </div>
 
           {createdInvite && (
             <div className="household-invite-result" role="status">
-              <p>Invite for <strong>{createdInvite.email}</strong></p>
+              <p>Share this one-time link with someone you trust.</p>
               <input readOnly value={createdInvite.url} aria-label="Household invitation link" />
-              <button type="button" onClick={() => navigator.clipboard?.writeText(createdInvite.url)}>Copy link</button>
+              <button type="button" onClick={copyInviteLink}>Copy link</button>
               <small>Expires {new Date(createdInvite.expiresAt).toLocaleString()}.</small>
             </div>
           )}
