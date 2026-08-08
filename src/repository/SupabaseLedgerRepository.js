@@ -97,30 +97,134 @@ export class SupabaseLedgerRepository extends LedgerRepository {
         return data.user;
     }
 
-    async getHouseholdId({ createIfMissing = true } = {}) {
-        if (this.householdId) return this.householdId;
+    async listHouseholds() {
         await this.requireUser();
-        const { data, error } = await this.client
+        const { data: memberships, error: membershipError } = await this.client
             .from('household_members')
-            .select('household_id')
-            .limit(1)
-            .maybeSingle();
-        if (error) throw storageError(error);
-        if (data?.household_id) {
-            this.householdId = data.household_id;
+            .select('household_id, role')
+            .order('created_at');
+        if (membershipError) throw storageError(membershipError, 'Could not load your households.');
+        if (!memberships?.length) return [];
+
+        const ids = memberships.map((row) => row.household_id);
+        const { data: households, error: householdError } = await this.client
+            .from('households')
+            .select('id, name, created_at')
+            .in('id', ids);
+        if (householdError) throw storageError(householdError, 'Could not load your households.');
+
+        const byId = new Map((households ?? []).map((row) => [row.id, row]));
+        return memberships
+            .map((membership) => {
+                const household = byId.get(membership.household_id);
+                if (!household) return null;
+                return {
+                    id: household.id,
+                    name: household.name,
+                    role: membership.role,
+                    createdAt: household.created_at,
+                };
+            })
+            .filter(Boolean);
+    }
+
+    async setActiveHousehold(householdId) {
+        if (!householdId) {
+            this.householdId = null;
+            return null;
+        }
+        const households = await this.listHouseholds();
+        const household = households.find((entry) => entry.id === householdId);
+        if (!household) throw new ValidationError('You do not have access to that household.');
+        this.householdId = household.id;
+        return household;
+    }
+
+    async getActiveHousehold() {
+        if (!this.householdId) return null;
+        const households = await this.listHouseholds();
+        return households.find((entry) => entry.id === this.householdId) ?? null;
+    }
+
+    async createHousehold(name) {
+        const householdName = name?.trim();
+        if (!householdName) throw new ValidationError('Household name is required.');
+        await this.requireUser();
+        const { data, error } = await this.client.rpc('create_household', {
+            household_name: householdName,
+        });
+        if (error) throw storageError(error, 'Could not create your household.');
+        this.householdId = data;
+        dispatchLedgerMonthsUpdated();
+        return this.getActiveHousehold();
+    }
+
+    async createHouseholdInvitation(email) {
+        const householdId = await this.requireHouseholdId();
+        const normalizedEmail = email?.trim().toLowerCase();
+        if (!normalizedEmail) throw new ValidationError('Email is required.');
+        const { data, error } = await this.client.rpc('create_household_invitation', {
+            target_household_id: householdId,
+            invite_email: normalizedEmail,
+        });
+        if (error) throw storageError(error, 'Could not create the household invitation.');
+        const row = Array.isArray(data) ? data[0] : data;
+        return {
+            id: row.invitation_id,
+            token: row.invitation_token,
+            expiresAt: row.expires_at,
+            email: normalizedEmail,
+        };
+    }
+
+    async acceptHouseholdInvitation(token) {
+        const invitationToken = token?.trim();
+        if (!invitationToken) throw new ValidationError('Invitation token is required.');
+        const { data, error } = await this.client.rpc('accept_household_invitation', {
+            invitation_token: invitationToken,
+        });
+        if (error) throw storageError(error, error.message || 'Could not accept the household invitation.');
+        this.householdId = data;
+        dispatchLedgerMonthsUpdated();
+        return this.getActiveHousehold();
+    }
+
+    async listHouseholdInvitations() {
+        const householdId = await this.requireHouseholdId();
+        const { data, error } = await this.client
+            .from('household_invitations')
+            .select('id, email, expires_at, accepted_at, created_at')
+            .eq('household_id', householdId)
+            .order('created_at', { ascending: false });
+        if (error) throw storageError(error, 'Could not load household invitations.');
+        return (data ?? []).map((row) => ({
+            id: row.id,
+            email: row.email,
+            expiresAt: row.expires_at,
+            acceptedAt: row.accepted_at,
+            createdAt: row.created_at,
+        }));
+    }
+
+    async getHouseholdId() {
+        if (this.householdId) return this.householdId;
+        const households = await this.listHouseholds();
+        if (households.length === 1) {
+            this.householdId = households[0].id;
             return this.householdId;
         }
-        if (!createIfMissing) return null;
-        const { data: newId, error: createError } = await this.client.rpc('create_household', {
-            household_name: 'Family Ledger',
-        });
-        if (createError) throw storageError(createError, 'Could not create your Family Ledger household.');
-        this.householdId = newId;
-        return newId;
+        if (households.length === 0) return null;
+        throw new ValidationError('Choose a household before opening the ledger.');
+    }
+
+    async requireHouseholdId() {
+        const householdId = await this.getHouseholdId();
+        if (!householdId) throw new ValidationError('Create or join a household before using the ledger.');
+        return householdId;
     }
 
     async getRecord(monthId) {
-        const householdId = await this.getHouseholdId({ createIfMissing: false });
+        const householdId = await this.getHouseholdId();
         if (!householdId) return null;
         const { data, error } = await this.client
             .from('ledger_months')
@@ -139,7 +243,7 @@ export class SupabaseLedgerRepository extends LedgerRepository {
     }
 
     async listMonths() {
-        const householdId = await this.getHouseholdId({ createIfMissing: false });
+        const householdId = await this.getHouseholdId();
         if (!householdId) return [];
         const { data, error } = await this.client
             .from('ledger_months')
@@ -190,7 +294,7 @@ export class SupabaseLedgerRepository extends LedgerRepository {
         if (await this.hasLedgerData(month.monthId)) {
             throw new ValidationError(`Month "${month.monthId}" already exists.`, { monthId: month.monthId });
         }
-        const householdId = await this.getHouseholdId();
+        const householdId = await this.requireHouseholdId();
         const record = month.schemaVersion ? month : createBlankLedgerMonth(month.monthId);
         const { data, error } = await this.client
             .from('ledger_months')
@@ -207,21 +311,20 @@ export class SupabaseLedgerRepository extends LedgerRepository {
     }
 
     async persistRecord(record, options) {
-        const householdId = await this.getHouseholdId();
+        const householdId = await this.requireHouseholdId();
         const expectedVersion = options?.expectedVersion ?? record.version;
         const next = {
             ...record,
             version: expectedVersion + 1,
             updatedAt: new Date().toISOString(),
         };
-        let query = this.client
+        const { data, error } = await this.client
             .from('ledger_months')
             .update(toMonthRow(next, householdId))
             .eq('household_id', householdId)
             .eq('month_id', record.monthId)
             .eq('version', expectedVersion)
             .select('*');
-        const { data, error } = await query;
         if (error) throw storageError(error, 'Could not save the month.');
         if (!data?.length) {
             const current = await this.requireRecord(record.monthId);
@@ -254,7 +357,7 @@ export class SupabaseLedgerRepository extends LedgerRepository {
 
     async saveMeetingEntry(monthId, key, value) {
         if (monthId && !key.startsWith('fl-ledger-')) await this.assertMeetingWritable(monthId);
-        const householdId = await this.getHouseholdId();
+        const householdId = await this.requireHouseholdId();
         const table = monthId ? 'meeting_entries' : 'ledger_entries';
         const row = monthId
             ? { household_id: householdId, month_id: monthId, entry_key: key, value, updated_at: new Date().toISOString() }
@@ -265,7 +368,7 @@ export class SupabaseLedgerRepository extends LedgerRepository {
     }
 
     async getMeetingEntry(monthId, key) {
-        const householdId = await this.getHouseholdId({ createIfMissing: false });
+        const householdId = await this.getHouseholdId();
         if (!householdId) return null;
         const table = monthId ? 'meeting_entries' : 'ledger_entries';
         let query = this.client
@@ -280,7 +383,7 @@ export class SupabaseLedgerRepository extends LedgerRepository {
     }
 
     async listActions(filters = {}) {
-        const householdId = await this.getHouseholdId({ createIfMissing: false });
+        const householdId = await this.getHouseholdId();
         if (!householdId) return [];
         let query = this.client.from('actions').select('*').eq('household_id', householdId);
         if (filters.status) query = query.eq('status', filters.status);
@@ -304,7 +407,7 @@ export class SupabaseLedgerRepository extends LedgerRepository {
     }
 
     async saveAction(action) {
-        const householdId = await this.getHouseholdId();
+        const householdId = await this.requireHouseholdId();
         const { data, error } = await this.client
             .from('actions')
             .insert(toActionRow(action, householdId))
@@ -315,7 +418,7 @@ export class SupabaseLedgerRepository extends LedgerRepository {
     }
 
     async updateAction(id, patch) {
-        const householdId = await this.getHouseholdId();
+        const householdId = await this.requireHouseholdId();
         const current = (await this.listActions()).find((action) => action.id === id);
         if (!current) throw new ValidationError(`Action "${id}" not found.`, { id });
         const merged = { ...current, ...patch, updatedAt: new Date().toISOString() };
@@ -337,7 +440,7 @@ export class SupabaseLedgerRepository extends LedgerRepository {
     }
 
     async deleteAction(id) {
-        const householdId = await this.getHouseholdId();
+        const householdId = await this.requireHouseholdId();
         const { error } = await this.client.from('actions').delete().eq('household_id', householdId).eq('id', id);
         if (error) throw storageError(error, 'Could not delete the action.');
     }
