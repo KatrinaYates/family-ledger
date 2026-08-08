@@ -98,6 +98,189 @@
   justify-content: center;
 }
 
+.page-loader {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  min-height: 240px;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.content-shell-inner:has(> .content-body > .page-loader) {
+  height: 100%;
+}
+
+.content-body:has(> .page-loader) {
+  display: grid;
+  place-items: center;
+  min-height: 100%;
+}
+
+.writing-loader {
+  width: min(360px, 70vw);
+  display: grid;
+  gap: 15px;
+}
+
+.writing-loader__line {
+  position: relative;
+  height: 18px;
+  border-bottom: 1px solid rgba(93, 110, 119, 0.22);
+}
+
+.writing-loader__line--short {
+  width: 68%;
+}
+
+.writing-loader__line--medium {
+  width: 84%;
+}
+
+.writing-loader__ink {
+  position: absolute;
+  left: 0;
+  bottom: 3px;
+  height: 3px;
+  width: 0;
+  border-radius: 999px;
+  background: var(--deep, #2f7773);
+  animation: write-line 1.7s ease-in-out infinite;
+}
+
+.writing-loader__line:nth-child(2) .writing-loader__ink {
+  animation-delay: 0.22s;
+}
+
+.writing-loader__line:nth-child(3) .writing-loader__ink {
+  animation-delay: 0.44s;
+}
+
+.writing-loader__pen {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  font-size: 22px;
+  transform: translate(-6px, -2px) rotate(-18deg);
+  transform-origin: center;
+  animation: move-pen 1.7s ease-in-out infinite;
+  color: var(--gold, #b58c2e);
+}
+
+.writing-loader__label {
+  margin: 10px 0 0;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #52656c;
+}
+
+.writing-loader__dots {
+  display: inline-flex;
+  gap: 3px;
+  margin-left: 2px;
+  vertical-align: middle;
+}
+
+.writing-loader__dots span {
+  width: 4px;
+  height: 4px;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: var(--deep, #2f7773);
+  opacity: 0.25;
+  animation: writing-dot-pulse 1.2s ease-in-out infinite;
+}
+
+.writing-loader__dots span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.writing-loader__dots span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes write-line {
+  0% {
+    width: 0;
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  60% {
+    width: 82%;
+    opacity: 1;
+  }
+
+  80% {
+    width: 82%;
+    opacity: 1;
+  }
+
+  100% {
+    width: 82%;
+    opacity: 0;
+  }
+}
+
+@keyframes move-pen {
+  0% {
+    left: 0;
+    opacity: 0;
+    transform: translate(-6px, -2px) rotate(-18deg);
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  60% {
+    left: 82%;
+    opacity: 1;
+    transform: translate(-6px, -2px) rotate(-12deg);
+  }
+
+  80% {
+    left: 82%;
+    opacity: 1;
+  }
+
+  100% {
+    left: 82%;
+    opacity: 0;
+  }
+}
+
+@keyframes writing-dot-pulse {
+  0%, 70%, 100% {
+    opacity: 0.2;
+    transform: translateY(0);
+  }
+
+  35% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .writing-loader__ink,
+  .writing-loader__pen,
+  .writing-loader__dots span {
+    animation: none;
+  }
+
+  .writing-loader__ink {
+    width: 82%;
+    opacity: 1;
+  }
+}
+
 .loader-book {
   position: relative;
   flex-shrink: 0;

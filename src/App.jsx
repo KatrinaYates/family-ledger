@@ -356,7 +356,11 @@ export default function App() {
     content = <InsideCover month={displayMonth} meta={monthData?.meta} />;
   } else if (resolvedPage.type === 'month') {
     if (chapterMonthId && monthLoading) {
-      content = <LedgerLoader inline aria-label="Opening your ledger" />;
+      content = (
+        <ContentShell>
+          <LedgerLoader inline aria-label="Filling in your page" />
+        </ContentShell>
+      );
     } else {
       content = (
         <MonthChapterPage
@@ -380,7 +384,7 @@ export default function App() {
   } else if ((monthLoading || !monthData) && resolvedPage.type === 'content') {
     content = (
       <ContentShell>
-        <LedgerLoader inline aria-label="Opening your ledger" />
+        <LedgerLoader inline aria-label="Filling in your page" />
       </ContentShell>
     );
   } else if (resolvedPage.type === 'divider') {

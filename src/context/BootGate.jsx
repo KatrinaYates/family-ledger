@@ -53,11 +53,40 @@ export function useBootLoading(key, loading) {
 }
 
 /** @param {{ overlay?: boolean, inline?: boolean, preview?: boolean, className?: string, 'aria-label'?: string }} props */
+export function PageLoader({ className = '', ...rest }) {
+    return (
+        <div className={['page-loader', className].filter(Boolean).join(' ')} role="status" aria-live="polite" {...rest}>
+            <div className="writing-loader">
+                <div className="writing-loader__line">
+                    <span className="writing-loader__ink" aria-hidden="true" />
+                    <span className="writing-loader__pen" aria-hidden="true">✒</span>
+                </div>
+                <div className="writing-loader__line writing-loader__line--short">
+                    <span className="writing-loader__ink" aria-hidden="true" />
+                </div>
+                <div className="writing-loader__line writing-loader__line--medium">
+                    <span className="writing-loader__ink" aria-hidden="true" />
+                </div>
+                <p className="writing-loader__label" aria-hidden="true">
+                    Filling in your page
+                    <span className="writing-loader__dots">
+                        <span /><span /><span />
+                    </span>
+                </p>
+            </div>
+        </div>
+    );
+}
+
+/** @param {{ overlay?: boolean, inline?: boolean, preview?: boolean, className?: string, 'aria-label'?: string }} props */
 export function LedgerLoader({ overlay = false, inline = false, preview = false, className = '', ...rest }) {
+    if (inline) {
+        return <PageLoader className={className} {...rest} />;
+    }
+
     const rootClass = [
         'ledger-loader',
         overlay ? 'ledger-loader-overlay' : '',
-        inline ? 'ledger-loader-inline' : '',
         preview ? 'ledger-loader-preview' : '',
         className,
     ].filter(Boolean).join(' ');
