@@ -7,6 +7,8 @@ import christmasTree from "../assets/illustrations/christmas-tree.svg";
 import vineDoodle from "../assets/illustrations/vine-doodle.svg";
 import sunIllustration from "../assets/illustrations/sun.svg";
 import washiTape from "../assets/illustrations/washi-tape.svg";
+import { useLedgerNotes } from '../hooks/useLedgerNotes';
+import { ledgerInsideKey } from '../utils/meetingKeys';
 
 const illustrations = {
     sunflower,
@@ -184,9 +186,44 @@ export function AnnualCover() {
     );
 }
 
-export function InsideCover({month, meta}) {
-    const motto = meta?.motto || 'Progress over perfection.';
-    const names = meta?.names || 'Person A & Person B';
+export function InsideCover({ month, meta }) {
+    const namesField = useLedgerNotes(
+        ledgerInsideKey('names'),
+        meta?.names || 'Person A & Person B',
+    );
+    const startedField = useLedgerNotes(ledgerInsideKey('started'), '');
+    const mottoField = useLedgerNotes(
+        ledgerInsideKey('motto'),
+        meta?.motto || 'Progress over perfection.',
+    );
+    const whyWeMeetField = useLedgerNotes(
+        ledgerInsideKey('why-we-meet'),
+        'To stay informed, make intentional decisions, and build the future we want together.',
+    );
+
+    const fields = [
+        {
+            label: 'Names',
+            field: namesField,
+            placeholder: 'Who is this ledger for?',
+        },
+        {
+            label: 'Started',
+            field: startedField,
+            placeholder: `e.g. ${month.label} ${month.year ?? 2026}`,
+        },
+        {
+            label: 'Our Financial Motto',
+            field: mottoField,
+            placeholder: 'A phrase that guides your money meetings',
+        },
+        {
+            label: 'Why We Meet',
+            field: whyWeMeetField,
+            placeholder: 'What do you hope these conversations create?',
+        },
+    ];
+
     return (
         <div className="inside-cover">
             <Illustration name="sunflower" className="season-doodle top" />
@@ -197,17 +234,24 @@ export function InsideCover({month, meta}) {
                     This Ledger Belongs To
                 </h1>
                 <p>A shared place for honest conversations, clear decisions, and steady progress.</p>
-                {[
-                    ['Names', names],
-                    ['Started', `${month.label} ${month.year ?? 2026}`],
-                    ['Our Financial Motto', motto],
-                    ['Why We Meet', 'To stay informed, make intentional decisions, and build the future we want together.'],
-                ].map(([label, value]) => (
-                    <div className="belong-line" key={label}>
+                {fields.map(({ label, field, placeholder }) => (
+                    <label className="belong-line" key={label}>
                         <b>{label}</b>
-                        <span>{value}</span>
-                    </div>
+                        <input
+                            type="text"
+                            className="belong-line-input"
+                            value={field.value}
+                            onChange={(event) => field.setValue(event.target.value)}
+                            placeholder={placeholder}
+                            disabled={field.loading}
+                        />
+                    </label>
                 ))}
+                {fields.some(({ field }) => field.saveError) && (
+                    <p className="field-save-error belong-line-error" role="alert">
+                        {fields.find(({ field }) => field.saveError)?.field.saveError}
+                    </p>
+                )}
                 <StickyNote className="inside-note">A little clarity today makes next month easier. ♡</StickyNote>
             </div>
         </div>

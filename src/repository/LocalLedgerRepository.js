@@ -285,7 +285,9 @@ export class LocalLedgerRepository extends LedgerRepository {
     }
 
     async saveMeetingEntry(monthId, key, value) {
-        this.assertMeetingWritable(monthId);
+        if (!key.startsWith('fl-ledger-')) {
+            this.assertMeetingWritable(monthId);
+        }
         if (typeof value === 'string') {
             try {
                 localStorage.setItem(key, value);

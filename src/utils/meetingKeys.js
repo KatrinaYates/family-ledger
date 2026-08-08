@@ -1,3 +1,8 @@
+/** @param {string} field */
+export function ledgerInsideKey(field) {
+    return `fl-ledger-inside-${field}`;
+}
+
 /** @param {string} monthId @param {string} section @param {number | string} page @param {string} field */
 export function meetingKey(monthId, section, page, field) {
     return `fl-${monthId}-${section}-${page}-${field}`;

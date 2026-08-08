@@ -29,7 +29,7 @@ import {
   SectionDivider,
   sectionTabs,
 } from './components/LedgerComponents';
-import { DataQualityBanner } from './components/DataQualityBanner';
+import { DataQualityNotes } from './components/DataQualityNotes';
 
 const sections = {
   snapshot:{number:'01',title:'Financial Snapshot',description:'A quick read on where our financial life stands.',inside:'Connected net worth • Cash • Emergency fund • Retirement • Debt',how:'Start with the big picture before diving into details.',prompt:'What changed most this month?',noteTone:'blue',tone:'teal'},
@@ -157,12 +157,7 @@ const contentPageProps = (page, month, monthData) => ({
 });
 
 function MonthNotebookShell({ children }) {
-  return (
-    <ContentShell>
-      <DataQualityBanner />
-      {children}
-    </ContentShell>
-  );
+  return <ContentShell>{children}</ContentShell>;
 }
 
 export default function App() {
@@ -474,7 +469,7 @@ export default function App() {
 
   const showSections = !isPreview && (resolvedPage.type === 'divider' || resolvedPage.type === 'content');
 
-  const wrappedContent = resolvedPage.monthId || resolvedPage.type === 'inside' ? (
+  const wrappedContent = resolvedPage.monthId ? (
     <MonthProvider
       monthId={monthContextValue.monthId}
       month={monthContextValue.month}
@@ -489,14 +484,17 @@ export default function App() {
       <a className="skip-link" href="#notebook-content">Skip to notebook page</a>
       <div className="site-toolbar" aria-label="Notebook navigation">
         <BreadcrumbNav crumbs={breadcrumbs} onNavigate={navigateTo} />
-        <span className="keyboard-help" title="Keyboard shortcuts">
-          {usingLocalData && (
-            <span className="data-source-badge" title={`Loaded from local data for ${activeMonth} (gitignored)`}>
-              Local data
-            </span>
-          )}
-          {isPreview ? 'Preview only · ↑ ↓ months' : '← → pages · ↑ ↓ months · Esc up a level'}
-        </span>
+        <div className="site-toolbar-actions">
+          {resolvedPage.monthId && <DataQualityNotes monthId={resolvedPage.monthId} />}
+          <span className="keyboard-help" title="Keyboard shortcuts">
+            {usingLocalData && (
+              <span className="data-source-badge" title={`Loaded from local data for ${activeMonth} (gitignored)`}>
+                Local data
+              </span>
+            )}
+            {isPreview ? 'Preview only · ↑ ↓ months' : '← → pages · ↑ ↓ months · Esc up a level'}
+          </span>
+        </div>
       </div>
       <NotebookShell
         months={months}

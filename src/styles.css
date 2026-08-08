@@ -732,6 +732,32 @@ summary:focus-visible {
   padding-bottom: 7px;
 }
 
+.belong-line-input {
+  width: 100%;
+  border: none;
+  border-bottom: 2px solid #9DB0B4;
+  padding: 0 0 7px;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  resize: vertical;
+}
+
+.belong-line-input:focus {
+  outline: none;
+  border-bottom-color: #126C6A;
+}
+
+.belong-line-input::placeholder {
+  color: #8A9AA0;
+  opacity: 0.85;
+}
+
+.belong-line-error {
+  grid-column: 1 / -1;
+  margin-top: 0;
+}
+
 .inside-note { right: 3%; bottom: 4%; transform: rotate(3deg); }
 
 .month-date-badge {
