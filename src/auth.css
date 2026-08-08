@@ -44,9 +44,7 @@
   color: var(--ink);
 }
 
-.ledger-auth-sheet--wide {
-  width: min(100%, 760px);
-}
+.ledger-auth-sheet--wide { width: min(100%, 760px); }
 
 .ledger-auth-sheet--wide h1 {
   margin: 0 0 12px;
@@ -57,9 +55,7 @@
   color: var(--ink);
 }
 
-.household-gate-lead {
-  margin-bottom: 8px;
-}
+.household-gate-lead { margin-bottom: 8px; }
 
 .ledger-auth-header {
   text-align: center;
@@ -103,14 +99,10 @@
   color: var(--ink);
 }
 
-.ledger-auth-field {
-  position: relative;
-}
-
 .ledger-auth-input {
   width: 100%;
   min-height: 48px;
-  padding: 0 44px 0 0;
+  padding: 0 4px;
   border: none;
   border-bottom: 2px solid #9DB0B4;
   background: transparent;
@@ -128,15 +120,6 @@
   border-bottom-color: var(--deep);
 }
 
-.ledger-auth-field-icon {
-  position: absolute;
-  right: 4px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #8A9AA0;
-  pointer-events: none;
-}
-
 .ledger-auth-btn {
   display: inline-flex;
   align-items: center;
@@ -150,15 +133,19 @@
   border: 2px solid transparent;
   font: inherit;
   font-weight: 700;
+  cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
 }
 
-.ledger-auth-btn:focus-visible {
+.ledger-auth-btn:focus-visible,
+.ledger-auth-text-btn:focus-visible,
+.ledger-auth-input:focus-visible {
   outline: 2px solid var(--deep);
   outline-offset: 3px;
 }
 
-.ledger-auth-btn:disabled {
+.ledger-auth-btn:disabled,
+.ledger-auth-text-btn:disabled {
   opacity: 0.65;
   cursor: not-allowed;
 }
@@ -172,12 +159,6 @@
 .ledger-auth-btn-primary:hover:not(:disabled) {
   background: #0f5a58;
   border-color: #0f5a58;
-}
-
-.ledger-auth-btn-primary .ledger-auth-field-icon {
-  position: static;
-  transform: none;
-  color: currentColor;
 }
 
 .ledger-auth-divider {
@@ -204,11 +185,34 @@
   color: var(--ink);
   background: #FFFDF8;
   border-color: #D8CFC0;
+  margin-top: 0;
 }
 
 .ledger-auth-btn-google:hover:not(:disabled) {
   background: #FFF9ED;
   border-color: #C4B49E;
+}
+
+.ledger-auth-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 18px;
+  margin-top: 16px;
+}
+
+.ledger-auth-text-btn {
+  appearance: none;
+  border: 0;
+  padding: 3px 0;
+  background: transparent;
+  color: var(--deep);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
 }
 
 .ledger-auth-message {
@@ -260,23 +264,8 @@
 }
 
 @media (max-width: 520px) {
-  .ledger-auth-shell {
-    padding: 20px 14px;
-  }
-
-  .ledger-auth-doodle-vine {
-    left: -4%;
-    bottom: 4%;
-    opacity: 0.28;
-  }
-
-  .ledger-auth-doodle-flower {
-    right: -2%;
-    top: 6%;
-    opacity: 0.28;
-  }
-
-  .ledger-auth-lead {
-    font-size: 16px;
-  }
+  .ledger-auth-shell { padding: 20px 14px; }
+  .ledger-auth-doodle-vine { left: -4%; bottom: 4%; opacity: 0.28; }
+  .ledger-auth-doodle-flower { right: -2%; top: 6%; opacity: 0.28; }
+  .ledger-auth-lead { font-size: 16px; }
 }
