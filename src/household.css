@@ -233,6 +233,10 @@
   border: 1px solid rgba(233, 223, 209, 0.95);
 }
 
+.household-invite-result button.is-copied {
+  background: #2E7D6F;
+}
+
 .household-switcher > span {
   font-size: 0.78rem;
   font-weight: 700;

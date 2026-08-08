@@ -18,7 +18,9 @@ function ChevronIcon({ open }) {
 export function HouseholdAccessMenu() {
     const household = useHousehold();
     const [open, setOpen] = useState(false);
+    const [copied, setCopied] = useState(false);
     const menuRef = useRef(null);
+    const copiedTimerRef = useRef(null);
 
     useEffect(() => {
         if (!open) return undefined;
@@ -40,6 +42,18 @@ export function HouseholdAccessMenu() {
         };
     }, [open]);
 
+    useEffect(() => () => {
+        if (copiedTimerRef.current) window.clearTimeout(copiedTimerRef.current);
+    }, []);
+
+    useEffect(() => {
+        if (!open) setCopied(false);
+    }, [open]);
+
+    useEffect(() => {
+        setCopied(false);
+    }, [household?.createdInvite?.url]);
+
     if (!household?.activeHousehold) return null;
 
     const {
@@ -53,6 +67,13 @@ export function HouseholdAccessMenu() {
         chooseHousehold,
         signOut,
     } = household;
+
+    const handleCopyLink = async () => {
+        await copyInviteLink();
+        setCopied(true);
+        if (copiedTimerRef.current) window.clearTimeout(copiedTimerRef.current);
+        copiedTimerRef.current = window.setTimeout(() => setCopied(false), 2000);
+    };
 
     return (
         <>
@@ -93,7 +114,14 @@ export function HouseholdAccessMenu() {
                             <div className="household-invite-result" role="status">
                                 <p>Share this one-time link with someone you trust.</p>
                                 <input readOnly value={createdInvite.url} aria-label="Household invitation link" />
-                                <button type="button" onClick={copyInviteLink}>Copy link</button>
+                                <button
+                                    type="button"
+                                    className={copied ? 'is-copied' : ''}
+                                    onClick={handleCopyLink}
+                                    aria-live="polite"
+                                >
+                                    {copied ? 'Copied!' : 'Copy link'}
+                                </button>
                                 <small>Expires {new Date(createdInvite.expiresAt).toLocaleString()}.</small>
                             </div>
                         )}
