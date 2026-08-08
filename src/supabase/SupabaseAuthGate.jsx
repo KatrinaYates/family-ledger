@@ -1,7 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { supabase } from './client.js';
 import { AuthShell } from './AuthShell.jsx';
 import { getAuthRedirectUrl } from './getAuthRedirectUrl.js';
+
+const GOOGLE_CLIENT_ID = '186838960462-6l3m806m1jfkim6q1bmn7o9c0s7d16s5.apps.googleusercontent.com';
+const GOOGLE_IDENTITY_SCRIPT_ID = 'family-ledger-google-identity';
 
 function LockIcon() {
     return (
@@ -12,15 +15,29 @@ function LockIcon() {
     );
 }
 
-function GoogleIcon() {
-    return (
-        <svg className="ledger-auth-google-icon" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M21.6 12.23c0-.82-.07-1.42-.22-2.05H12v3.72h5.52c-.11.92-.71 2.3-2.04 3.23l-.02.12 2.96 2.3.21.02c1.89-1.74 2.98-4.3 2.98-7.34z" fill="#4285F4" />
-            <path d="M12 22c2.7 0 4.96-.89 6.61-2.43l-3.15-2.45c-.84.57-1.96.97-3.46.97-2.64 0-4.88-1.74-5.68-4.15l-.12.01-3.08 2.39-.04.11C3.87 19.84 7.65 22 12 22z" fill="#34A853" />
-            <path d="M6.32 14.05c-.22-.65-.35-1.35-.35-2.05s.13-1.4.33-2.05l-.01-.13-3.12-2.43-.1.05C2.42 9.36 2 10.63 2 12s.42 2.64 1.07 4.16l3.25-2.11z" fill="#FBBC05" />
-            <path d="M12 5.38c1.88 0 3.15.81 3.87 1.49l2.83-2.76C16.93 2.89 14.7 2 12 2 7.65 2 3.87 4.16 2.07 7.84l3.25 2.11C6.12 7.5 8.36 5.38 12 5.38z" fill="#EA4335" />
-        </svg>
-    );
+function loadGoogleIdentityScript() {
+    return new Promise((resolve, reject) => {
+        if (window.google?.accounts?.id) {
+            resolve(window.google);
+            return;
+        }
+
+        const existing = document.getElementById(GOOGLE_IDENTITY_SCRIPT_ID);
+        if (existing) {
+            existing.addEventListener('load', () => resolve(window.google), { once: true });
+            existing.addEventListener('error', () => reject(new Error('Could not load Google sign-in.')), { once: true });
+            return;
+        }
+
+        const script = document.createElement('script');
+        script.id = GOOGLE_IDENTITY_SCRIPT_ID;
+        script.src = 'https://accounts.google.com/gsi/client';
+        script.async = true;
+        script.defer = true;
+        script.onload = () => resolve(window.google);
+        script.onerror = () => reject(new Error('Could not load Google sign-in.'));
+        document.head.appendChild(script);
+    });
 }
 
 export function SupabaseAuthGate({ children }) {
@@ -33,6 +50,7 @@ export function SupabaseAuthGate({ children }) {
     const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [googleSubmitting, setGoogleSubmitting] = useState(false);
+    const googleButtonRef = useRef(null);
 
     useEffect(() => {
         let mounted = true;
@@ -51,6 +69,58 @@ export function SupabaseAuthGate({ children }) {
             listener.subscription.unsubscribe();
         };
     }, []);
+
+    useEffect(() => {
+        if (loading || session || !googleButtonRef.current) return undefined;
+
+        let cancelled = false;
+
+        loadGoogleIdentityScript()
+            .then((google) => {
+                if (cancelled || !google?.accounts?.id || !googleButtonRef.current) return;
+
+                google.accounts.id.initialize({
+                    client_id: GOOGLE_CLIENT_ID,
+                    use_fedcm_for_prompt: true,
+                    callback: async (credentialResponse) => {
+                        if (!credentialResponse?.credential) {
+                            setError('Google did not return a sign-in credential. Please try again.');
+                            return;
+                        }
+
+                        setError('');
+                        setMessage('');
+                        setGoogleSubmitting(true);
+
+                        const { error: googleError } = await supabase.auth.signInWithIdToken({
+                            provider: 'google',
+                            token: credentialResponse.credential,
+                        });
+
+                        setGoogleSubmitting(false);
+                        if (googleError) setError(googleError.message);
+                    },
+                });
+
+                googleButtonRef.current.replaceChildren();
+                google.accounts.id.renderButton(googleButtonRef.current, {
+                    type: 'standard',
+                    theme: 'outline',
+                    size: 'large',
+                    text: 'continue_with',
+                    shape: 'pill',
+                    logo_alignment: 'left',
+                    width: Math.min(400, Math.max(240, googleButtonRef.current.clientWidth || 360)),
+                });
+            })
+            .catch((loadError) => {
+                if (!cancelled) setError(loadError.message);
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [loading, session]);
 
     const resetFeedback = () => {
         setError('');
@@ -82,17 +152,6 @@ export function SupabaseAuthGate({ children }) {
         }
 
         setMessage(mode === 'signup' ? 'Account created.' : 'Signed in.');
-    };
-
-    const signInWithGoogle = async () => {
-        resetFeedback();
-        setGoogleSubmitting(true);
-        const { error: signInError } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: { redirectTo: getAuthRedirectUrl() },
-        });
-        setGoogleSubmitting(false);
-        if (signInError) setError(signInError.message);
     };
 
     const resetPassword = async () => {
@@ -137,16 +196,13 @@ export function SupabaseAuthGate({ children }) {
                 </p>
             </header>
 
-            <button
-                type="button"
-                className="ledger-auth-btn ledger-auth-btn-google"
-                onClick={signInWithGoogle}
-                disabled={busy}
+            <div
+                ref={googleButtonRef}
+                className={`ledger-auth-google-native${busy ? ' is-busy' : ''}`}
                 aria-busy={googleSubmitting || undefined}
             >
-                <GoogleIcon />
-                {googleSubmitting ? 'Redirecting…' : 'Continue with Google'}
-            </button>
+                <span>{googleSubmitting ? 'Signing in with Google…' : 'Loading Google sign-in…'}</span>
+            </div>
 
             <div className="ledger-auth-divider" role="separator"><span>or</span></div>
 
