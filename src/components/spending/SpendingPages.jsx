@@ -18,7 +18,7 @@ import { meetingKey } from '../../utils/meetingKeys';
 
 export function SpendingPages({ page, totalInSection, data, month }) {
   const { spending, meta } = data;
-  const monthLabel = month?.label || 'July';
+  const monthLabel = month?.label || meta?.month || 'This month';
   const year = meta?.year || 2026;
 
   if (page === 1) {
@@ -41,13 +41,13 @@ export function SpendingPages({ page, totalInSection, data, month }) {
             <MetricKpiRow items={[
               {
                 icon: '🛍️',
-                label: 'July spending',
+                label: `${monthLabel} spending`,
                 value: spending.total,
                 chip: { text: 'Excl. transfers', tone: 'blue' },
               },
               {
                 icon: '📅',
-                label: 'June spending',
+                label: 'Prior month spending',
                 value: spending.priorMonth,
                 chip: { text: 'Prior month', tone: 'purple' },
               },
@@ -79,19 +79,19 @@ export function SpendingPages({ page, totalInSection, data, month }) {
     );
   }
 
-  const { changes, bigPurchases, questions } = spending;
+  const { changes, bigPurchases, questions, changesPage } = spending;
   return (
     <div className="snapshot-page spending-page-2">
       <PageWithNotes pageId="spending-2">
         <SectionPageHeader
           eyebrow={`${monthLabel} ${year} · Spending · Page ${page} of ${totalInSection}`}
           title="Changes & Purchases"
-          subtitle="What shifted from June and which purchases stood out."
+          subtitle={changesPage?.subtitle || 'What shifted from the prior month and which purchases stood out.'}
           badge="Final spending page"
           badgeVariant="final"
         />
         <div className="story-split-grid spending-page-2-grid">
-          <PanelCard title="Largest changes from June" className="spending-changes-panel" scrollLabel="Category changes">
+          <PanelCard title="Largest changes from prior month" className="spending-changes-panel" scrollLabel="Category changes">
             <ChangeTable rows={changes} />
           </PanelCard>
           <div className="spending-page-2-side">

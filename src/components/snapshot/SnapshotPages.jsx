@@ -22,7 +22,7 @@ import { LockMonthControl } from '../handoff/LockMonthControl';
 
 export function SnapshotPages({ page, totalInSection, data, month }) {
   const { snapshot, meta } = data;
-  const monthLabel = month?.label || 'July';
+  const monthLabel = month?.label || meta?.month || 'This month';
   const year = meta?.year || 2026;
 
   if (page === 1) {
@@ -87,7 +87,7 @@ export function SnapshotPages({ page, totalInSection, data, month }) {
               footer={(
                 <>
                   <ContributionBlock
-                    label="July contributions recorded"
+                    label={`${monthLabel} contributions recorded`}
                     value={retirement.monthContributions ?? retirement.julyContributions}
                     note={retirement.contributionNote}
                   />

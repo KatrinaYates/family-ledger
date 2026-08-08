@@ -86,6 +86,7 @@ try {
   const blank = createBlankLedgerMonth('2026-08');
   assert(blank.version === 1, 'blank month should start at version 1');
   assert(blank.updatedAt === null, 'blank month updatedAt should be null');
+  assert(blank.generation?.source === 'manual', 'blank production month should use generation.source manual');
   mergeMonthView(enrichLedgerMonth(blank));
 
   assert(!fs.existsSync(path.join(monthsDir, '2026-10.sample.js')), 'October sample file should be absent');

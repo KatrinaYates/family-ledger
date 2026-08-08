@@ -18,7 +18,7 @@ import { meetingKey } from '../../utils/meetingKeys';
 
 export function StoryPages({ page, totalInSection, data, month }) {
   const { story, meta } = data;
-  const monthLabel = month?.label || 'July';
+  const monthLabel = month?.label || meta?.month || 'This month';
   const year = meta?.year || 2026;
 
   if (page === 1) {
@@ -93,7 +93,7 @@ export function StoryPages({ page, totalInSection, data, month }) {
         <div className="snapshot-grid-main story-ending-main">
           <SummaryPanel title={story.explanation.title} rows={endingPage.explanationRows} />
           <aside className="snapshot-side">
-            <StickyCard label="July retirement" tone="win">
+            <StickyCard label={`${monthLabel} retirement`} tone="win">
               <p><strong>{investments.monthContributions ?? investments.julyContributions}</strong> contributed across employee, match, profit-sharing, and after-tax.</p>
             </StickyCard>
             <StickyCard label="Still unclear" tone="missing">

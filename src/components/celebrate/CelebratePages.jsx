@@ -12,7 +12,7 @@ import { PageWithNotes } from '../meeting/MeetingFields';
 
 export function CelebratePages({ page, totalInSection, data, month }) {
   const { celebrate, meta } = data;
-  const monthLabel = month?.label || 'July';
+  const monthLabel = month?.label || meta?.month || 'This month';
   const year = meta?.year || 2026;
 
   const familyRewardField = useMeetingNotes(celebrateKey(month.id, 'reward'));

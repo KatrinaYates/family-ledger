@@ -118,6 +118,13 @@
   min-height: 100%;
 }
 
+.inside-cover--loading .page-loader {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  padding-top: 0;
+}
+
 .writing-loader {
   width: min(360px, 70vw);
   display: grid;

@@ -3,6 +3,12 @@ function monthLabel(meta) {
   return meta?.month?.trim() || 'the month';
 }
 
+function formatChangeLabel(change, changePercent) {
+  if (!change || change === '—') return '—';
+  if (!changePercent || changePercent === '—') return String(change);
+  return `${change} (${changePercent})`;
+}
+
 export function enrichSpending(spending = {}, meta) {
   const label = monthLabel(meta);
   const priorMonth = spending.priorMonth ?? '—';
@@ -18,13 +24,13 @@ export function enrichSpending(spending = {}, meta) {
     questions: spending.questions ?? [],
     overview: {
       subtitle: `Where money flowed in ${label} — excluding transfers so spending is not double-counted.`,
-      momLabel: `vs ${priorMonth}`,
-      changeLabel: `+${change} (${changePercent})`,
+      momLabel: 'vs prior month',
+      changeLabel: formatChangeLabel(change, changePercent),
       continuedText: 'Category changes and big purchases continue on the next page →',
     },
     changesPage: {
-      subtitle: 'What shifted from June, which purchases stood out, and what to discuss together.',
-      closingInsight: `Much of ${label}'s increase came from home repairs, vehicle repairs, and education — but flexible categories also rose.`,
+      subtitle: 'What shifted from the prior month, which purchases stood out, and what to discuss together.',
+      closingInsight: spending.closingInsight?.trim() || spending.changesPage?.closingInsight?.trim() || '',
       footerText: 'End of Spending · Next: CFO Recs',
     },
   };

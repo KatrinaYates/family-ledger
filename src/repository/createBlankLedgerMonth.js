@@ -15,7 +15,7 @@ export function createBlankLedgerMonth(monthId) {
             lockedAt: null,
         },
         generation: {
-            source: 'sample',
+            source: 'manual',
             version: 1,
             generatedAt: null,
         },

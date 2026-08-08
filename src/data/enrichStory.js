@@ -35,6 +35,12 @@ function itemsFromSection(section) {
   return [];
 }
 
+function explanationRowText(item) {
+  if (item.note?.trim()) return item.note.trim();
+  if (item.amount && item.amount !== '—') return String(item.amount);
+  return '';
+}
+
 export function enrichStory(story = {}, meta) {
   const label = monthLabel(meta);
   const income = story.income ?? { total: '—', period: '', groups: [] };
@@ -85,37 +91,39 @@ export function enrichStory(story = {}, meta) {
           label: 'Total inflows',
           value: income.total,
           chip: { text: 'Tagged income', tone: 'green' },
-          note: income.period,
+          note: income.period?.trim() || '',
         },
         {
           icon: '🏢',
           label: 'Regular take-home',
           value: regularIncome,
           chip: { text: 'Recurring', tone: 'blue' },
-          note: 'Two recurring payroll deposits.',
+          note: '',
         },
         {
           icon: '🎖️',
           label: 'Benefits income',
           value: benefitsIncome,
-          chip: { text: 'Monthly stipend', tone: 'purple' },
-          note: 'Stable monthly stipend.',
+          chip: { text: 'Benefits', tone: 'purple' },
+          note: '',
         },
         {
           icon: '🎓',
           label: 'One-time income',
           value: oneTimeIncome,
           chip: { text: 'Non-recurring', tone: 'yellow' },
-          note: 'Side payout — not normal monthly income.',
-          indicator: '!',
+          note: '',
+          indicator: oneTimeIncome !== '$0' && oneTimeIncome !== '—' ? '!' : undefined,
         },
       ],
       continuedText: 'Bills and lifestyle spending continue on the next page →',
     },
     billsPage: {
       subtitle: 'Core monthly obligations on one side, flexible lifestyle spending on the other.',
-      billsInsight: 'These are the expenses the household expects each month — mortgage, utilities, loan payments, and essentials.',
-      lifestyleInsight: 'Flexible categories deserve a separate conversation from fixed bills.',
+      billsInsight: bills.insight?.trim()
+        || 'These are the expenses the household expects each month.',
+      lifestyleInsight: lifestyle.insight?.trim()
+        || 'Flexible categories deserve a separate conversation from fixed bills.',
       continuedText: `Ending position and what explains ${label} continue on the next page →`,
     },
     endingPage: {
@@ -128,10 +136,10 @@ export function enrichStory(story = {}, meta) {
       explanationRows: (explanation.items ?? []).map((item) => ({
         icon: item.amount === '—' ? '📊' : '💸',
         title: item.name,
-        text: item.amount === '—' ? 'Higher than June' : item.amount,
+        text: explanationRowText(item),
       })),
       footerText: 'End of Monthly Story · Next: Spending',
-      closingInsight: explanation.closing ?? '',
+      closingInsight: explanation.closing?.trim() || '',
     },
   };
 }

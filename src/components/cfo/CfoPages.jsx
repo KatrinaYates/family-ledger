@@ -13,7 +13,7 @@ import { meetingKey } from '../../utils/meetingKeys';
 
 export function CfoPages({ page, totalInSection, data, month }) {
   const { cfo, meta } = data;
-  const monthLabel = month?.label || 'July';
+  const monthLabel = month?.label || meta?.month || 'This month';
   const year = meta?.year || 2026;
   const priority = cfo.priorities[page - 1];
 

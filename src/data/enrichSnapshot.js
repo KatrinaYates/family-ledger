@@ -1,6 +1,37 @@
+function parseAmount(value) {
+  return Number(String(value).replace(/[^0-9.-]/g, '')) || 0;
+}
+
+function statusChip(status, fallbackText, fallbackTone) {
+  const text = status?.trim();
+  if (!text) return { text: fallbackText, tone: fallbackTone };
+  return { text, tone: fallbackTone };
+}
+
+function insightSummaryRows(snapshot) {
+  const rows = [];
+  if (snapshot.netWorth?.insight?.trim()) {
+    rows.push({ icon: '📈', title: 'Net worth', text: snapshot.netWorth.insight.trim() });
+  }
+  if (snapshot.cash?.insight?.trim()) {
+    rows.push({ icon: '💵', title: 'Cash', text: snapshot.cash.insight.trim() });
+  }
+  if (snapshot.debt?.insight?.trim()) {
+    rows.push({ icon: '💳', title: 'Debt', text: snapshot.debt.insight.trim() });
+  }
+  if (snapshot.retirement?.insight?.trim()) {
+    rows.push({ icon: '🌱', title: 'Retirement', text: snapshot.retirement.insight.trim() });
+  }
+  return rows;
+}
+
 /** Derives snapshot page presentation data from core financial figures. */
 export function enrichSnapshot(snapshot = {}, meta) {
   const monthName = meta?.month?.trim() || 'the month';
+  const contributions = snapshot.retirement?.monthContributions
+    ?? snapshot.retirement?.julyContributions
+    ?? '—';
+
   const cashAccounts = (snapshot.cash?.accounts ?? []).map((account) => ({
     ...account,
     ...cashAccountMeta(account.name),
@@ -9,6 +40,14 @@ export function enrichSnapshot(snapshot = {}, meta) {
   const retirementSorted = [...(snapshot.retirement?.accounts ?? [])].sort(
     (a, b) => parseAmount(b.amount) - parseAmount(a.amount),
   );
+
+  const summaryRows = snapshot.overview?.summaryRows?.length
+    ? snapshot.overview.summaryRows
+    : insightSummaryRows(snapshot);
+
+  const missingBeforeLock = snapshot.missingBeforeLock
+    ?? snapshot.overview?.missingBeforeLock
+    ?? [];
 
   return {
     ...snapshot,
@@ -26,58 +65,38 @@ export function enrichSnapshot(snapshot = {}, meta) {
           icon: '📈',
           label: 'Connected Net Worth',
           value: snapshot.netWorth?.value ?? '—',
-          chip: { text: 'Positive', tone: 'green' },
-          note: 'Cash plus retirement minus connected debt.',
+          chip: statusChip(snapshot.netWorth?.status, 'Review', 'green'),
+          note: snapshot.netWorth?.insight?.trim() || snapshot.netWorth?.caveat?.trim() || '',
         },
         {
           icon: '💵',
           label: 'Connected Cash',
           value: snapshot.cash?.total ?? '—',
-          chip: { text: 'Mostly assigned', tone: 'blue' },
-          note: 'Most cash is reserved for bills or children\'s savings.',
+          chip: statusChip(snapshot.cash?.status, 'Review', 'blue'),
+          note: snapshot.cash?.insight?.trim() || '',
         },
         {
           icon: '🛟',
           label: 'Emergency Fund',
           value: snapshot.emergencyFund?.value ?? '—',
-          chip: { text: 'Needs definition', tone: 'yellow' },
-          note: 'No account is clearly designated as the emergency fund.',
-          indicator: '!',
+          chip: statusChip(snapshot.emergencyFund?.status, 'Review', 'yellow'),
+          note: snapshot.emergencyFund?.insight?.trim() || snapshot.emergencyFund?.description?.trim() || '',
+          indicator: snapshot.emergencyFund?.status ? undefined : '!',
         },
         {
           icon: '🌱',
           label: 'Retirement',
           value: snapshot.retirement?.total ?? '—',
-          chip: { text: 'Strongest area', tone: 'purple' },
-          note: `About ${snapshot.retirement?.monthContributions ?? snapshot.retirement?.julyContributions ?? '—'} was contributed during ${meta?.month ?? 'the month'}.`,
+          chip: statusChip(snapshot.retirement?.status, 'Review', 'purple'),
+          note: snapshot.retirement?.insight?.trim()
+            || (contributions !== '—' ? `About ${contributions} was contributed during ${monthName}.` : ''),
         },
       ],
-      summaryRows: [
-        {
-          icon: '🏠',
-          title: 'Connected net worth only',
-          text: 'Home value, mortgage balance, and unconnected accounts are not included.',
-        },
-        {
-          icon: '💳',
-          title: 'Debt remains the biggest drag',
-          text: 'Connected debt is nearly as large as the retirement balance.',
-        },
-        {
-          icon: '🧾',
-          title: 'Cash is not the same as available cash',
-          text: 'The Bills account and children\'s savings make the total look more flexible than it is.',
-        },
-      ],
-      pulseInsight: 'income remained strong and retirement kept growing, but high-interest debt and limited unassigned cash reduce flexibility.',
-      biggestWin: `We still invested about ${snapshot.retirement?.monthContributions ?? snapshot.retirement?.julyContributions ?? '—'} for retirement during an expensive month. ✨`,
-      biggestFocus: 'Stop high-interest card growth and define a real emergency fund.',
-      missingBeforeLock: [
-        'Home value and mortgage',
-        'Emergency-fund account',
-        'Card APR details',
-        'Brokerage link refresh',
-      ],
+      summaryRows,
+      pulseInsight: snapshot.overview?.pulseInsight ?? '',
+      biggestWin: meta?.biggestWin?.trim() || snapshot.overview?.biggestWin?.trim() || '',
+      biggestFocus: meta?.biggestFocus?.trim() || snapshot.overview?.biggestFocus?.trim() || '',
+      missingBeforeLock,
       continuedText: 'Cash and retirement continue on the next page →',
     },
     cash: {
@@ -85,7 +104,7 @@ export function enrichSnapshot(snapshot = {}, meta) {
       total: snapshot.cash?.total ?? '—',
       totalExact: snapshot.cash?.totalExact || snapshot.cash?.total || '—',
       accounts: cashAccounts,
-      betterKpiInsight: 'separate bills funded, available spending, emergency savings, children\'s savings, and sinking funds.',
+      betterKpiInsight: snapshot.cash?.insight?.trim() || '',
       continuedText: 'Debt details and final status continue on the next page →',
     },
     retirement: {
@@ -93,14 +112,17 @@ export function enrichSnapshot(snapshot = {}, meta) {
       total: snapshot.retirement?.total ?? '—',
       totalExact: snapshot.retirement?.totalExact || snapshot.retirement?.total || '—',
       accountsSorted: retirementSorted,
-      contributionNote: 'Employee contributions, employer match, profit-sharing, and after-tax contributions.',
+      contributionNote: snapshot.retirement?.contributionNote
+        || 'Employee contributions, employer match, profit-sharing, and after-tax contributions.',
     },
     emergencyFund: {
       ...(snapshot.emergencyFund ?? {}),
       value: snapshot.emergencyFund?.value ?? '—',
-      headline: 'Needs a household definition',
-      description: snapshot.emergencyFund?.description || `The only clearly identifiable general savings balance is ${snapshot.emergencyFund?.value ?? '—'}, but the Bills account may contain additional cushion.`,
-      checks: [
+      headline: snapshot.emergencyFund?.status?.trim() || 'Define together',
+      description: snapshot.emergencyFund?.description?.trim()
+        || snapshot.emergencyFund?.insight?.trim()
+        || '',
+      checks: snapshot.emergencyFund?.checks ?? [
         'Choose the account',
         'Confirm the balance',
         'Set the first target',
@@ -110,27 +132,19 @@ export function enrichSnapshot(snapshot = {}, meta) {
     debtPage: {
       subtitle: `A complete view of connected debt, key risks, and what must be decided before ${monthName} is locked.`,
       overallStatus: {
-        title: 'Positive, but debt-heavy',
-        text: snapshot.netWorth?.insight ?? '',
+        title: snapshot.netWorth?.status?.trim() || 'Review connected balances',
+        text: snapshot.netWorth?.insight?.trim() || snapshot.debt?.insight?.trim() || '',
       },
       healthScore: {
-        title: 'Not included yet',
-        text: 'Wait until the formula is transparent and tied to real financial behaviors.',
+        title: snapshot.healthScore?.title || 'Not included yet',
+        text: snapshot.healthScore?.text
+          || 'Add a health score when the formula is transparent and tied to real financial behaviors.',
       },
-      readyToLock: [
-        'Mortgage and home value are added',
-        'Emergency savings are defined',
-        'Card rates are confirmed',
-        'Brokerage link is current',
-      ],
-      finalInsight: `${monthName}'s strongest foundation is retirement. ${monthName}'s clearest risk is expensive revolving debt.`,
+      readyToLock: snapshot.debtPage?.readyToLock ?? missingBeforeLock,
+      finalInsight: snapshot.debtPage?.finalInsight?.trim() || snapshot.debt?.insight?.trim() || '',
       footerText: 'End of Financial Snapshot · Next: Monthly Story',
     },
   };
-}
-
-function parseAmount(value) {
-  return Number(String(value).replace(/[^0-9.-]/g, '')) || 0;
 }
 
 function cashAccountMeta(name) {

@@ -11,7 +11,7 @@ import { EditableQuestions, PageWithNotes } from './MeetingFields';
 
 export function MeetingPages({ page, totalInSection, data, month }) {
   const { meeting, meta } = data;
-  const monthLabel = month?.label || 'July';
+  const monthLabel = month?.label || meta?.month || 'This month';
   const year = meta?.year || 2026;
 
   const surprisedField = useMeetingNotes(meetingConversationKey(month.id, 'surprised'));

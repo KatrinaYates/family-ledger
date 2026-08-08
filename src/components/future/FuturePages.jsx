@@ -13,7 +13,7 @@ import { meetingKey } from '../../utils/meetingKeys';
 
 export function FuturePages({ page, totalInSection, data, month }) {
   const { future, meta } = data;
-  const monthLabel = month?.label || 'July';
+  const monthLabel = month?.label || meta?.month || 'This month';
   const year = meta?.year || 2026;
   const { retirement } = future;
 

@@ -92,6 +92,7 @@ export function applyBlankSourceDefaults(sourceData = {}, monthId) {
                 insight: '',
                 ...snapshot.debt,
             },
+            missingBeforeLock: [],
         },
         story: {
             income: { total: '—', period: '', groups: [] },

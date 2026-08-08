@@ -18,7 +18,7 @@ import { LockMonthControl } from './LockMonthControl';
 
 export function HandoffPages({ page, totalInSection, data, month }) {
   const { handoff, meta } = data;
-  const monthLabel = month?.label || 'July';
+  const monthLabel = month?.label || meta?.month || 'This month';
   const year = meta?.year || 2026;
 
   const decisionsMadeField = useMeetingNotes(handoffKey(month.id, 'decisions'));

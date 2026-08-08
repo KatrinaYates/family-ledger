@@ -12,6 +12,7 @@ import { normalizePageId } from './utils/normalizePageId';
 import { createBlankLedgerMonth } from './repository/createBlankLedgerMonth.js';
 import { dispatchLedgerMonthsUpdated } from './utils/meetingEvents';
 import { useBootLoading, LedgerLoader } from './context/BootGate.jsx';
+import { useInsideCoverFields } from './hooks/useInsideCoverFields';
 import { SnapshotPages } from './components/snapshot/SnapshotPages';
 import { StoryPages } from './components/story/StoryPages';
 import { SpendingPages } from './components/spending/SpendingPages';
@@ -226,11 +227,15 @@ export default function App() {
   const resolvedMonthId = resolvedPage.monthId || activeMonth;
   const { data: monthData, loading: monthLoading, error: monthError } = useLedgerMonth(resolvedMonthId);
 
+  const insideCoverReady = !monthsLoading && !monthLoading && Boolean(monthData);
+  const insideCover = useInsideCoverFields(monthData?.meta, { enabled: insideCoverReady });
+
   useEffect(() => {
     if (!monthsLoading && monthData) setInitialBootComplete(true);
   }, [monthsLoading, monthData]);
 
   useBootLoading('month', !initialBootComplete && monthLoading);
+  useBootLoading('inside-cover', insideCover.loading && insideCoverReady);
 
   const monthLoadError = Boolean(
     resolvedPage.monthId &&
@@ -337,7 +342,7 @@ export default function App() {
     [resolvedPage, pageId],
   );
 
-  if (monthsLoading || (!initialBootComplete && monthLoading)) return null;
+  if (monthsLoading || (!initialBootComplete && monthLoading) || (insideCoverReady && insideCover.loading)) return null;
 
   if (monthsError) {
     return (
@@ -353,7 +358,7 @@ export default function App() {
   if (resolvedPage.type === 'cover') {
     content = <AnnualCover />;
   } else if (resolvedPage.type === 'inside') {
-    content = <InsideCover month={displayMonth} meta={monthData?.meta} />;
+    content = <InsideCover month={displayMonth} insideCover={insideCover} />;
   } else if (resolvedPage.type === 'month') {
     if (chapterMonthId && monthLoading) {
       content = (
