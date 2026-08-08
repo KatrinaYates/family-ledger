@@ -275,14 +275,6 @@
   color: #8A9AA0;
 }
 
-.ledger-auth-status {
-  margin: 0;
-  text-align: center;
-  font-size: 18px;
-  font-weight: 600;
-  color: #49606A;
-}
-
 @media (max-width: 520px) {
   .ledger-auth-shell { padding: 20px 14px; }
   .ledger-auth-doodle-vine { left: -4%; bottom: 4%; opacity: 0.28; }

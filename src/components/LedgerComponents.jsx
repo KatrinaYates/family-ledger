@@ -80,20 +80,16 @@ export function SpiralBinding() {
 export function MonthTabs({ months, availableMonthIds = [], activeMonth, onSelect }) {
   return (
       <nav className="month-tabs" aria-label="Month chapters">
-          {months.map((month) => {
-              const hasData = availableMonthIds.includes(month.id);
-              const isPreview = !hasData;
-              return (
+          {months.map((month) => (
               <button
                   key={month.id}
-                  className={`month-tab ${month.slug} ${activeMonth === month.id ? "active" : ""} ${isPreview ? "future" : ""}`}
+                  className={`month-tab ${month.slug} ${activeMonth === month.id ? "active" : ""}`}
                   onClick={() => onSelect(month.id)}
                   aria-current={activeMonth === month.id ? "page" : undefined}
-                  aria-label={`${month.label} ${month.year ?? 2026}${isPreview ? ", preview only" : ""}`}>
+                  aria-label={`${month.label} ${month.year ?? 2026}`}>
                   {month.short}
               </button>
-              );
-          })}
+          ))}
       </nav>
   );
 }
@@ -270,8 +266,7 @@ export function FocusPocket({title, children}) {
     );
 }
 
-export function MonthChapterPage({month, chapterMeta, hasLedgerData = true}) {
-    if (!hasLedgerData) return <FutureMonthPage month={month} />;
+export function MonthChapterPage({ month, chapterMeta }) {
     const meetingDate = chapterMeta?.meetingDate || `${month.label} 5, ${month.year ?? 2026}`;
     const meetingLength = chapterMeta?.meetingLength || '55 minutes';
     const intention = chapterMeta?.intention || chapterMeta?.motto || 'Be curious, not critical.';
@@ -301,40 +296,6 @@ export function MonthChapterPage({month, chapterMeta, hasLedgerData = true}) {
             </StickyNote>
             <FocusPocket title={`${month.label} Focus`}>
                 <p>{focus}</p>
-            </FocusPocket>
-        </div>
-    );
-}
-
-export function FutureMonthPage({month}) {
-    return (
-        <div className="future-month" style={{"--month-a": month.colors[0], "--month-b": month.colors[1], "--month-c": month.colors[2]}}>
-            <div className="month-band" />
-            <div className="month-content">
-                <p>CHAPTER {month.number}</p>
-                <h1 className="notebook-page-title" tabIndex="-1">
-                    {month.label}
-                    <br />
-                    {month.year ?? 2026}
-                </h1>
-                <div className="chapter-sub">This chapter is in the catalog, but no ledger data file exists yet.</div>
-                <p className="ledger-preview-notice">
-                    No ledger data found for <code>{month.id}</code>. Add{' '}
-                    <code>{`src/data/months/${month.id}.sample.js`}</code> or a gitignored local file to open the full notebook.
-                </p>
-            </div>
-            <Polaroid month={month} className="chapter-polaroid" />
-            <StickyNote className="chapter-note">
-                {month.message ?? 'Coming soon.'}
-                <br />
-                <b>{month.promise ?? 'We will open this chapter together.'}</b>
-            </StickyNote>
-            <FocusPocket title={`${month.label} Preview`}>
-                <ul className="focus-pocket-list">
-                    {(month.preview ?? []).map((line) => (
-                        <li key={line}>{line}</li>
-                    ))}
-                </ul>
             </FocusPocket>
         </div>
     );

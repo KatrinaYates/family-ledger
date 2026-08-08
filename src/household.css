@@ -26,7 +26,7 @@
   width: 100%;
   min-height: 44px;
   padding: 10px 12px;
-  border: 1px solid rgba(45, 53, 72, 0.28);
+  border: 1px solid rgba(157, 176, 180, 0.65);
   border-radius: 10px;
   background: #fffdf8;
   color: var(--ink, #2d3548);
@@ -34,10 +34,10 @@
 
 .household-onboarding-panel button,
 .household-choice-list button,
-.household-access-panel button {
+.household-access-panel button:not(.household-signout) {
   min-height: 44px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 999px;
   padding: 10px 14px;
   font: inherit;
   font-weight: 700;
@@ -45,7 +45,7 @@
 }
 
 .household-onboarding-panel button {
-  background: var(--deep, #20334a);
+  background: var(--deep);
   color: white;
 }
 
@@ -62,12 +62,14 @@
   background: rgba(255, 255, 255, 0.7);
   color: var(--ink, #2d3548);
   border: 1px solid rgba(45, 53, 72, 0.16);
+  border-radius: 12px;
 }
 
 .household-error {
   margin: 14px 0 0;
   color: #9b2f2f;
   font-weight: 700;
+  font-size: 0.9rem;
 }
 
 .household-signout {
@@ -87,65 +89,166 @@
 }
 
 .household-access-menu {
+  position: relative;
+  z-index: 41;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.household-access-backdrop {
   position: fixed;
-  z-index: 80;
-  top: 10px;
-  right: 14px;
-  color: var(--ink, #2d3548);
+  inset: 0;
+  z-index: 35;
+  background: transparent;
 }
 
-.household-access-menu > summary {
-  list-style: none;
-  cursor: pointer;
+.household-access-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 231, 164, 0.38);
   border-radius: 999px;
-  padding: 7px 12px;
-  background: rgba(255, 250, 239, 0.94);
-  border: 1px solid rgba(45, 53, 72, 0.16);
-  box-shadow: 0 4px 14px rgba(28, 27, 24, 0.12);
-  font-size: 0.8rem;
-  font-weight: 800;
+  background: rgba(255, 250, 239, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  color: #FFF9ED;
+  font: inherit;
+  cursor: pointer;
+  opacity: 1;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.household-access-menu > summary::-webkit-details-marker { display: none; }
+.household-access-trigger:hover,
+.household-access-menu.is-open .household-access-trigger {
+  background: rgba(255, 250, 239, 0.22);
+  border-color: rgba(255, 231, 164, 0.55);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.household-access-trigger:focus-visible {
+  outline: 2px solid #ffe7a4;
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.household-access-trigger-text {
+  display: grid;
+  gap: 1px;
+  text-align: right;
+  max-width: min(180px, 34vw);
+}
+
+.household-access-trigger-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #ffe7a4;
+  opacity: 0.9;
+}
+
+.household-access-trigger-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.household-access-chevron {
+  flex-shrink: 0;
+  opacity: 0.75;
+  transition: transform 0.15s ease;
+}
+
+.household-access-chevron.is-open {
+  transform: rotate(180deg);
+}
 
 .household-access-panel {
   position: absolute;
   right: 0;
-  top: calc(100% + 8px);
-  width: min(330px, calc(100vw - 28px));
+  top: calc(100% + 10px);
+  z-index: 40;
+  width: min(330px, calc(100vw - 24px));
   padding: 18px;
   border-radius: 16px;
-  background: #fffaf0;
-  border: 1px solid rgba(45, 53, 72, 0.16);
-  box-shadow: 0 16px 40px rgba(30, 28, 24, 0.2);
+  border: 1px solid #E9DFD1;
+  background:
+    var(--paper-grain),
+    linear-gradient(135deg, #FFFDF8, #FFF9ED);
+  background-size: 200px 200px, auto;
+  background-blend-mode: multiply, normal;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.24);
+  color: var(--ink);
+}
+
+.household-access-panel-kicker {
+  margin: 0 0 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #49606A;
+}
+
+.household-access-panel-title {
+  margin: 0 0 8px;
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink);
 }
 
 .household-access-panel form,
 .household-invite-result,
-.household-switcher {
+.household-switcher,
+.household-invite-actions {
   display: grid;
   gap: 8px;
   margin-top: 14px;
 }
 
-.household-access-panel button {
-  background: var(--deep, #20334a);
+.household-access-panel button:not(.household-signout) {
+  background: var(--deep);
   color: white;
 }
 
 .household-access-role,
 .household-invite-result small {
-  color: rgba(45, 53, 72, 0.7);
-  font-size: 0.82rem;
+  color: #49606A;
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.household-access-role {
+  margin: 0;
 }
 
 .household-invite-result {
   padding: 12px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(233, 223, 209, 0.95);
+}
+
+.household-switcher > span {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6B7A82;
 }
 
 @media (max-width: 700px) {
   .household-onboarding-grid { grid-template-columns: 1fr; }
-  .household-access-menu { top: 8px; right: 8px; }
+  .household-access-trigger-text { max-width: 120px; }
+}
+
+@media (max-width: 900px) {
+  .household-access-trigger-label { display: none; }
+  .site-toolbar-meta .household-access-menu {
+    padding-left: 10px;
+  }
 }

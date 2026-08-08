@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useBootLoading } from '../context/BootGate.jsx';
+import { HouseholdProvider } from '../context/HouseholdContext.jsx';
 import { ledgerRepository } from '../repository';
 import { AuthShell } from './AuthShell.jsx';
 import { supabase } from './client.js';
@@ -32,6 +34,8 @@ export function HouseholdGate({ children }) {
   const [joinValue, setJoinValue] = useState(inviteFromUrl);
   const [createdInvite, setCreatedInvite] = useState(null);
   const [busy, setBusy] = useState(false);
+
+  useBootLoading('household', loading);
 
   const loadHouseholds = useCallback(async () => {
     const rows = await ledgerRepository.listHouseholds();
@@ -144,13 +148,7 @@ export function HouseholdGate({ children }) {
     await supabase.auth.signOut();
   };
 
-  if (loading) {
-    return (
-      <AuthShell busy>
-        <p className="ledger-auth-status">Opening your household…</p>
-      </AuthShell>
-    );
-  }
+  if (loading) return null;
 
   if (!activeHousehold) {
     return (
@@ -198,44 +196,20 @@ export function HouseholdGate({ children }) {
   }
 
   return (
-    <div className="household-app-shell" key={activeHousehold.id}>
-      <details className="household-access-menu">
-        <summary>{activeHousehold.name}</summary>
-        <div className="household-access-panel">
-          <p><strong>{activeHousehold.name}</strong></p>
-          <p className="household-access-role">Everyone with access can view and edit this ledger.</p>
-
-          <div className="household-invite-actions">
-            <button type="button" onClick={createInvitation} disabled={busy}>
-              {busy ? 'Creating link…' : 'Create invite link'}
-            </button>
-          </div>
-
-          {createdInvite && (
-            <div className="household-invite-result" role="status">
-              <p>Share this one-time link with someone you trust.</p>
-              <input readOnly value={createdInvite.url} aria-label="Household invitation link" />
-              <button type="button" onClick={copyInviteLink}>Copy link</button>
-              <small>Expires {new Date(createdInvite.expiresAt).toLocaleString()}.</small>
-            </div>
-          )}
-
-          {households.length > 1 && (
-            <div className="household-switcher">
-              <span>Switch household</span>
-              {households.filter((household) => household.id !== activeHousehold.id).map((household) => (
-                <button key={household.id} type="button" onClick={() => chooseHousehold(household.id)} disabled={busy}>
-                  {household.name}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {error && <p className="household-error" role="alert">{error}</p>}
-          <button type="button" className="household-signout" onClick={signOut}>Sign out</button>
-        </div>
-      </details>
+    <HouseholdProvider
+      value={{
+        activeHousehold,
+        households,
+        busy,
+        error,
+        createdInvite,
+        createInvitation,
+        copyInviteLink,
+        chooseHousehold,
+        signOut,
+      }}
+    >
       {children}
-    </div>
+    </HouseholdProvider>
   );
 }

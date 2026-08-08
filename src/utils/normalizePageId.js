@@ -15,7 +15,7 @@ export function normalizePageId(pageId) {
     if (pageId.startsWith('future-')) {
         const legacyMonth = pageId.slice('future-'.length);
         const modernMonthId = LEGACY_MONTH_IDS[legacyMonth] ?? legacyMonth;
-        return `future-${modernMonthId}`;
+        return modernMonthId;
     }
 
     if (pageId === 'july') return '2026-07';

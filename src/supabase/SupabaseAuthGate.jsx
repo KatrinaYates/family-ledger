@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useBootLoading } from '../context/BootGate.jsx';
 import { supabase } from './client.js';
 import { AuthShell } from './AuthShell.jsx';
 import { getAuthRedirectUrl } from './getAuthRedirectUrl.js';
@@ -51,6 +52,8 @@ export function SupabaseAuthGate({ children }) {
     const [submitting, setSubmitting] = useState(false);
     const [googleSubmitting, setGoogleSubmitting] = useState(false);
     const googleButtonRef = useRef(null);
+
+    useBootLoading('auth', loading);
 
     useEffect(() => {
         let mounted = true;
@@ -172,13 +175,7 @@ export function SupabaseAuthGate({ children }) {
         setMessage('Password reset email sent.');
     };
 
-    if (loading) {
-        return (
-            <AuthShell busy>
-                <p className="ledger-auth-status">Opening your ledger…</p>
-            </AuthShell>
-        );
-    }
+    if (loading) return null;
 
     if (session) return children;
 

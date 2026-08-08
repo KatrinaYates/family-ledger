@@ -51,11 +51,3 @@ export function buildNotebookPages(availableMonthIds, sections = {}) {
     });
     return [...GLOBAL_PAGES, ...monthPages];
 }
-
-export function isPreviewPageId(pageId) {
-    return pageId.startsWith('future-');
-}
-
-export function previewMonthIdFromPageId(pageId) {
-    return pageId.replace('future-', '');
-}
