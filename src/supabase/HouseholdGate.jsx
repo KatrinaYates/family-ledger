@@ -34,7 +34,6 @@ export function HouseholdGate({ children }) {
   const [busy, setBusy] = useState(false);
 
   const loadHouseholds = useCallback(async () => {
-    setError('');
     const rows = await ledgerRepository.listHouseholds();
     setHouseholds(rows);
     return rows;
@@ -45,6 +44,7 @@ export function HouseholdGate({ children }) {
     (async () => {
       try {
         setLoading(true);
+        setError('');
         let rows = await loadHouseholds();
 
         if (inviteFromUrl) {
@@ -55,10 +55,13 @@ export function HouseholdGate({ children }) {
             const clean = new URL(window.location.href);
             clean.searchParams.delete('invite');
             window.history.replaceState({}, '', clean);
+            return;
           } catch (inviteError) {
             if (!cancelled) setError(getErrorMessage(inviteError));
           }
-        } else if (rows.length === 1) {
+        }
+
+        if (rows.length === 1) {
           const selected = await ledgerRepository.setActiveHousehold(rows[0].id);
           if (!cancelled) setActiveHousehold(selected);
         }
