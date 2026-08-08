@@ -193,6 +193,26 @@
   border-color: #C4B49E;
 }
 
+.ledger-auth-google-native {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  color: #6B7A82;
+  font-size: 13px;
+}
+
+.ledger-auth-google-native > div,
+.ledger-auth-google-native iframe {
+  max-width: 100% !important;
+}
+
+.ledger-auth-google-native.is-busy {
+  opacity: 0.65;
+  pointer-events: none;
+}
+
 .ledger-auth-links {
   display: flex;
   flex-wrap: wrap;
