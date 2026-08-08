@@ -8,6 +8,7 @@ import { SupabaseAuthGate } from './supabase/SupabaseAuthGate.jsx';
 import { HouseholdGate } from './supabase/HouseholdGate.jsx';
 import './styles.css';
 import './usability.css';
+import './auth.css';
 import './household.css';
 
 document.documentElement.style.setProperty('--paper-grain', `url("${paperGrain}")`);

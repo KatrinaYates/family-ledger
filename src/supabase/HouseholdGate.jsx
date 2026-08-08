@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ledgerRepository } from '../repository';
+import { AuthShell } from './AuthShell.jsx';
 import { supabase } from './client.js';
+import { getHouseholdInviteUrl } from './getAuthRedirectUrl.js';
 import { getErrorMessage } from '../utils/getErrorMessage.js';
 
 function invitationTokenFromValue(value) {
@@ -15,10 +17,7 @@ function invitationTokenFromValue(value) {
 }
 
 function invitationUrl(token) {
-  const url = new URL(window.location.href);
-  url.search = '';
-  url.searchParams.set('invite', token);
-  return url.toString();
+  return getHouseholdInviteUrl(token);
 }
 
 export function HouseholdGate({ children }) {
@@ -140,16 +139,21 @@ export function HouseholdGate({ children }) {
   };
 
   if (loading) {
-    return <main className="household-gate-shell"><section className="household-gate-card">Opening your household…</section></main>;
+    return (
+      <AuthShell busy>
+        <p className="ledger-auth-status">Opening your household…</p>
+      </AuthShell>
+    );
   }
 
   if (!activeHousehold) {
     return (
-      <main className="household-gate-shell">
-        <section className="household-gate-card" aria-labelledby="household-title">
-          <p className="household-gate-kicker">The Family Ledger</p>
-          <h1 id="household-title">Choose your household</h1>
-          <p>Your sign-in proves who you are. Household membership decides which ledger you can open.</p>
+      <AuthShell wide labelledBy="household-title">
+        <p className="ledger-auth-kicker">The Family Ledger</p>
+        <h1 id="household-title">Choose your household</h1>
+        <p className="ledger-auth-lead household-gate-lead">
+          Your sign-in proves who you are. Household membership decides which ledger you can open.
+        </p>
 
           {households.length > 1 && (
             <div className="household-choice-list">
@@ -182,10 +186,9 @@ export function HouseholdGate({ children }) {
             </div>
           )}
 
-          {error && <p className="household-error" role="alert">{error}</p>}
+          {error && <p className="ledger-auth-error household-error" role="alert">{error}</p>}
           <button type="button" className="household-signout" onClick={signOut}>Sign out</button>
-        </section>
-      </main>
+      </AuthShell>
     );
   }
 

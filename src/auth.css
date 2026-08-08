@@ -1,0 +1,282 @@
+.ledger-auth-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 32px 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.ledger-auth-doodle {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.42;
+  z-index: 0;
+}
+
+.ledger-auth-doodle-vine {
+  width: min(180px, 28vw);
+  left: 4%;
+  bottom: 8%;
+  transform: rotate(-12deg);
+}
+
+.ledger-auth-doodle-flower {
+  width: min(120px, 20vw);
+  right: 6%;
+  top: 10%;
+  transform: rotate(18deg);
+}
+
+.ledger-auth-sheet {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 440px);
+  padding: clamp(28px, 5vw, 44px) clamp(24px, 4vw, 40px);
+  border-radius: 28px;
+  border: 2px solid #E9DFD1;
+  background:
+    var(--paper-grain),
+    linear-gradient(135deg, #F7F1E6, #FFF9ED);
+  background-size: 200px 200px, auto;
+  background-blend-mode: multiply, normal;
+  box-shadow: var(--shadow-lifted);
+  color: var(--ink);
+}
+
+.ledger-auth-sheet--wide {
+  width: min(100%, 760px);
+}
+
+.ledger-auth-sheet--wide h1 {
+  margin: 0 0 12px;
+  font-family: var(--font-heading);
+  font-size: clamp(28px, 5vw, 36px);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.household-gate-lead {
+  margin-bottom: 8px;
+}
+
+.ledger-auth-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.ledger-auth-kicker {
+  margin: 0 0 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #49606A;
+}
+
+.ledger-auth-header h1 {
+  margin: 0 0 12px;
+  font-family: var(--font-heading);
+  font-size: clamp(32px, 6vw, 42px);
+  font-weight: 700;
+  line-height: 1.05;
+  color: var(--ink);
+}
+
+.ledger-auth-lead {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.5;
+  color: #49606A;
+}
+
+.ledger-auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ledger-auth-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.ledger-auth-field {
+  position: relative;
+}
+
+.ledger-auth-input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 44px 0 0;
+  border: none;
+  border-bottom: 2px solid #9DB0B4;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+}
+
+.ledger-auth-input::placeholder {
+  color: #8A9AA0;
+  opacity: 0.85;
+}
+
+.ledger-auth-input:focus {
+  outline: none;
+  border-bottom-color: var(--deep);
+}
+
+.ledger-auth-field-icon {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #8A9AA0;
+  pointer-events: none;
+}
+
+.ledger-auth-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  margin-top: 8px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  font: inherit;
+  font-weight: 700;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.ledger-auth-btn:focus-visible {
+  outline: 2px solid var(--deep);
+  outline-offset: 3px;
+}
+
+.ledger-auth-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.ledger-auth-btn-primary {
+  color: #FFFDF8;
+  background: var(--deep);
+  border-color: var(--deep);
+}
+
+.ledger-auth-btn-primary:hover:not(:disabled) {
+  background: #0f5a58;
+  border-color: #0f5a58;
+}
+
+.ledger-auth-btn-primary .ledger-auth-field-icon {
+  position: static;
+  transform: none;
+  color: currentColor;
+}
+
+.ledger-auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 22px 0 18px;
+  color: #8A9AA0;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ledger-auth-divider::before,
+.ledger-auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(157, 176, 180, 0.55);
+}
+
+.ledger-auth-btn-google {
+  color: var(--ink);
+  background: #FFFDF8;
+  border-color: #D8CFC0;
+}
+
+.ledger-auth-btn-google:hover:not(:disabled) {
+  background: #FFF9ED;
+  border-color: #C4B49E;
+}
+
+.ledger-auth-message {
+  margin: 16px 0 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(184, 216, 120, 0.22);
+  border: 1px solid rgba(111, 163, 78, 0.35);
+  color: #2D4A28;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.ledger-auth-error {
+  margin: 16px 0 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 142, 120, 0.15);
+  border: 1px solid rgba(255, 142, 120, 0.45);
+  color: #5c2f28;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.ledger-auth-privacy {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 24px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid rgba(233, 223, 209, 0.95);
+  font-size: 13px;
+  line-height: 1.5;
+  color: #6B7A82;
+}
+
+.ledger-auth-privacy-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #8A9AA0;
+}
+
+.ledger-auth-status {
+  margin: 0;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: #49606A;
+}
+
+@media (max-width: 520px) {
+  .ledger-auth-shell {
+    padding: 20px 14px;
+  }
+
+  .ledger-auth-doodle-vine {
+    left: -4%;
+    bottom: 4%;
+    opacity: 0.28;
+  }
+
+  .ledger-auth-doodle-flower {
+    right: -2%;
+    top: 6%;
+    opacity: 0.28;
+  }
+
+  .ledger-auth-lead {
+    font-size: 16px;
+  }
+}
