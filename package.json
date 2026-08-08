@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:sample": "VITE_USE_SAMPLE_DATA=true vite",
+    "dev:supabase": "VITE_LEDGER_BACKEND=supabase vite",
     "build": "GITHUB_PAGES=true vite build",
     "preview": "GITHUB_PAGES=true vite preview",
     "precommit": "bash scripts/check-no-personal-data.sh",
@@ -13,6 +14,7 @@
     "smoke:months": "node scripts/smoke-ledger-months.mjs"
   },
   "dependencies": {
+    "@supabase/supabase-js": "latest",
     "@vitejs/plugin-react": "latest",
     "vite": "latest",
     "react": "latest",
