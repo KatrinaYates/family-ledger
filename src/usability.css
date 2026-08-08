@@ -13,6 +13,27 @@
 
 .skip-link:focus { top: 0; }
 
+.ledger-boot {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.ledger-boot-inline {
+  min-height: 320px;
+}
+
+.ledger-loading {
+  margin: 0;
+  padding: 16px 24px;
+  border-radius: 12px;
+  background: rgba(255, 253, 248, 0.96);
+  color: #2A1A0E;
+  font-weight: 600;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
 .site-toolbar {
   position: sticky;
   top: 0;

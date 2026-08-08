@@ -281,13 +281,13 @@ export function FutureMonthPage({month}) {
             </div>
             <Polaroid month={month} className="chapter-polaroid" />
             <StickyNote className="chapter-note">
-                {month.message}
+                {month.message ?? 'Coming soon.'}
                 <br />
-                <b>{month.promise}</b>
+                <b>{month.promise ?? 'We will open this chapter together.'}</b>
             </StickyNote>
             <FocusPocket title={`${month.label} Preview`}>
                 <ul className="focus-pocket-list">
-                    {month.preview.map((line) => (
+                    {(month.preview ?? []).map((line) => (
                         <li key={line}>{line}</li>
                     ))}
                 </ul>

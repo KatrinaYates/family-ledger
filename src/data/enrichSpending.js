@@ -13,6 +13,9 @@ export function enrichSpending(spending = {}, meta) {
     topCategories: spending.topCategories ?? [],
     momChanges: spending.momChanges ?? [],
     bigPurchases: spending.bigPurchases ?? [],
+    unexpected: spending.unexpected ?? [],
+    changes: spending.changes ?? spending.momChanges ?? [],
+    questions: spending.questions ?? [],
     overview: {
       subtitle: `Where money flowed in ${label} — excluding transfers so spending is not double-counted.`,
       momLabel: `vs ${priorMonth}`,

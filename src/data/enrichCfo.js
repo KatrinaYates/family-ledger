@@ -7,6 +7,7 @@ export function enrichCfo(cfo = {}, meta) {
   const label = monthLabel(meta);
   const priorities = (cfo.priorities ?? []).map((p, index, arr) => ({
     ...p,
+    decisions: p.decisions ?? [],
     page: index + 1,
     totalPages: arr.length,
     eyebrowSuffix: `Section 04 · Page ${index + 1} of ${arr.length}`,

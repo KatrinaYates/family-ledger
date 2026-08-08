@@ -30,7 +30,7 @@ export function MetricKpi({ icon, label, value, chip, note, indicator }) {
   );
 }
 
-export function MetricKpiRow({ items }) {
+export function MetricKpiRow({ items = [] }) {
   return (
     <section className="snapshot-kpi-row" aria-label="Key metrics">
       {items.map((item) => (
@@ -140,7 +140,7 @@ export function MeaningTag({ tone, children }) {
   return <span className={`meaning-tag ${tone}`}>{children}</span>;
 }
 
-export function DashedList({ items, large = false }) {
+export function DashedList({ items = [], large = false }) {
   return (
     <div className={`dashed-list ${large ? 'dashed-list-large' : ''}`.trim()}>
       {items.map((item) => (
@@ -153,7 +153,7 @@ export function DashedList({ items, large = false }) {
   );
 }
 
-export function GroupedLists({ groups }) {
+export function GroupedLists({ groups = [] }) {
   return (
     <div className="grouped-lists">
       {groups.map((group) => (
@@ -183,7 +183,7 @@ export function RankedTable({ columns, rows }) {
   );
 }
 
-export function ChangeTable({ rows }) {
+export function ChangeTable({ rows = [] }) {
   return (
     <div className="change-table">
       <div className="change-row head">

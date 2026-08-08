@@ -12,6 +12,13 @@ export function enrichSnapshot(snapshot = {}, meta) {
 
   return {
     ...snapshot,
+    debt: {
+      total: snapshot.debt?.total ?? '—',
+      insight: snapshot.debt?.insight ?? '',
+      loans: snapshot.debt?.loans ?? [],
+      creditCards: snapshot.debt?.creditCards ?? [],
+      ...(snapshot.debt ?? {}),
+    },
     overview: {
       subtitle: 'The big picture first: what we have, what we owe, and where our attention belongs this month.',
       kpis: [

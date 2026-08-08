@@ -5,8 +5,18 @@ function monthLabel(meta) {
 
 export function enrichFuture(future, meta) {
   const label = monthLabel(meta);
+  const retirement = future.retirement ?? {};
   return {
     ...future,
+    goals: future.goals ?? [],
+    upcomingExpenses: future.upcomingExpenses ?? [],
+    retirement: {
+      balance: '—',
+      monthContributions: '—',
+      projectionNote: '',
+      goalNote: 'Define retirement targets together before locking this month.',
+      ...retirement,
+    },
     retirementPage: {
       subtitle: 'Where retirement stands today and what we still need to define for meaningful projections.',
       footerText: 'Goals and upcoming expenses continue on the next page →',

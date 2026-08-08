@@ -10,6 +10,7 @@ function emptyCfoPriority(index) {
         difficulty: 'Easy · Medium · Hard',
         note: '',
         suggestedFunds: [],
+        decisions: [],
     };
 }
 
@@ -86,15 +87,21 @@ export function applyBlankSourceDefaults(sourceData = {}, monthId) {
             debt: {
                 total: '—',
                 groups: [],
+                loans: [],
+                creditCards: [],
+                insight: '',
                 ...snapshot.debt,
             },
         },
         story: {
             income: { total: '—', period: '', groups: [] },
-            bills: { groups: [] },
-            lifestyle: { groups: [] },
+            bills: { groups: [], items: [] },
+            lifestyle: { groups: [], items: [] },
+            savings: { missing: [] },
+            investments: { monthContributions: '—' },
+            debtPayments: { items: [] },
             endingPosition: { totalCash: '—', billsAccount: '—', available: '—' },
-            explanation: { items: [], closing: '' },
+            explanation: { title: 'What explains the month', items: [], closing: '' },
             ...story,
             income: {
                 total: '—',
@@ -122,6 +129,9 @@ export function applyBlankSourceDefaults(sourceData = {}, monthId) {
             topCategories: [],
             momChanges: [],
             bigPurchases: [],
+            unexpected: [],
+            changes: [],
+            questions: [],
             ...spending,
         },
         cfo: {

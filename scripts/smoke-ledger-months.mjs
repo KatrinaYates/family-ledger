@@ -121,6 +121,20 @@ try {
   assert(notFound instanceof LedgerRepositoryError, 'LedgerNotFoundError extends base error');
   const locked = new LockedMonthError('2026-07');
   assert(locked.code === 'LOCKED', 'LockedMonthError exposes code');
+
+  for (const monthId of ['2026-08', '2026-09']) {
+    const record = loadSampleRecord(samples[monthId], monthId);
+    const view = mergeMonthView(record);
+    assert(Array.isArray(view.story?.bills?.items), `${monthId} story.bills.items should be an array`);
+    assert(Array.isArray(view.story?.lifestyle?.items), `${monthId} story.lifestyle.items should be an array`);
+    assert(Array.isArray(view.story?.debtPayments?.items), `${monthId} story.debtPayments.items should be an array`);
+    assert(Array.isArray(view.spending?.changes), `${monthId} spending.changes should be an array`);
+    assert(Array.isArray(view.spending?.unexpected), `${monthId} spending.unexpected should be an array`);
+    assert(Array.isArray(view.snapshot?.debt?.loans), `${monthId} snapshot.debt.loans should be an array`);
+    assert(view.cfo?.priorities?.[0]?.decisions != null, `${monthId} cfo priorities should include decisions`);
+    assert(view.celebrate?.page?.subtitle, `${monthId} celebrate.page.subtitle should be enriched`);
+    assert(view.actions?.page?.subtitle, `${monthId} actions.page.subtitle should be enriched`);
+  }
 } catch (error) {
   errors.push(`Unexpected error: ${error.message}`);
 }

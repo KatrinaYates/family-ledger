@@ -22,17 +22,61 @@ function monthLabel(meta) {
   return meta?.month?.trim() || 'the month';
 }
 
+function itemsFromSection(section) {
+  if (Array.isArray(section?.items)) return section.items;
+  if (Array.isArray(section?.groups)) {
+    return section.groups.flatMap((group) =>
+      (group.items ?? []).map((item) => ({
+        name: item.name ?? group.label ?? 'Item',
+        amount: item.amount ?? '—',
+      })),
+    );
+  }
+  return [];
+}
+
 export function enrichStory(story = {}, meta) {
   const label = monthLabel(meta);
   const income = story.income ?? { total: '—', period: '', groups: [] };
   const endingPosition = story.endingPosition ?? { totalCash: '—', billsAccount: '—', available: '—' };
   const explanation = story.explanation ?? { items: [], closing: '' };
+  const bills = story.bills ?? { groups: [] };
+  const lifestyle = story.lifestyle ?? { groups: [] };
+  const savings = story.savings ?? { missing: [] };
+  const investments = story.investments ?? { monthContributions: '—' };
+  const debtPayments = story.debtPayments ?? { items: [] };
   const regularIncome = sumGroupItems(income.groups ?? [], ['Regular take-home']);
   const benefitsIncome = sumGroupItems(income.groups ?? [], ['Benefits income']);
   const oneTimeIncome = sumGroupItems(income.groups ?? [], ['One-time income']);
 
   return {
     ...story,
+    bills: {
+      ...bills,
+      items: itemsFromSection(bills),
+    },
+    lifestyle: {
+      ...lifestyle,
+      items: itemsFromSection(lifestyle),
+    },
+    savings: {
+      missing: [],
+      ...savings,
+    },
+    investments: {
+      monthContributions: '—',
+      ...investments,
+    },
+    debtPayments: {
+      items: [],
+      ...debtPayments,
+    },
+    explanation: {
+      title: 'What explains the month',
+      items: [],
+      closing: '',
+      ...explanation,
+    },
     overview: {
       subtitle: 'How money came in this month — separated so recurring income is not inflated by one-time deposits.',
       kpis: [
