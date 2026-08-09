@@ -46,8 +46,17 @@
   --gold-dark: #B8922A;
 
   /* Shared breakpoints — use for new responsive rules */
+  --bp-wide: 1400px;
+  --bp-giant: 1800px;
   --bp-notebook: 1100px;
+  --bp-tablet: 900px;
   --bp-compact: 720px;
+
+  /* Notebook / desk scene sizing */
+  --desk-gutter: clamp(12px, 2vw, 32px);
+  --desk-max: min(calc(100vw - var(--desk-gutter) * 2), 1680px);
+  --book-height: 85vh;
+  --stage-height: var(--book-height);
 }
 
 * { box-sizing: border-box; }
@@ -89,18 +98,29 @@ summary:focus-visible {
   outline: none;
 }
 
-/* Desk scene — fixed-size stage; notebook does not resize with viewport height */
-.desk-scene {
+/* Desk scene — scales with viewport, vertically centered below toolbar */
+main {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main > .desk-scene {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
-  width: min(1600px, calc(100vw - 32px));
-  margin: 28px auto 24px;
+  width: var(--desk-max);
+  margin: 0 auto;
   perspective: 1400px;
 }
 
 .stage {
   width: 100%;
-  aspect-ratio: 16 / 9;
-  min-height: 650px;
+  height: var(--book-height);
+  min-height: var(--book-height);
+  max-height: var(--book-height);
   position: relative;
   overflow: visible;
 }
@@ -108,9 +128,9 @@ summary:focus-visible {
 .notebook {
   position: absolute;
   left: 6.5%;
-  top: 7.5%;
+  top: 0;
   width: 87%;
-  height: 95%;
+  height: 100%;
   border-radius: 28px;
   --page-turn-right: 52px;
   --page-turn-bottom: 72px;
@@ -181,7 +201,7 @@ summary:focus-visible {
   bottom: 0;
   right: calc(100% - -6px);
   width: 24%;
-  min-width: 140px;
+  min-width: 100%;
   max-width: 280px;
   border-radius: 28px;
   background:
@@ -864,6 +884,50 @@ summary:focus-visible {
 }
 
 .chapter-note { left: 7%; bottom: 5%; transform: rotate(-3deg); }
+
+/* ── Responsive layout modes ───────────────────────────────────────── */
+
+/* Giant desktop — notebook fills more of the viewport */
+@media (min-width: 1400px) {
+  :root {
+    --desk-max: min(calc(100vw - 48px), 2000px);
+  }
+
+  .notebook {
+    left: 5.5%;
+    width: 89%;
+  }
+
+  .left-page {
+    width: 22%;
+    max-width: 320px;
+  }
+}
+
+@media (min-width: 1800px) {
+  :root {
+    --desk-max: min(calc(100vw - 64px), 2280px);
+  }
+}
+
+/* Compact laptop / tablet landscape — soften left-page before notebook mode */
+@media (max-width: 1280px) and (min-width: 1101px) {
+  .left-page {
+    width: 20%;
+    min-width: 110px;
+    max-width: 220px;
+  }
+
+  .month-tabs {
+    right: -62px;
+  }
+
+  .month-tab {
+    width: 62px;
+    height: 74px;
+    font-size: 16px;
+  }
+}
 
 /* Polaroid */
 .polaroid {
@@ -2767,14 +2831,14 @@ summary:focus-visible {
 }
 
 @media (max-width: 1100px) {
-  /* Break out of fixed 16:9 — notebook grows vertically like Snapshotexample.html */
+  /* Notebook stays 95vh; pages scroll inside when content stacks */
   .stage {
-    aspect-ratio: auto;
-    height: auto;
-    min-height: 1200px;
+    height: var(--book-height);
+    min-height: var(--book-height);
+    max-height: var(--book-height);
   }
 
-  .notebook { left: 7%; width: 84%; height: 95%; top: 2.5%; }
+  .notebook { left: 7%; width: 84%; height: 100%; top: 0; }
 
   .left-page {
     width: 20%;
@@ -3095,32 +3159,51 @@ summary:focus-visible {
     margin: 16px auto 0;
   }
 
-  /* Month chapter covers — paper band fills page, content stacks */
+  /* Month chapter — intentional narrow composition */
   .month-chapter,
   .future-month {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "main"
+      "polaroid"
+      "note"
+      "focus";
+    gap: 14px;
+    align-content: start;
+    align-items: start;
     overflow-y: auto;
-    padding: 16px 12px 28px;
+    overflow-x: hidden;
+    padding: 14px 12px 24px;
+    min-height: auto;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: auto;
+    height: auto;
   }
 
   .month-band {
-    position: absolute;
-    top: 12px;
-    left: 10px;
-    right: 10px;
-    bottom: 12px;
-    height: auto;
-    min-height: auto;
+    display: none;
   }
 
   .month-content {
+    grid-area: main;
     position: relative;
     left: auto;
     right: auto;
     top: auto;
     z-index: 2;
-    padding: 28px 20px 12px;
+    padding: 28px 22px 20px;
+    background:
+      var(--paper-grain),
+      #FFF9ED;
+    background-size: 200px 200px, auto;
+    background-blend-mode: multiply, normal;
+    border-radius: 16px;
+    box-shadow: 0 14px 32px rgba(53, 63, 72, 0.14);
+    border-top: 3px solid rgba(255, 255, 255, 0.9);
+    border-bottom: 3px solid rgba(255, 255, 255, 0.9);
   }
 
   .month-content > p {
@@ -3151,24 +3234,40 @@ summary:focus-visible {
 
   .polaroid,
   .chapter-polaroid {
+    grid-area: polaroid;
     position: relative;
     right: auto;
     top: auto;
     transform: rotate(-3deg);
     width: min(200px, 58vw);
-    margin: 8px auto 16px;
+    margin: 0 auto;
     z-index: 2;
   }
 
+  .chapter-note {
+    grid-area: note;
+    position: relative;
+    left: auto;
+    bottom: auto;
+    transform: rotate(-2deg);
+    width: 100%;
+    max-width: 340px;
+    margin: 0 auto;
+    z-index: 2;
+    font-size: 19px;
+    justify-self: center;
+  }
+
   .focus-pocket {
+    grid-area: focus;
     position: relative;
     right: auto;
     bottom: auto;
     width: 100%;
-    max-width: 340px;
-    min-height: 200px;
+    max-width: 360px;
+    min-height: 180px;
     height: auto;
-    margin: 8px auto 16px;
+    margin: 0 auto;
     align-self: center;
     z-index: 2;
   }
@@ -3179,40 +3278,56 @@ summary:focus-visible {
     right: auto;
     top: auto;
     transform: rotate(-1deg);
-    margin: 0 8px 70px;
+    margin: 0 8px 0;
+  }
+}
+
+/* Tablet — side-by-side decor under chapter header */
+@media (max-width: 1100px) and (min-width: 721px) {
+  .month-chapter,
+  .future-month {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "main main"
+      "polaroid note"
+      "focus focus";
+    column-gap: 16px;
+  }
+
+  .chapter-polaroid {
+    justify-self: end;
+    margin: 0;
   }
 
   .chapter-note {
-    position: relative;
-    left: auto;
-    bottom: auto;
-    transform: rotate(-2deg);
-    width: 100%;
-    max-width: 320px;
-    margin: 0 auto 8px;
-    z-index: 2;
-    font-size: 19px;
+    justify-self: start;
+    margin: 0;
+    align-self: start;
+  }
+
+  .focus-pocket {
+    grid-column: 1 / -1;
   }
 }
 
 @media (max-width: 720px) {
-  .desk-scene {
+  main > .desk-scene {
     width: calc(100vw - 16px);
-    margin-top: 8px;
     overflow-x: hidden;
   }
 
   .stage {
     width: 100%;
-    min-height: 1400px;
-    height: auto;
+    height: var(--book-height);
+    min-height: var(--book-height);
+    max-height: var(--book-height);
   }
 
   .notebook {
     left: 5%;
-    top: 2.5%;
+    top: 0;
     width: 90%;
-    height: 95%;
+    height: 100%;
   }
 
   .left-page {
@@ -3238,8 +3353,18 @@ summary:focus-visible {
     max-width: calc(100% - 32px);
   }
 
+  .month-chapter,
+  .future-month {
+    grid-template-areas:
+      "main"
+      "note"
+      "focus";
+    padding: 10px 10px 20px;
+    gap: 12px;
+  }
+
   .month-content {
-    padding: 24px 16px 12px;
+    padding: 24px 16px 16px;
   }
 
   .month-content h1 {
