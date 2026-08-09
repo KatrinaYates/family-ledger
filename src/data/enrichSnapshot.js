@@ -2,6 +2,15 @@ function parseAmount(value) {
   return Number(String(value).replace(/[^0-9.-]/g, '')) || 0;
 }
 
+function formatCurrency(value) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
 function statusChip(status, fallbackText, fallbackTone) {
   const text = status?.trim();
   if (!text) return { text: fallbackText, tone: fallbackTone };
@@ -34,6 +43,16 @@ export function enrichSnapshot(snapshot = {}, meta) {
     ...account,
     ...cashAccountMeta(account.name),
   }));
+
+  const availableCash = cashAccounts
+    .filter((account) => account.cashClass === 'available')
+    .reduce((sum, account) => sum + parseAmount(account.amount), 0);
+  const protectedCash = cashAccounts
+    .filter((account) => account.cashClass === 'protected')
+    .reduce((sum, account) => sum + parseAmount(account.amount), 0);
+  const unclassifiedCash = cashAccounts
+    .filter((account) => !['available', 'protected'].includes(account.cashClass))
+    .reduce((sum, account) => sum + parseAmount(account.amount), 0);
 
   const retirementSorted = [...(snapshot.retirement?.accounts ?? [])].sort(
     (a, b) => parseAmount(b.amount) - parseAmount(a.amount),
@@ -102,6 +121,9 @@ export function enrichSnapshot(snapshot = {}, meta) {
       total: snapshot.cash?.total ?? '—',
       totalExact: snapshot.cash?.totalExact || snapshot.cash?.total || '—',
       accounts: cashAccounts,
+      availableTotal: formatCurrency(availableCash),
+      protectedTotal: formatCurrency(protectedCash),
+      unclassifiedTotal: unclassifiedCash ? formatCurrency(unclassifiedCash) : '',
       betterKpiInsight: snapshot.cash?.insight?.trim() || '',
       continuedText: 'Debt details and final status continue on the next page →',
     },
@@ -110,6 +132,7 @@ export function enrichSnapshot(snapshot = {}, meta) {
       total: snapshot.retirement?.total ?? '—',
       totalExact: snapshot.retirement?.totalExact || snapshot.retirement?.total || '—',
       accountsSorted: retirementSorted,
+      protectionLabel: 'Protected long-term money',
       contributionNote: snapshot.retirement?.contributionNote
         || 'Employee contributions, employer match, profit-sharing, and after-tax contributions.',
     },
@@ -146,21 +169,28 @@ export function enrichSnapshot(snapshot = {}, meta) {
 }
 
 function cashAccountMeta(name) {
+  const normalized = String(name || '').trim().toLowerCase();
   const map = {
-    'Household bills': { tag: 'assigned', tagLabel: 'Assigned' },
-    'Bills account': { tag: 'assigned', tagLabel: 'Assigned' },
-    'Maple jar': { tag: 'protected', tagLabel: 'Goal jar' },
-    'River jar': { tag: 'protected', tagLabel: 'Goal jar' },
-    'Daily checking': { tag: 'available', tagLabel: 'Available' },
-    'Basic checking': { tag: 'available', tagLabel: 'Available' },
-    'Living account': { tag: 'available', tagLabel: 'Available' },
-    'Rainy day fund': { tag: 'review', tagLabel: 'Emergency' },
-    'General savings': { tag: 'review', tagLabel: 'Needs definition' },
-    'Vacation jar': { tag: 'review', tagLabel: 'Goal jar' },
-    'Garage project jar': { tag: 'review', tagLabel: 'Goal jar' },
-    'Partners savings': { tag: 'review', tagLabel: 'Unclear purpose' },
-    'Payment app': { tag: 'neutral', tagLabel: 'Empty' },
-    'PayPal': { tag: 'neutral', tagLabel: 'Empty' },
+    'household bills': { tag: 'assigned', tagLabel: 'Protected · bills', cashClass: 'protected' },
+    'bills account': { tag: 'assigned', tagLabel: 'Protected · bills', cashClass: 'protected' },
+    'bills': { tag: 'assigned', tagLabel: 'Protected · bills', cashClass: 'protected' },
+    'cole': { tag: 'protected', tagLabel: 'Protected · kids', cashClass: 'protected' },
+    'clay': { tag: 'protected', tagLabel: 'Protected · kids', cashClass: 'protected' },
+    'maple jar': { tag: 'protected', tagLabel: 'Protected · goal', cashClass: 'protected' },
+    'river jar': { tag: 'protected', tagLabel: 'Protected · goal', cashClass: 'protected' },
+    'daily checking': { tag: 'available', tagLabel: 'Available', cashClass: 'available' },
+    'basic checking': { tag: 'available', tagLabel: 'Available', cashClass: 'available' },
+    'partners checking': { tag: 'available', tagLabel: 'Available', cashClass: 'available' },
+    'living account': { tag: 'available', tagLabel: 'Available', cashClass: 'available' },
+    'living': { tag: 'available', tagLabel: 'Available', cashClass: 'available' },
+    'rainy day fund': { tag: 'protected', tagLabel: 'Protected · emergency', cashClass: 'protected' },
+    'general savings': { tag: 'protected', tagLabel: 'Protected · savings', cashClass: 'protected' },
+    'savings': { tag: 'protected', tagLabel: 'Protected · emergency', cashClass: 'protected' },
+    'partners savings': { tag: 'protected', tagLabel: 'Protected · savings', cashClass: 'protected' },
+    'vacation jar': { tag: 'protected', tagLabel: 'Protected · goal', cashClass: 'protected' },
+    'garage project jar': { tag: 'protected', tagLabel: 'Protected · goal', cashClass: 'protected' },
+    'payment app': { tag: 'neutral', tagLabel: 'Available if funded', cashClass: 'available' },
+    'paypal': { tag: 'neutral', tagLabel: 'Available if funded', cashClass: 'available' },
   };
-  return map[name] || { tag: 'neutral', tagLabel: 'Other' };
+  return map[normalized] || { tag: 'neutral', tagLabel: 'Needs classification', cashClass: 'unclassified' };
 }
