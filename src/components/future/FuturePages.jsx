@@ -74,7 +74,9 @@ export function FuturePages({ page, totalInSection, data, month }) {
           <PanelCard title="Kids’ Savings" total={kidsSavings.total}>
             <DashedList items={kidsSavings.accounts} />
             <p className="panel-note">
-              {monthLabel} added: <strong>{kidsSavings.monthAdded}</strong>. {kidsSavings.note}
+              {monthLabel} growth: <strong>{kidsSavings.monthAdded}</strong>
+              {' '}({kidsSavings.monthContributions} contributed + {kidsSavings.monthInterest} interest).{' '}
+              {kidsSavings.note}
             </p>
           </PanelCard>
         )}
