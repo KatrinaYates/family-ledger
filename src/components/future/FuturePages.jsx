@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  DashedList,
   MetricKpiRow,
   PanelCard,
   SectionPageHeader,
@@ -15,7 +16,7 @@ export function FuturePages({ page, totalInSection, data, month }) {
   const { future, meta } = data;
   const monthLabel = month?.label || meta?.month || 'This month';
   const year = meta?.year || 2026;
-  const { retirement } = future;
+  const { retirement, kidsSavings } = future;
 
   if (page === 1) {
     return (
@@ -69,6 +70,14 @@ export function FuturePages({ page, totalInSection, data, month }) {
           badge="Final future page"
           badgeVariant="final"
         />
+        {kidsSavings.accounts.length > 0 && (
+          <PanelCard title="Kids’ Savings" total={kidsSavings.total}>
+            <DashedList items={kidsSavings.accounts} />
+            <p className="panel-note">
+              {monthLabel} added: <strong>{kidsSavings.monthAdded}</strong>. {kidsSavings.note}
+            </p>
+          </PanelCard>
+        )}
         <div className="story-split-grid">
           <PanelCard title="Shared goals" scrollLabel="Family financial goals">
             <EditableBulletList
