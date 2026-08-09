@@ -131,7 +131,7 @@ export function enrichStory(story = {}, meta) {
       endingPills: [
         { label: 'Connected cash', value: endingPosition.totalCash },
         { label: 'Bills account', value: endingPosition.billsAccount },
-        { label: 'Freely available', value: endingPosition.available },
+        { label: 'Outside bills acct', value: endingPosition.available },
       ],
       explanationRows: (explanation.items ?? []).map((item) => ({
         icon: item.amount === '—' ? '📊' : '💸',
