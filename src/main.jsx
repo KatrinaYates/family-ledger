@@ -7,6 +7,7 @@ import { isSupabaseBackend } from './repository';
 import { BootGateProvider } from './context/BootGate.jsx';
 import { SupabaseAuthGate } from './supabase/SupabaseAuthGate.jsx';
 import { HouseholdGate } from './supabase/HouseholdGate.jsx';
+import { MonthPageLockControl } from './components/MonthPageLockControl.jsx';
 import './styles.css';
 import './usability.css';
 import './auth.css';
@@ -20,12 +21,14 @@ const app = isSupabaseBackend ? (
     <SupabaseAuthGate>
       <HouseholdGate>
         <App />
+        <MonthPageLockControl />
       </HouseholdGate>
     </SupabaseAuthGate>
   </BootGateProvider>
 ) : (
   <BootGateProvider>
     <App />
+    <MonthPageLockControl />
   </BootGateProvider>
 );
 
