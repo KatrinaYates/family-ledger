@@ -1,9 +1,19 @@
 export function enrichFuture(future) {
   const retirement = future.retirement ?? {};
+  const kidsSavings = future.kidsSavings ?? {};
   return {
     ...future,
     goals: future.goals ?? [],
     upcomingExpenses: future.upcomingExpenses ?? [],
+    kidsSavings: {
+      total: '—',
+      monthAdded: '—',
+      monthContributions: '—',
+      monthInterest: '—',
+      accounts: [],
+      note: 'Protected for the kids and excluded from household spendable cash.',
+      ...kidsSavings,
+    },
     retirement: {
       balance: '—',
       monthContributions: '—',
