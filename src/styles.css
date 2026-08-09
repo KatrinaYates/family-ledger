@@ -863,7 +863,7 @@ summary:focus-visible {
   box-shadow: var(--shadow-soft);
 }
 
-.chapter-note { left: 7%; bottom: 7%; transform: rotate(-3deg); }
+.chapter-note { left: 7%; bottom: 5%; transform: rotate(-3deg); }
 
 /* Polaroid */
 .polaroid {
@@ -945,7 +945,7 @@ summary:focus-visible {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0;
+  bottom: -20px;
   height: 108px;
   background:
     var(--paper-grain),

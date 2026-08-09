@@ -493,20 +493,72 @@
   font-weight: 600;
 }
 
-.keyboard-help {
-  font-size: 13px;
-  font-weight: 600;
-  opacity: 0.75;
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
 .site-toolbar-actions {
   display: flex;
   align-items: center;
+  gap: 18px;
+}
+
+.site-toolbar-utilities {
+  display: flex;
+  align-items: center;
   gap: 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #F5E6D3;
+}
+
+.site-toolbar-utilities > * + * {
+  padding-left: 14px;
+  border-left: 1px solid rgba(245, 230, 211, 0.28);
+}
+
+.site-toolbar-utilities + .site-toolbar-meta {
+  padding-left: 14px;
+  border-left: 1px solid rgba(245, 230, 211, 0.28);
+}
+
+/* Toolbar utilities read as text links, not pill buttons */
+.site-toolbar .month-lock-status.is-badge {
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: inherit;
+  opacity: 0.85;
+  font-size: inherit;
+  font-weight: inherit;
+  gap: 0.35rem;
+}
+
+.site-toolbar .month-lock-status.is-badge:hover {
+  opacity: 1;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  filter: none;
+  box-shadow: none;
+}
+
+.site-toolbar .month-lock-status.is-badge:focus-visible {
+  outline: 2px solid #ffe7a4;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.site-toolbar .month-lock-status.is-draft.is-badge,
+.site-toolbar .month-lock-status.is-meeting_ready.is-badge,
+.site-toolbar .month-lock-status.is-locked.is-badge {
+  background: none;
+  border: none;
+  color: inherit;
+}
+
+.site-toolbar .month-lock-status-month {
+  opacity: 1;
+  font-weight: inherit;
+  border-left: none;
+  padding-left: 0;
 }
 
 .site-toolbar-meta {
@@ -516,9 +568,42 @@
   margin-left: auto;
 }
 
-.site-toolbar-meta .household-access-menu {
+.site-toolbar-meta > * + * {
   padding-left: 14px;
   border-left: 1px solid rgba(245, 230, 211, 0.28);
+}
+
+.site-toolbar-meta .household-access-menu {
+  padding-left: 0;
+  border-left: none;
+}
+
+.site-toolbar-meta .household-access-trigger {
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  opacity: 0.9;
+  font-size: 13px;
+  font-weight: 600;
+  gap: 6px;
+}
+
+.site-toolbar-meta .household-access-trigger:hover,
+.site-toolbar-meta .household-access-menu.is-open .household-access-trigger {
+  background: none;
+  border: none;
+  box-shadow: none;
+  opacity: 1;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.site-toolbar-meta .household-access-trigger:focus-visible {
+  outline: 2px solid #ffe7a4;
+  outline-offset: 3px;
+  border-radius: 4px;
 }
 
 .data-quality-notes {
@@ -530,9 +615,13 @@
 .data-quality-notes-trigger {
   cursor: pointer;
   list-style: none;
-  color: #F5E6D3;
-  opacity: 0.55;
+  color: inherit;
+  opacity: 0.72;
   user-select: none;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
 }
 
 .data-quality-notes-trigger::-webkit-details-marker {
@@ -600,7 +689,6 @@
 
 
 @media (max-width: 900px) {
-  .keyboard-help { display: none; }
   .desk-scene {
     width: min(1600px, calc(100vw - 24px));
   }
@@ -649,6 +737,105 @@
 
 .lock-month-btn:hover {
   background: var(--paper-warm, #f7f2e8);
+}
+
+.month-lock-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-body, inherit);
+  line-height: 1.2;
+  cursor: pointer;
+  text-align: left;
+}
+
+.month-lock-status.is-badge {
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid #c9bfb0;
+  background: #fffdf7;
+  color: #2c2419;
+  box-shadow: 0 1px 3px rgba(44, 36, 25, 0.08);
+}
+
+.month-lock-status.is-badge:hover {
+  filter: brightness(0.98);
+  box-shadow: 0 2px 8px rgba(44, 36, 25, 0.12);
+}
+
+.month-lock-status.is-badge:focus-visible {
+  outline: 2px solid #56707a;
+  outline-offset: 2px;
+}
+
+.month-lock-status.is-draft.is-badge {
+  border-color: #c9bfb0;
+  background: #fffdf7;
+}
+
+.month-lock-status.is-meeting_ready.is-badge {
+  border-color: #7aa889;
+  background: #edf7ef;
+  color: #1f4a2d;
+}
+
+.month-lock-status.is-locked.is-badge {
+  border-color: #2c2419;
+  background: #2c2419;
+  color: #fff9ed;
+}
+
+.month-lock-status.is-loading {
+  opacity: 0.85;
+  cursor: wait;
+}
+
+.month-lock-status-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.month-lock-status-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.month-lock-status-label {
+  font-size: inherit;
+  font-weight: 800;
+}
+
+.month-lock-status-detail {
+  font-size: 0.78rem;
+  font-weight: 600;
+  opacity: 0.88;
+}
+
+.month-lock-status-month {
+  font-size: 0.78rem;
+  font-weight: 700;
+  opacity: 0.82;
+  padding-left: 0.35rem;
+  border-left: 1px solid currentColor;
+}
+
+.month-lock-status-jump {
+  font-size: 0.78rem;
+  font-weight: 800;
+  opacity: 0.9;
+  margin-left: 0.15rem;
+}
+
+.month-lock-status.is-locked .month-lock-status-month,
+.month-lock-status.is-locked .month-lock-status-jump {
+  opacity: 0.85;
+}
+
+#month-lock-control:focus-visible {
+  outline: 2px solid #56707a;
+  outline-offset: 4px;
 }
 
 .carry-forward-actions {

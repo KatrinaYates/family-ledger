@@ -33,6 +33,7 @@ import {
 } from './components/LedgerComponents';
 import { DataQualityNotes } from './components/DataQualityNotes';
 import { HouseholdAccessMenu } from './supabase/HouseholdAccessMenu.jsx';
+import { MonthLockStatus } from './components/MonthLockStatus.jsx';
 
 const sections = {
   snapshot:{number:'01',title:'Financial Snapshot',description:'A quick read on where our financial life stands.',inside:'Connected net worth • Cash • Emergency fund • Retirement • Debt',how:'Start with the big picture before diving into details.',prompt:'What changed most this month?',noteTone:'blue',tone:'teal'},
@@ -352,6 +353,10 @@ export default function App() {
     [resolvedPage, pageId],
   );
 
+  const jumpToMonthLock = useCallback(() => {
+    navigateTo(`${contextMonthId}-handoff-2`);
+  }, [contextMonthId, navigateTo]);
+
   if (
     monthsLoading ||
     (!bootComplete && monthLoading) ||
@@ -484,16 +489,22 @@ export default function App() {
       <div className="site-toolbar" aria-label="Notebook navigation">
         <BreadcrumbNav crumbs={breadcrumbs} onNavigate={navigateTo} />
         <div className="site-toolbar-actions">
-          {resolvedPage.monthId && <DataQualityNotes monthId={resolvedPage.monthId} />}
+          {resolvedPage.monthId && (
+            <div className="site-toolbar-utilities">
+              <MonthLockStatus
+                monthId={contextMonthId}
+                month={displayMonth}
+                onJumpToLock={jumpToMonthLock}
+              />
+              <DataQualityNotes monthId={resolvedPage.monthId} />
+            </div>
+          )}
           <div className="site-toolbar-meta">
-            <span className="keyboard-help" title="Keyboard shortcuts">
-              {usingLocalData && (
-                <span className="data-source-badge" title={`Loaded from local data for ${activeMonth} (gitignored)`}>
-                  Local data
-                </span>
-              )}
-              {'← → pages · ↑ ↓ months · Esc up a level'}
-            </span>
+            {usingLocalData && (
+              <span className="data-source-badge" title={`Loaded from local data for ${activeMonth} (gitignored)`}>
+                Local data
+              </span>
+            )}
             <HouseholdAccessMenu />
           </div>
         </div>

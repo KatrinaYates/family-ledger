@@ -1,21 +1,39 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useMonthContext } from '../../context/MonthContext';
 import { useWorkflow } from '../../hooks/useWorkflow';
 import { ledgerRepository } from '../../repository';
 import { dispatchWorkflowUpdated } from '../../utils/meetingEvents';
 import { getErrorMessage } from '../../utils/getErrorMessage';
+import { MONTH_LOCK_SCROLL_KEY } from '../MonthLockStatus.jsx';
 
 export function LockMonthControl({ className = '' }) {
   const { monthId, month } = useMonthContext();
   const { workflow, version, loading, refresh } = useWorkflow(monthId);
+  const controlRef = useRef(null);
   const [confirming, setConfirming] = useState(false);
   const [unlockConfirming, setUnlockConfirming] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
 
+  useEffect(() => {
+    const scrollTarget = sessionStorage.getItem(MONTH_LOCK_SCROLL_KEY);
+    if (scrollTarget !== monthId || !controlRef.current) return;
+    sessionStorage.removeItem(MONTH_LOCK_SCROLL_KEY);
+    const timer = window.setTimeout(() => {
+      controlRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      controlRef.current?.focus({ preventScroll: true });
+    }, 120);
+    return () => window.clearTimeout(timer);
+  }, [monthId, loading]);
+
   if (loading) {
     return (
-      <div className={`lock-month-control is-loading ${className}`.trim()}>
+      <div
+        ref={controlRef}
+        id="month-lock-control"
+        tabIndex={-1}
+        className={`lock-month-control is-loading ${className}`.trim()}
+      >
         <p className="lock-month-hint">Loading lock status…</p>
       </div>
     );
@@ -43,7 +61,12 @@ export function LockMonthControl({ className = '' }) {
     };
 
     return (
-      <div className={`lock-month-control is-locked ${className}`.trim()}>
+      <div
+        ref={controlRef}
+        id="month-lock-control"
+        tabIndex={-1}
+        className={`lock-month-control is-locked ${className}`.trim()}
+      >
         <p>
           <strong>{month.label} is locked.</strong>{' '}
           {workflow.lockedAt && (
@@ -85,7 +108,12 @@ export function LockMonthControl({ className = '' }) {
   };
 
   return (
-    <div className={`lock-month-control ${className}`.trim()}>
+    <div
+      ref={controlRef}
+      id="month-lock-control"
+      tabIndex={-1}
+      className={`lock-month-control ${className}`.trim()}
+    >
       <p className="lock-month-hint">
         When you are done with the {month.label} meeting, lock this month to protect your notes.
       </p>
