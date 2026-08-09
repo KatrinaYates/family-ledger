@@ -18,14 +18,14 @@ function MeetingUpdate({ update }) {
       <div className="meeting-update-list">
         {update.metrics.map((metric) => (
           <p className="panel-note" key={metric.label}>
-            <strong>{metric.label}</strong>: {metric.monthEnd} at month-end → {metric.current} now{' '}
+            <strong>{metric.label}</strong>: {metric.monthEnd} at month-end → {metric.current} latest connected{' '}
             <span>({metric.change})</span>
           </p>
         ))}
       </div>
       {update.debtBreakdown && (
         <p className="panel-note">
-          Current debt detail: {update.debtBreakdown.creditCards} credit cards + {update.debtBreakdown.loans} loans.
+          Latest connected debt detail: {update.debtBreakdown.creditCards} credit cards + {update.debtBreakdown.loans} loans.
         </p>
       )}
       {update.coverageNote && <p className="panel-note">{update.coverageNote}</p>}
