@@ -146,6 +146,13 @@ export function applyBlankSourceDefaults(sourceData = {}, monthId) {
         future: {
             goals: [],
             upcomingExpenses: [],
+            kidsSavings: {
+                total: '—',
+                monthAdded: '—',
+                accounts: [],
+                note: 'Protected for the kids and excluded from household spendable cash.',
+                ...future.kidsSavings,
+            },
             retirement: {
                 balance: '—',
                 monthContributions: '—',
