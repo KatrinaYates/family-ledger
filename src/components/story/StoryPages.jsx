@@ -79,6 +79,8 @@ export function StoryPages({ page, totalInSection, data, month }) {
   }
 
   const { endingPage, savings, investments, debtPayments } = story;
+  const hasUnclearSavings = Array.isArray(savings.missing) && savings.missing.length > 0;
+
   return (
     <div className="snapshot-page story-page-3">
       <PageWithNotes pageId="story-3">
@@ -96,14 +98,16 @@ export function StoryPages({ page, totalInSection, data, month }) {
             <StickyCard label={`${monthLabel} retirement`} tone="win">
               <p><strong>{investments.monthContributions ?? investments.julyContributions}</strong> contributed across employee, match, profit-sharing, and after-tax.</p>
             </StickyCard>
-            <StickyCard label="Still unclear" tone="missing">
-              <ScrollBody label="Unclear savings items" className="scroll-body-compact">
-                <EditableBulletList
-                  storageKey={meetingKey(month.id, 'story', 3, 'unclear-savings')}
-                  seedItems={savings.missing}
-                />
-              </ScrollBody>
-            </StickyCard>
+            {hasUnclearSavings && (
+              <StickyCard label="Still unclear" tone="missing">
+                <ScrollBody label="Unclear savings items" className="scroll-body-compact">
+                  <EditableBulletList
+                    storageKey={meetingKey(month.id, 'story', 3, 'unclear-savings')}
+                    seedItems={savings.missing}
+                  />
+                </ScrollBody>
+              </StickyCard>
+            )}
             <StickyCard label="Debt payments" tone="default">
               <ScrollBody label="Debt payments" className="scroll-body-compact">
                 <DashedList items={debtPayments.items} />
