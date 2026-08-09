@@ -57,7 +57,6 @@ export function HandoffPages({ page, totalInSection, data, month }) {
               <CarryForwardActions />
             </PanelCard>
           </div>
-          <LockMonthControl className="handoff-lock-control" />
           <div className="story-split-grid handoff-split">
             <aside className="snapshot-side handoff-final-edits">
               <PromptField
@@ -125,6 +124,7 @@ export function HandoffPages({ page, totalInSection, data, month }) {
           )}
         </StickyCard>
       </div>
+      <LockMonthControl className="handoff-lock-control" />
     </div>
   );
 }
