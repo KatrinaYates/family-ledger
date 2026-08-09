@@ -1,4 +1,4 @@
-/** @typedef {{ code?: string, message: string }} DataQualityWarning */
+/** @typedef {{ code?: string, message: string, severity?: 'info' | 'warning' | 'error' }} DataQualityWarning */
 /** @typedef {{ institution: string, lastSync?: string }} StaleConnection */
 /** @typedef {{ name: string, type?: string }} MissingAccount */
 
@@ -25,25 +25,35 @@ export function normalizeDataQuality(raw) {
             ? raw.missingAccounts.filter((item) => item && typeof item === 'object')
             : [],
         warnings: Array.isArray(raw.warnings)
-            ? raw.warnings.filter((item) => item && typeof item.message === 'string' && item.message.trim())
+            ? raw.warnings
+                .filter((item) => item && typeof item.message === 'string' && item.message.trim())
+                .map((item) => ({
+                    ...item,
+                    severity: ['info', 'warning', 'error'].includes(item.severity) ? item.severity : 'warning',
+                }))
             : [],
     };
 }
 
 /**
- * Flatten dataQuality into display-ready banner items.
+ * Flatten dataQuality into display-ready items.
+ * Informational provenance notes are available to callers that explicitly request them,
+ * but do not count as unhealthy data by default.
  * @param {import('../repository/types.js').DataQuality | null | undefined} dataQuality
- * @returns {Array<{ kind: string, text: string }>}
+ * @param {{ includeInfo?: boolean }} [options]
+ * @returns {Array<{ kind: string, text: string, severity: 'info' | 'warning' | 'error' }>}
  */
-export function collectDataQualityItems(dataQuality) {
+export function collectDataQualityItems(dataQuality, { includeInfo = false } = {}) {
     const normalized = normalizeDataQuality(dataQuality);
-    /** @type {Array<{ kind: string, text: string }>} */
+    /** @type {Array<{ kind: string, text: string, severity: 'info' | 'warning' | 'error' }>} */
     const items = [];
 
     for (const warning of normalized.warnings) {
+        if (!includeInfo && warning.severity === 'info') continue;
         items.push({
             kind: warning.code || 'warning',
             text: warning.message.trim(),
+            severity: warning.severity || 'warning',
         });
     }
 
@@ -54,6 +64,7 @@ export function collectDataQualityItems(dataQuality) {
         items.push({
             kind: 'stale_connection',
             text: `${institution} connection may be stale${syncNote}.`,
+            severity: 'error',
         });
     }
 
@@ -64,6 +75,7 @@ export function collectDataQualityItems(dataQuality) {
         items.push({
             kind: 'missing_account',
             text: `Missing account: ${name}${typeNote}.`,
+            severity: 'error',
         });
     }
 
