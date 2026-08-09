@@ -8,6 +8,8 @@ export function enrichFuture(future) {
     kidsSavings: {
       total: '—',
       monthAdded: '—',
+      monthContributions: '—',
+      monthInterest: '—',
       accounts: [],
       note: 'Protected for the kids and excluded from household spendable cash.',
       ...kidsSavings,
