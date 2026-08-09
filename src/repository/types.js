@@ -20,6 +20,7 @@
  * @typedef {Object} DataQualityWarning
  * @property {string} [code]
  * @property {string} message
+ * @property {'info' | 'warning' | 'error'} [severity]
  */
 
 /**
