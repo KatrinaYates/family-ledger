@@ -3,7 +3,7 @@ import {
     listAvailableMonthIds,
     isUsingLocalData,
 } from '../data/loadLedgerMonth.js';
-import { mergeMonthView } from '../data/normalizeLedgerMonth.js';
+import { mergeMonthView, resolveMonthView } from '../data/normalizeLedgerMonth.js';
 import { enrichLedgerMonth } from '../data/enrichLedgerMonth.js';
 import { createBlankLedgerMonth } from './createBlankLedgerMonth.js';
 import { LedgerRepository } from './LedgerRepository.js';
@@ -14,7 +14,7 @@ import {
     StorageError,
     ValidationError,
 } from './errors.js';
-import { dispatchLedgerMonthsUpdated } from '../utils/meetingEvents.js';
+import { dispatchLedgerMonthsUpdated, dispatchLedgerMonthUpdated } from '../utils/meetingEvents.js';
 
 const ACTIONS_KEY = 'fl-actions';
 const WORKFLOW_KEY_PREFIX = 'fl-ledger-workflow-';
@@ -110,7 +110,7 @@ export class LocalLedgerRepository extends LedgerRepository {
         const overlay = readJson(`${CREATED_RECORD_PREFIX}${monthId}`, null);
         let record = fromFile;
         if (overlay) {
-            record = {
+            const merged = {
                 ...fromFile,
                 ...overlay,
                 version: overlay.version ?? fromFile.version ?? 1,
@@ -119,12 +119,9 @@ export class LocalLedgerRepository extends LedgerRepository {
                 generation: { ...fromFile.generation, ...(overlay.generation ?? {}) },
                 dataQuality: overlay.dataQuality ?? fromFile.dataQuality,
                 sourceData: overlay.sourceData ?? fromFile.sourceData,
-                generatedAnalysis:
-                    overlay.generatedAnalysis && Object.keys(overlay.generatedAnalysis).length > 0
-                        ? overlay.generatedAnalysis
-                        : fromFile.generatedAnalysis,
                 meetingData: overlay.meetingData ?? fromFile.meetingData,
             };
+            record = enrichLedgerMonth(merged);
         }
         this.records.set(monthId, this.applyWorkflowOverride(record));
         return this.records.get(monthId);
@@ -210,7 +207,7 @@ export class LocalLedgerRepository extends LedgerRepository {
 
     async getMonth(monthId) {
         const record = this.requireRecord(monthId);
-        return mergeMonthView(record);
+        return resolveMonthView(record);
     }
 
     async createMonth(month) {
@@ -221,9 +218,11 @@ export class LocalLedgerRepository extends LedgerRepository {
         if (this.getRecord(monthId)) {
             throw new ValidationError(`Month "${monthId}" already exists.`, { monthId });
         }
-        const record = month.schemaVersion ? month : createBlankLedgerMonth(monthId);
+        const base = month.schemaVersion ? month : createBlankLedgerMonth(monthId);
+        const record = enrichLedgerMonth(base, { touchGeneration: true });
         const persisted = this.persistRecord(record);
         dispatchLedgerMonthsUpdated();
+        dispatchLedgerMonthUpdated(monthId);
         return persisted;
     }
 
@@ -251,6 +250,7 @@ export class LocalLedgerRepository extends LedgerRepository {
             generation: enriched.generation,
         };
         const persisted = this.persistRecord(updated, options);
+        dispatchLedgerMonthUpdated(monthId);
         return mergeMonthView(persisted);
     }
 
@@ -267,6 +267,7 @@ export class LocalLedgerRepository extends LedgerRepository {
         };
 
         const persisted = this.persistRecord(updated, options);
+        dispatchLedgerMonthUpdated(monthId);
         return mergeMonthView(persisted);
     }
 

@@ -1,6 +1,6 @@
 import { LedgerRepository } from './LedgerRepository.js';
 import { createBlankLedgerMonth } from './createBlankLedgerMonth.js';
-import { mergeMonthView } from '../data/normalizeLedgerMonth.js';
+import { mergeMonthView, resolveMonthView } from '../data/normalizeLedgerMonth.js';
 import { enrichLedgerMonth } from '../data/enrichLedgerMonth.js';
 import {
     ConflictError,
@@ -9,7 +9,7 @@ import {
     StorageError,
     ValidationError,
 } from './errors.js';
-import { dispatchLedgerMonthsUpdated } from '../utils/meetingEvents.js';
+import { dispatchLedgerMonthsUpdated, dispatchLedgerMonthUpdated } from '../utils/meetingEvents.js';
 
 function toRecord(row) {
     return {
@@ -114,6 +114,7 @@ export class SupabaseLedgerRepository extends LedgerRepository {
         if (householdError) throw storageError(householdError, 'Could not load your households.');
 
         const byId = new Map((households ?? []).map((row) => [row.id, row]));
+        const seen = new Set();
         return memberships
             .map((membership) => {
                 const household = byId.get(membership.household_id);
@@ -125,7 +126,12 @@ export class SupabaseLedgerRepository extends LedgerRepository {
                     createdAt: household.created_at,
                 };
             })
-            .filter(Boolean);
+            .filter(Boolean)
+            .filter((entry) => {
+                if (seen.has(entry.id)) return false;
+                seen.add(entry.id);
+                return true;
+            });
     }
 
     async setActiveHousehold(householdId) {
@@ -272,7 +278,7 @@ export class SupabaseLedgerRepository extends LedgerRepository {
     }
 
     async getMonth(monthId) {
-        return mergeMonthView(await this.requireRecord(monthId));
+        return resolveMonthView(await this.requireRecord(monthId));
     }
 
     async getLedgerRecord(monthId) {
@@ -295,7 +301,8 @@ export class SupabaseLedgerRepository extends LedgerRepository {
             throw new ValidationError(`Month "${month.monthId}" already exists.`, { monthId: month.monthId });
         }
         const householdId = await this.requireHouseholdId();
-        const record = month.schemaVersion ? month : createBlankLedgerMonth(month.monthId);
+        const base = month.schemaVersion ? month : createBlankLedgerMonth(month.monthId);
+        const record = enrichLedgerMonth(base, { touchGeneration: true });
         const { data, error } = await this.client
             .from('ledger_months')
             .insert(toMonthRow(record, householdId))
@@ -303,6 +310,7 @@ export class SupabaseLedgerRepository extends LedgerRepository {
             .single();
         if (error) throw storageError(error, 'Could not create the month.');
         dispatchLedgerMonthsUpdated();
+        dispatchLedgerMonthUpdated(record.monthId);
         return toRecord(data);
     }
 
@@ -340,13 +348,17 @@ export class SupabaseLedgerRepository extends LedgerRepository {
             sourceData,
             workflow: { ...record.workflow, sourceAsOf: new Date().toISOString() },
         }, { touchGeneration: true });
-        return mergeMonthView(await this.persistRecord(enriched, options));
+        const view = mergeMonthView(await this.persistRecord(enriched, options));
+        dispatchLedgerMonthUpdated(monthId);
+        return view;
     }
 
     async regenerateAnalysis(monthId, options) {
         const record = await this.requireRecord(monthId);
         const enriched = enrichLedgerMonth(record, { touchGeneration: true });
-        return mergeMonthView(await this.persistRecord(enriched, options));
+        const view = mergeMonthView(await this.persistRecord(enriched, options));
+        dispatchLedgerMonthUpdated(monthId);
+        return view;
     }
 
     async assertMeetingWritable(monthId) {

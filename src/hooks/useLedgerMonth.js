@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ledgerRepository } from '../repository';
-import { WORKFLOW_UPDATED_EVENT } from '../utils/meetingEvents';
+import { WORKFLOW_UPDATED_EVENT, LEDGER_MONTH_UPDATED_EVENT } from '../utils/meetingEvents';
 import { getErrorMessage } from '../utils/getErrorMessage';
 import { useAsyncGuard } from './useAsyncGuard';
 
@@ -55,10 +55,18 @@ export function useLedgerMonth(monthId) {
     }, [refresh]);
 
     useEffect(() => {
-        const handleUpdate = () => refresh();
+        const handleUpdate = (event) => {
+            const updatedMonthId = event?.detail?.monthId;
+            if (updatedMonthId && updatedMonthId !== monthId) return;
+            refresh();
+        };
         window.addEventListener(WORKFLOW_UPDATED_EVENT, handleUpdate);
-        return () => window.removeEventListener(WORKFLOW_UPDATED_EVENT, handleUpdate);
-    }, [refresh]);
+        window.addEventListener(LEDGER_MONTH_UPDATED_EVENT, handleUpdate);
+        return () => {
+            window.removeEventListener(WORKFLOW_UPDATED_EVENT, handleUpdate);
+            window.removeEventListener(LEDGER_MONTH_UPDATED_EVENT, handleUpdate);
+        };
+    }, [monthId, refresh]);
 
     return { data, version, loading, error, refresh };
 }

@@ -1,4 +1,5 @@
 import { normalizeDataQuality } from './normalizeDataQuality.js';
+import { enrichLedgerMonth } from './enrichLedgerMonth.js';
 
 const SECTION_KEYS = [
     'meta',
@@ -89,6 +90,15 @@ export function mergeMonthView(record) {
         ...generatedAnalysis,
         meta: sourceData.meta,
     };
+}
+
+/**
+ * Derive the renderable month view from source_data.
+ * Never trusts stored generated_analysis alone — always re-enriches from source.
+ * @param {import('../repository/types.js').LedgerMonth} record
+ */
+export function resolveMonthView(record) {
+    return mergeMonthView(enrichLedgerMonth(record));
 }
 
 /** Rename legacy field names inside source data. */

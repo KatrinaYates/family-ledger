@@ -7,11 +7,19 @@ import { getErrorMessage } from '../../utils/getErrorMessage';
 
 export function LockMonthControl({ className = '' }) {
   const { monthId, month } = useMonthContext();
-  const { workflow, version, refresh } = useWorkflow(monthId);
+  const { workflow, version, loading, refresh } = useWorkflow(monthId);
   const [confirming, setConfirming] = useState(false);
   const [unlockConfirming, setUnlockConfirming] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
+
+  if (loading) {
+    return (
+      <div className={`lock-month-control is-loading ${className}`.trim()}>
+        <p className="lock-month-hint">Loading lock status…</p>
+      </div>
+    );
+  }
 
   if (workflow.status === 'locked') {
     const handleUnlock = async () => {

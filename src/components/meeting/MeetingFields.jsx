@@ -34,10 +34,15 @@ function seedActionRows(rows) {
 }
 
 function seedBulletItems(seeds) {
-  return seeds.map((text, index) => ({
-    id: `seed-${index}`,
-    text,
-  }));
+  return seeds.map((entry, index) => {
+    const text = typeof entry === 'string'
+      ? entry
+      : entry?.text ?? entry?.name ?? entry?.label ?? String(entry ?? '');
+    return {
+      id: `seed-${index}`,
+      text,
+    };
+  });
 }
 
 function FieldSaveError({ message }) {

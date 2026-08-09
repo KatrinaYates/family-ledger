@@ -36,6 +36,7 @@ export function applyBlankSourceDefaults(sourceData = {}, monthId) {
 
     return {
         meta: {
+            monthId,
             month: label,
             year,
             meetingDate: '',

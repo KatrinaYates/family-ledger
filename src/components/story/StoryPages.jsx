@@ -96,7 +96,7 @@ export function StoryPages({ page, totalInSection, data, month }) {
           <SummaryPanel title={story.explanation.title} rows={endingPage.explanationRows} />
           <aside className="snapshot-side">
             <StickyCard label={`${monthLabel} retirement`} tone="win">
-              <p><strong>{investments.monthContributions ?? investments.julyContributions}</strong> contributed across employee, match, profit-sharing, and after-tax.</p>
+              <p><strong>{investments.monthContributions}</strong> contributed across employee, match, profit-sharing, and after-tax.</p>
             </StickyCard>
             {hasUnclearSavings && (
               <StickyCard label="Still unclear" tone="missing">

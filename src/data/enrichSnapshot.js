@@ -28,9 +28,7 @@ function insightSummaryRows(snapshot) {
 /** Derives snapshot page presentation data from core financial figures. */
 export function enrichSnapshot(snapshot = {}, meta) {
   const monthName = meta?.month?.trim() || 'the month';
-  const contributions = snapshot.retirement?.monthContributions
-    ?? snapshot.retirement?.julyContributions
-    ?? '—';
+  const contributions = snapshot.retirement?.monthContributions ?? '—';
 
   const cashAccounts = (snapshot.cash?.accounts ?? []).map((account) => ({
     ...account,

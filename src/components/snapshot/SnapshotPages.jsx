@@ -88,7 +88,7 @@ export function SnapshotPages({ page, totalInSection, data, month }) {
                 <>
                   <ContributionBlock
                     label={`${monthLabel} contributions recorded`}
-                    value={retirement.monthContributions ?? retirement.julyContributions}
+                    value={retirement.monthContributions}
                     note={retirement.contributionNote}
                   />
                   {retirement.note && <WarningBanner>{retirement.note}</WarningBanner>}

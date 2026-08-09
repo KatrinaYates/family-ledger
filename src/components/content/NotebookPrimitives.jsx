@@ -183,13 +183,13 @@ export function RankedTable({ columns, rows }) {
   );
 }
 
-export function ChangeTable({ rows = [] }) {
+export function ChangeTable({ rows = [], priorLabel = 'Prior', currentLabel = 'Current' }) {
   return (
     <div className="change-table">
       <div className="change-row head">
         <span>Category</span>
-        <span>June</span>
-        <span>July</span>
+        <span>{priorLabel}</span>
+        <span>{currentLabel}</span>
         <span>Change</span>
       </div>
       {rows.map((row) => (

@@ -8,9 +8,10 @@ import { fileURLToPath } from 'url';
 import sample202607 from '../src/data/months/2026-07.sample.js';
 import sample202608 from '../src/data/months/2026-08.sample.js';
 import sample202609 from '../src/data/months/2026-09.sample.js';
-import { normalizeToContract, mergeMonthView } from '../src/data/normalizeLedgerMonth.js';
+import { normalizeToContract, mergeMonthView, resolveMonthView } from '../src/data/normalizeLedgerMonth.js';
 import { enrichLedgerMonth } from '../src/data/enrichLedgerMonth.js';
 import { createBlankLedgerMonth } from '../src/repository/createBlankLedgerMonth.js';
+import { getComparisonMonthLabels } from '../src/utils/monthLabels.js';
 import {
   ConflictError,
   LedgerNotFoundError,
@@ -96,6 +97,90 @@ try {
   assert(typeof LockedMonthError === 'function', 'LockedMonthError class exists');
   assert(typeof ConflictError === 'function', 'ConflictError class exists');
 
+  // Stale generated_analysis must not override fresher source_data on read.
+  const staleRecord = loadSampleRecord(samples['2026-07'], '2026-07');
+  staleRecord.sourceData.snapshot = {
+    ...staleRecord.sourceData.snapshot,
+    cash: {
+      ...(staleRecord.sourceData.snapshot?.cash ?? {}),
+      total: '$17,799.42',
+      status: 'Connected',
+    },
+  };
+  staleRecord.generatedAnalysis = {
+    ...staleRecord.generatedAnalysis,
+    snapshot: {
+      ...(staleRecord.generatedAnalysis.snapshot ?? {}),
+      overview: {
+        ...(staleRecord.generatedAnalysis.snapshot?.overview ?? {}),
+        kpis: [
+          { icon: '💵', label: 'Connected Cash', value: '—', chip: { text: 'Needs month-end detail', tone: 'blue' }, note: '' },
+        ],
+      },
+      cash: {
+        ...(staleRecord.generatedAnalysis.snapshot?.cash ?? {}),
+        total: '—',
+      },
+    },
+  };
+  const repairedView = resolveMonthView(staleRecord);
+  assert(
+    repairedView.snapshot?.overview?.kpis?.find((kpi) => kpi.label === 'Connected Cash')?.value === '$17,799.42',
+    'resolveMonthView should derive cash KPI from source_data, not stale generated_analysis',
+  );
+  assert(
+    repairedView.snapshot?.cash?.total === '$17,799.42',
+    'resolveMonthView should expose updated cash total from source_data',
+  );
+
+  const augustLabels = getComparisonMonthLabels('2026-08', 'August');
+  assert(augustLabels.currentLabel === 'August', 'August comparison current label');
+  assert(augustLabels.priorLabel === 'July', 'August comparison prior label should be July');
+
+  const enrichedAugust = loadSampleRecord(samples['2026-08'], '2026-08');
+  const augustSpendingView = mergeMonthView(enrichedAugust);
+  assert(
+    augustSpendingView.spending?.comparisonLabels?.priorLabel === 'July',
+    'enriched spending should include dynamic comparison labels',
+  );
+
+  function dedupeHouseholds(memberships, households) {
+    const byId = new Map(households.map((row) => [row.id, row]));
+    const seen = new Set();
+    return memberships
+      .map((membership) => {
+        const household = byId.get(membership.household_id);
+        if (!household) return null;
+        return { id: household.id, name: household.name };
+      })
+      .filter(Boolean)
+      .filter((entry) => {
+        if (seen.has(entry.id)) return false;
+        seen.add(entry.id);
+        return true;
+      });
+  }
+
+  const duplicateMembershipFixture = [
+    { household_id: 'hh-1', role: 'member' },
+    { household_id: 'hh-1', role: 'member' },
+    { household_id: 'hh-2', role: 'member' },
+  ];
+  const householdFixture = [
+    { id: 'hh-1', name: 'Home' },
+    { id: 'hh-2', name: 'Other' },
+  ];
+  const deduped = dedupeHouseholds(duplicateMembershipFixture, householdFixture);
+  assert(deduped.length === 2, 'household list should dedupe by household_id');
+  assert(deduped[0].id === 'hh-1' && deduped[1].id === 'hh-2', 'deduped households preserve first-seen order');
+
+  const supabaseRepoSource = fs.readFileSync(
+    path.join(__dirname, '../src/repository/SupabaseLedgerRepository.js'),
+    'utf8',
+  );
+  assert(supabaseRepoSource.includes('resolveMonthView'), 'Supabase getMonth uses resolveMonthView');
+  assert(supabaseRepoSource.includes('seen.has(entry.id)'), 'listHouseholds dedupes household_id');
+
   const blankRecord = createBlankLedgerMonth('2026-07');
   const bumped = bumpRecordVersion(blankRecord);
   assert(bumped.version === 2, 'bumpRecordVersion increments version');
@@ -113,6 +198,7 @@ try {
     path.join(__dirname, '../src/repository/LocalLedgerRepository.js'),
     'utf8',
   );
+  assert(localRepoSource.includes('resolveMonthView'), 'Local getMonth uses resolveMonthView');
   assert(localRepoSource.includes('async listNavigableMonthIds'), 'listNavigableMonthIds is async');
   assert(localRepoSource.includes('async unlockMonth'), 'unlockMonth is async');
   assert(localRepoSource.includes('async deleteAction'), 'deleteAction is async');

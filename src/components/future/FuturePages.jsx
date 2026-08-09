@@ -37,7 +37,7 @@ export function FuturePages({ page, totalInSection, data, month }) {
             {
               icon: '📥',
               label: `${monthLabel} contributions`,
-              value: retirement.monthContributions ?? retirement.julyContributions,
+              value: retirement.monthContributions,
               chip: { text: 'Still investing', tone: 'green' },
             },
           ]} />

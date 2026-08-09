@@ -80,6 +80,7 @@ export function SpendingPages({ page, totalInSection, data, month }) {
   }
 
   const { changes, bigPurchases, questions, changesPage } = spending;
+  const { priorLabel, currentLabel } = changesPage?.comparisonLabels ?? spending.comparisonLabels ?? {};
   return (
     <div className="snapshot-page spending-page-2">
       <PageWithNotes pageId="spending-2">
@@ -92,7 +93,11 @@ export function SpendingPages({ page, totalInSection, data, month }) {
         />
         <div className="story-split-grid spending-page-2-grid">
           <PanelCard title="Largest changes from prior month" className="spending-changes-panel" scrollLabel="Category changes">
-            <ChangeTable rows={changes} />
+            <ChangeTable
+              rows={changes}
+              priorLabel={priorLabel}
+              currentLabel={currentLabel}
+            />
           </PanelCard>
           <div className="spending-page-2-side">
             <PanelCard title="Big purchases" scrollLabel="Big purchases" className="spending-purchases-panel">
