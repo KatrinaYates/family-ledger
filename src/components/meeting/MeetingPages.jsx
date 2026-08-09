@@ -9,6 +9,30 @@ import { meetingConversationKey } from '../../utils/meetingKeys';
 import { meetingKey } from '../../utils/meetingKeys';
 import { EditableQuestions, PageWithNotes } from './MeetingFields';
 
+function MeetingUpdate({ update }) {
+  if (!update?.metrics?.length) return null;
+
+  return (
+    <PanelCard title={update.label || 'Meeting Update'} className="meeting-update-card">
+      <p className="panel-note">{update.note}</p>
+      <div className="meeting-update-list">
+        {update.metrics.map((metric) => (
+          <p className="panel-note" key={metric.label}>
+            <strong>{metric.label}</strong>: {metric.monthEnd} at month-end → {metric.current} now{' '}
+            <span>({metric.change})</span>
+          </p>
+        ))}
+      </div>
+      {update.debtBreakdown && (
+        <p className="panel-note">
+          Current debt detail: {update.debtBreakdown.creditCards} credit cards + {update.debtBreakdown.loans} loans.
+        </p>
+      )}
+      {update.coverageNote && <p className="panel-note">{update.coverageNote}</p>}
+    </PanelCard>
+  );
+}
+
 export function MeetingPages({ page, totalInSection, data, month }) {
   const { meeting, meta } = data;
   const monthLabel = month?.label || meta?.month || 'This month';
@@ -31,6 +55,7 @@ export function MeetingPages({ page, totalInSection, data, month }) {
             badge="Talk together"
             badgeVariant="talk"
           />
+          <MeetingUpdate update={meeting.currentUpdate} />
           <div className="meeting-prompt-grid">
             <PromptField label="What surprised us?" value={surprisedField.value} onChange={surprisedField.setValue} />
             <PromptField label="What felt good?" value={feltGoodField.value} onChange={feltGoodField.setValue} />
