@@ -55,7 +55,7 @@
   /* Notebook / desk scene sizing */
   --desk-gutter: clamp(12px, 2vw, 32px);
   --desk-max: min(calc(100vw - var(--desk-gutter) * 2), 1680px);
-  --book-height: 85vh;
+  --book-height: 80vh;
   --stage-height: var(--book-height);
 }
 

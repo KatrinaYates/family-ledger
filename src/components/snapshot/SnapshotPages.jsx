@@ -18,7 +18,6 @@ import {
   PageWithNotes,
 } from '../meeting/MeetingFields';
 import { meetingKey } from '../../utils/meetingKeys';
-import { LockMonthControl } from '../handoff/LockMonthControl';
 
 export function SnapshotPages({ page, totalInSection, data, month }) {
   const { snapshot, meta } = data;
@@ -146,7 +145,6 @@ export function SnapshotPages({ page, totalInSection, data, month }) {
                 seedItems={debtPage.readyToLock}
               />
             </StickyCard>
-            <LockMonthControl />
           </aside>
         </div>
       </PageWithNotes>
