@@ -1467,7 +1467,19 @@ main > .desk-scene {
 }
 
 .panel-body {
-  overflow: hidden;
+  overflow-y: auto;
+}
+
+/* Standalone cards must not expand to fill the page (prevents overlap with headers) */
+.panel-stack.panel-stack-auto,
+.meeting-update-card {
+  flex: 0 0 auto;
+  height: auto;
+  max-height: min(38vh, 320px);
+}
+
+.meeting-update-card .panel-body {
+  overflow-y: auto;
 }
 
 .scroll-body::-webkit-scrollbar {
@@ -1522,6 +1534,29 @@ main > .desk-scene {
   font-family: var(--font-data);
   font-weight: 700;
   color: #2D3548;
+  font-variant-numeric: tabular-nums;
+}
+
+.snapshot-kpi-value.is-with-goal {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  gap: 0.2em;
+  white-space: nowrap;
+  font-size: clamp(24px, 2.1vw, 32px);
+}
+
+.snapshot-kpi-value-primary {
+  flex-shrink: 0;
+}
+
+.snapshot-kpi-value-secondary {
+  flex-shrink: 1;
+  min-width: 0;
+  font-size: clamp(14px, 1.15vw, 17px);
+  font-weight: 600;
+  letter-spacing: 0;
+  color: #737b84;
 }
 
 .snapshot-kpi p {
@@ -1565,9 +1600,34 @@ main > .desk-scene {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 1.65fr 0.8fr;
+  grid-template-columns: minmax(0, 1.65fr) minmax(0, 0.8fr);
   gap: 14px;
   overflow: hidden;
+  align-items: stretch;
+}
+
+.snapshot-grid-main > * {
+  min-width: 0;
+}
+
+.snapshot-page-1 .snapshot-panel {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.snapshot-page-1 .snapshot-panel h2 {
+  flex-shrink: 0;
+}
+
+.snapshot-page-1 .snapshot-panel .scroll-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.snapshot-page-1 .snapshot-side {
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .snapshot-panel {
@@ -1934,8 +1994,7 @@ main > .desk-scene {
 .debt-detail-body {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 .debt-groups-large {
@@ -2342,10 +2401,49 @@ main > .desk-scene {
 .page-with-notes-body {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
+  gap: 10px;
   padding-right: 2px;
+}
+
+/* Meeting page 1 — header + update card + scrollable prompts, no page scroll */
+.meeting-page-1 .page-with-notes-body {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 10px;
+}
+
+.meeting-prompt-grid {
+  display: grid;
+  gap: 14px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+  align-content: start;
+}
+
+/* Meeting page 2 — questions fill remaining space; insight sizes to content */
+.meeting-page-2 .page-with-notes-body {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 12px;
+}
+
+.meeting-page-2 .page-with-notes-body > .panel-stack:nth-child(2) {
+  min-height: 0;
+  height: 100%;
+}
+
+.meeting-page-2 .page-with-notes-body > .panel-stack:nth-child(3) {
+  flex: 0 0 auto;
+  height: auto;
+  max-height: min(34vh, 260px);
+}
+
+.meeting-page-2 .page-with-notes-body > .panel-stack:nth-child(3) .panel-body {
+  overflow-y: auto;
 }
 
 .section-notes-panel {
@@ -2595,13 +2693,19 @@ main > .desk-scene {
   flex: 0 0 auto;
 }
 
+.handoff-page-1 .page-with-notes-body {
+  display: grid;
+  grid-template-rows: auto minmax(120px, 28%) minmax(0, 1fr) minmax(100px, 24%);
+  gap: 10px;
+  overflow: hidden;
+}
+
 .handoff-summary-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
   flex-shrink: 0;
   min-height: 0;
-  max-height: 200px;
   align-items: stretch;
 }
 
@@ -2691,9 +2795,9 @@ main > .desk-scene {
 }
 
 .handoff-page-1 .handoff-split {
-  flex: 1;
+  margin-top: 0;
   min-height: 0;
-  margin-top: 10px;
+  overflow: hidden;
 }
 
 .handoff-page-2 .handoff-feedback-grid {
@@ -2816,6 +2920,47 @@ main > .desk-scene {
   gap: 12px;
 }
 
+/* Future page 2 — compact kid cards + goals grid */
+.future-page-2 .page-with-notes-body {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 12px;
+  overflow: hidden;
+}
+
+.kids-savings-section {
+  flex-shrink: 0;
+}
+
+.kids-savings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.kids-savings-card {
+  height: auto;
+}
+
+.kids-savings-card.panel-stack {
+  height: auto;
+}
+
+.kids-savings-growth {
+  margin: 0;
+}
+
+.kids-savings-household-note {
+  margin: 10px 0 0;
+  font-size: max(var(--text-support-min), 13px);
+  color: #737b84;
+}
+
+.future-page-2 .story-split-grid {
+  min-height: 0;
+  overflow: hidden;
+}
+
 .writing-area textarea {
   width: 100%;
   min-height: 190px;
@@ -2883,7 +3028,7 @@ main > .desk-scene {
   }
 
   .page-with-notes-body {
-    overflow: visible;
+    overflow: hidden;
   }
 
   .meeting-rundown-scroll {
@@ -2914,6 +3059,16 @@ main > .desk-scene {
     overflow: visible;
     grid-template-rows: auto;
     grid-template-columns: 1fr;
+  }
+
+  .kids-savings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .future-page-2 .page-with-notes-body {
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
   }
 
   .snapshot-panel,

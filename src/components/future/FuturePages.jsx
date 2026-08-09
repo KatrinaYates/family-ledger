@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  DashedList,
   MetricKpiRow,
   PanelCard,
   SectionPageHeader,
@@ -11,6 +10,19 @@ import {
   PageWithNotes,
 } from '../meeting/MeetingFields';
 import { meetingKey } from '../../utils/meetingKeys';
+
+function kidGrowthLine(kid, monthLabel) {
+  const hasGrowth = kid.monthAdded || kid.monthContributions || kid.monthInterest;
+  if (!hasGrowth) return null;
+
+  return (
+    <p className="panel-note kids-savings-growth">
+      {monthLabel} growth: <strong>{kid.monthAdded ?? '—'}</strong>
+      {' '}
+      ({kid.monthContributions ?? '—'} contributed + {kid.monthInterest ?? '—'} interest)
+    </p>
+  );
+}
 
 export function FuturePages({ page, totalInSection, data, month }) {
   const { future, meta } = data;
@@ -71,14 +83,33 @@ export function FuturePages({ page, totalInSection, data, month }) {
           badgeVariant="final"
         />
         {kidsSavings.accounts.length > 0 && (
-          <PanelCard title="Kids’ Savings" total={kidsSavings.total}>
-            <DashedList items={kidsSavings.accounts} />
-            <p className="panel-note">
-              {monthLabel} growth: <strong>{kidsSavings.monthAdded}</strong>
-              {' '}({kidsSavings.monthContributions} contributed + {kidsSavings.monthInterest} interest).{' '}
-              {kidsSavings.note}
-            </p>
-          </PanelCard>
+          <div className="kids-savings-section">
+            <div className="kids-savings-grid" aria-label="Kids savings by child">
+              {kidsSavings.accounts.map((kid) => (
+                <PanelCard
+                  key={kid.name}
+                  title={kid.name}
+                  total={kid.balance}
+                  className="kids-savings-card"
+                >
+                  {kidGrowthLine(kid, monthLabel)}
+                </PanelCard>
+              ))}
+            </div>
+            {(kidsSavings.monthAdded || kidsSavings.note) && (
+              <p className="panel-note kids-savings-household-note">
+                {kidsSavings.monthAdded && (
+                  <>
+                    Household {monthLabel} total: <strong>{kidsSavings.monthAdded}</strong>
+                    {' '}
+                    ({kidsSavings.monthContributions} contributed + {kidsSavings.monthInterest} interest).
+                    {' '}
+                  </>
+                )}
+                {kidsSavings.note}
+              </p>
+            )}
+          </div>
         )}
         <div className="story-split-grid">
           <PanelCard title="Shared goals" scrollLabel="Family financial goals">

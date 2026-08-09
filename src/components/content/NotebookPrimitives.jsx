@@ -14,6 +14,33 @@ export function StatusBadge({ children, variant = 'default' }) {
   return <span className={`status-badge status-badge-${variant}`}>{children}</span>;
 }
 
+const KPI_GOAL_SPLIT = /\s+\/\s+/;
+
+function renderKpiValue(value) {
+  if (value == null || value === '—') return value;
+
+  const text = String(value).trim();
+  const parts = text.split(KPI_GOAL_SPLIT);
+  if (parts.length !== 2 || !parts[0] || !parts[1]) return text;
+
+  return (
+    <>
+      <span className="snapshot-kpi-value-primary">{parts[0]}</span>
+      <span className="snapshot-kpi-value-secondary">
+        {' / '}
+        {parts[1]}
+      </span>
+    </>
+  );
+}
+
+function kpiValueClassName(value) {
+  if (value == null || value === '—') return 'snapshot-kpi-value';
+  return KPI_GOAL_SPLIT.test(String(value).trim())
+    ? 'snapshot-kpi-value is-with-goal'
+    : 'snapshot-kpi-value';
+}
+
 export function MetricKpi({ icon, label, value, chip, note, indicator }) {
   const chipTone = CHIP_TONES.includes(chip?.tone) ? chip.tone : 'green';
   return (
@@ -24,7 +51,7 @@ export function MetricKpi({ icon, label, value, chip, note, indicator }) {
           <span aria-hidden="true">{indicator}</span>
         )}
       </div>
-      <strong className="snapshot-kpi-value">{value}</strong>
+      <strong className={kpiValueClassName(value)}>{renderKpiValue(value)}</strong>
       {chip && <span className={`snapshot-chip ${chipTone}`}>{chip.text}</span>}
     </article>
   );

@@ -38,7 +38,11 @@ export function SnapshotPages({ page, totalInSection, data, month }) {
           />
           <MetricKpiRow items={overview.kpis} />
           <div className="snapshot-grid-main">
-            <SummaryPanel title="What the headline numbers mean" rows={overview.summaryRows} />
+            <SummaryPanel
+              title="What the headline numbers mean"
+              rows={overview.summaryRows}
+              scrollLabel="Headline number summaries"
+            />
             <aside className="snapshot-side">
               <StickyCard label="Biggest win" tone="win">
                 <p>{overview.biggestWin}</p>
