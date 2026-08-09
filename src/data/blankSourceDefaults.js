@@ -149,6 +149,8 @@ export function applyBlankSourceDefaults(sourceData = {}, monthId) {
             kidsSavings: {
                 total: '—',
                 monthAdded: '—',
+                monthContributions: '—',
+                monthInterest: '—',
                 accounts: [],
                 note: 'Protected for the kids and excluded from household spendable cash.',
                 ...future.kidsSavings,
