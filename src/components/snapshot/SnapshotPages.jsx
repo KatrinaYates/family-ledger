@@ -61,16 +61,46 @@ export function SnapshotPages({ page, totalInSection, data, month }) {
 
   if (page === 2) {
     const { cash, retirement, emergencyFund } = snapshot;
+    const cashSummary = [
+      {
+        icon: '💸',
+        label: 'Available household cash',
+        value: cash.availableTotal,
+        chip: { text: 'Spendable', tone: 'green' },
+      },
+      {
+        icon: '🔒',
+        label: 'Protected cash',
+        value: cash.protectedTotal,
+        chip: { text: 'Bills · kids · savings', tone: 'yellow' },
+      },
+      {
+        icon: '🌱',
+        label: 'Retirement',
+        value: retirement.totalExact || retirement.total,
+        chip: { text: retirement.protectionLabel, tone: 'purple' },
+      },
+    ];
+    if (cash.unclassifiedTotal) {
+      cashSummary.push({
+        icon: '❓',
+        label: 'Needs classification',
+        value: cash.unclassifiedTotal,
+        chip: { text: 'Review', tone: 'watch' },
+      });
+    }
+
     return (
       <div className="snapshot-page snapshot-page-2">
         <PageWithNotes pageId="snapshot-2">
           <SectionPageHeader
             eyebrow={`${monthLabel} ${year} · Financial Snapshot · Page ${page} of ${totalInSection}`}
             title="Cash & Retirement"
-            subtitle="Where the money is sitting today and which balances are truly available."
+            subtitle="What was truly available at month-end versus money already protected for bills, kids, savings, and retirement."
             badge="Snapshot continued"
             badgeVariant="continued"
           />
+          <MetricKpiRow items={cashSummary} />
           <div className="snapshot-cash-grid">
             <PanelCard
               title="Cash allocation"
