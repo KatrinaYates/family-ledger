@@ -211,7 +211,11 @@ try {
     assert(Array.isArray(view.month?.kpis), `${monthId} month.kpis should be an array`);
     assert(view.month?.howItWent, `${monthId} month.howItWent should be enriched`);
     assert(typeof view.month?.overallPulse === 'string', `${monthId} month.overallPulse should be a string`);
-    assert(view.month?.moneySummary?.blocks, `${monthId} month.moneySummary.blocks should exist`);
+    assert(view.month?.moneySummary == null, `${monthId} month should not expose removed moneySummary`);
+    assert(
+      view.month?.futureProgress == null || view.month?.futureProgress?.total,
+      `${monthId} month.futureProgress should be monthly contributions or absent`,
+    );
     const kpiLabels = (view.month?.kpis ?? []).map((k) => k.label);
     assert(!kpiLabels.includes('Saved / invested'), `${monthId} should not use Saved / invested KPI label`);
     if (kpiLabels.includes('Debt') && kpiLabels.includes('Net worth')) {
@@ -225,6 +229,16 @@ try {
     assert(view.spending?.whatChanged, `${monthId} spending.whatChanged should be enriched`);
     assert(view.spending?.spendingWatch, `${monthId} spending.spendingWatch should be enriched`);
     assert(view.spending?.notableSpending, `${monthId} spending.notableSpending should be enriched`);
+    if (view.spending?.notableSpending?.items?.length) {
+      const first = view.spending.notableSpending.items[0];
+      assert(first.context != null || first.category != null, `${monthId} notable items should expose read-only context/category`);
+      assert(first.note == null, `${monthId} notable items should not expose generated note field`);
+    }
+    assert(
+      view.spending?.spendingWatch?.patterns?.items != null || view.spending?.spendingWatch?.patterns?.status === 'ok',
+      `${monthId} spending watch patterns should expose structured items`,
+    );
+    assert(view.spending?.spendingWatch?.patterns?.lines == null, `${monthId} spending watch should not expose legacy pattern lines`);
     assert(view.spending?.pulse == null, `${monthId} spending should not expose removed pulse key`);
     assert(view.spending?.notablePurchases == null, `${monthId} spending should not expose removed notablePurchases key`);
     assert(view.spending?.watchList == null, `${monthId} spending should not expose removed watchList key`);
