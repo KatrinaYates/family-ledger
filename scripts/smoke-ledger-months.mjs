@@ -10,6 +10,7 @@ import sample202608 from '../src/data/months/2026-08.sample.js';
 import sample202609 from '../src/data/months/2026-09.sample.js';
 import { normalizeToContract, mergeMonthView, resolveMonthView } from '../src/data/normalizeLedgerMonth.js';
 import { enrichLedgerMonth } from '../src/data/enrichLedgerMonth.js';
+import { buildFutureProgress } from '../src/data/futureProgress.js';
 import { MONTH_SECTION_IDS, MONTH_SECTIONS } from '../src/data/monthSections.js';
 import { createBlankLedgerMonth } from '../src/repository/createBlankLedgerMonth.js';
 import { getComparisonMonthLabels } from '../src/utils/monthLabels.js';
@@ -253,8 +254,35 @@ try {
     assert(view.actions?.page?.subtitle, `${monthId} actions.page.subtitle should be enriched`);
     assert(!view.actions?.page?.footerText, `${monthId} actions should not include multi-page footerText`);
     assert(!view.celebrate?.page?.footerText, `${monthId} celebrate should not include multi-page footerText`);
-    assert(!view.future?.retirementPage?.footerText, `${monthId} future should not include multi-page footerText`);
-    assert(!view.future?.goalsPage?.footerText, `${monthId} future goalsPage should not include multi-page footerText`);
+    assert(view.future?.subtitle, `${monthId} future section should expose subtitle`);
+    assert(Array.isArray(view.future?.goals), `${monthId} future.goals should be an array`);
+    assert(Array.isArray(view.future?.monthlyActivity), `${monthId} future.monthlyActivity should be an array`);
+    assert(Array.isArray(view.future?.comingUp), `${monthId} future.comingUp should be an array`);
+    assert(Array.isArray(view.future?.discussionPrompts), `${monthId} future.discussionPrompts should be an array`);
+    assert(view.future?.retirementPage == null, `${monthId} future should not expose legacy retirementPage`);
+    assert(view.future?.goalsPage == null, `${monthId} future should not expose legacy goalsPage`);
+    const monthProgress = view.month?.futureProgress;
+    const futureProgress = view.future?.futureProgress;
+    if (monthProgress?.total && futureProgress?.total) {
+      assert(
+        monthProgress.total === futureProgress.total,
+        `${monthId} Snapshot and Future futureProgress totals should match`,
+      );
+    }
+  }
+
+  const julyRecord = loadSampleRecord(samples['2026-07'], '2026-07');
+  const julyProgress = buildFutureProgress(julyRecord.sourceData);
+  if (julyProgress?.components?.length) {
+    const emergency = julyProgress.components.find((c) => c.label === 'Emergency fund');
+    const efContributions = julyRecord.sourceData.snapshot?.emergencyFund?.monthContributions;
+    const efAdded = julyRecord.sourceData.snapshot?.emergencyFund?.monthAdded;
+    if (efContributions && efAdded && efContributions !== efAdded) {
+      assert(
+        emergency?.value === efContributions,
+        'Future progress should use emergency monthContributions, not monthAdded',
+      );
+    }
   }
 } catch (error) {
   errors.push(`Unexpected error: ${error.message}`);

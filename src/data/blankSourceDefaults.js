@@ -53,8 +53,8 @@ export function applyBlankSourceDefaults(sourceData = {}, monthId) {
             netWorth: { value: '—', insight: '', components: [], status: '', caveat: '' },
             cash: { total: '—', totalExact: '—', status: '', insight: '', kpis: [], accounts: [] },
             retirement: { total: '—', totalExact: '—', monthContributions: '—', accounts: [] },
-            emergencyFund: { value: '—', description: '' },
-            debt: { total: '—', groups: [] },
+            emergencyFund: { value: '—', description: '', target: null, monthContributions: null },
+            debt: { total: '—', groups: [], monthPayments: null, measurementStatus: null },
             ...snapshot,
             cash: {
                 total: '—',
@@ -83,6 +83,8 @@ export function applyBlankSourceDefaults(sourceData = {}, monthId) {
             emergencyFund: {
                 value: '—',
                 description: '',
+                target: null,
+                monthContributions: null,
                 ...snapshot.emergencyFund,
             },
             debt: {
@@ -91,6 +93,8 @@ export function applyBlankSourceDefaults(sourceData = {}, monthId) {
                 loans: [],
                 creditCards: [],
                 insight: '',
+                monthPayments: null,
+                measurementStatus: null,
                 ...snapshot.debt,
             },
             missingBeforeLock: [],
@@ -145,7 +149,7 @@ export function applyBlankSourceDefaults(sourceData = {}, monthId) {
         },
         future: {
             goals: [],
-            upcomingExpenses: [],
+            upcoming: [],
             kidsSavings: {
                 total: '—',
                 monthAdded: '—',
@@ -159,6 +163,7 @@ export function applyBlankSourceDefaults(sourceData = {}, monthId) {
                 balance: '—',
                 monthContributions: '—',
                 projectionNote: '',
+                balanceCaveat: '',
                 ...future.retirement,
             },
             ...future,

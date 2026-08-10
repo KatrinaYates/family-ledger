@@ -21,7 +21,7 @@ export function buildGeneratedAnalysis(sourceData) {
         month: enrichMonth(sourceData, meta),
         spending: enrichSpending(sourceData.spending, meta),
         cfo,
-        future: enrichFuture(sourceData.future, meta),
+        future: enrichFuture(sourceData, meta),
         decisions: enrichDecisions(sourceData, cfo, meta),
         actions: enrichActions(sourceData.actions),
         celebrate: enrichCelebrate(sourceData.celebrate, meta),

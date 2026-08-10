@@ -128,4 +128,38 @@
  * @property {Object} [recentActivity]
  */
 
+/**
+ * @typedef {Object} FutureGoalSource
+ * @property {string} id
+ * @property {string} [type]
+ * @property {string} [title]
+ * @property {string | number} [target]
+ * @property {string | number} [currentPosition]
+ * @property {string | number} [monthlyProgress]
+ * @property {string} [asOf]
+ * @property {string} [measurementStatus]
+ * @property {string} [context]
+ */
+
+/**
+ * @typedef {Object} FutureUpcomingSource
+ * @property {string} id
+ * @property {string} title
+ * @property {string} [date]
+ * @property {string} [amount]
+ * @property {string} [type]
+ * @property {string} [context]
+ */
+
+/**
+ * @typedef {Object} GeneratedFutureAnalysis
+ * @property {string} subtitle
+ * @property {{ total?: string, components?: Array<{ label: string, value: string }> } | null} futureProgress
+ * @property {string} summary
+ * @property {Array<Object>} goals
+ * @property {Array<Object>} monthlyActivity
+ * @property {Array<Object>} comingUp
+ * @property {string[]} discussionPrompts
+ */
+
 export {};

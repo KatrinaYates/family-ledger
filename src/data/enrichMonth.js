@@ -1,7 +1,8 @@
 import { enrichSnapshot } from './enrichSnapshot.js';
 import { enrichStory } from './enrichStory.js';
+import { buildFutureProgress } from './futureProgress.js';
 import { getComparisonMonthLabels } from '../utils/monthLabels.js';
-import { formatCurrency, parseAmount } from './spendingAnalysis.js';
+import { parseAmount } from './spendingAnalysis.js';
 
 /** @param {object | undefined} meta */
 function monthLabel(meta) {
@@ -48,57 +49,7 @@ function spendingMovementNote(spending, meta) {
   return change || pct || '';
 }
 
-/** @param {object} sourceData @param {object} snapshot @param {object} story */
-function buildFutureProgress(sourceData, snapshot, story) {
-  const future = sourceData.future ?? {};
-  /** @type {Array<{ label: string, value: string, amountNum: number }>} */
-  const components = [];
-
-  const retirementCandidates = [
-    story.investments?.monthContributions,
-    snapshot.retirement?.monthContributions,
-    future.retirement?.monthContributions,
-  ].filter(hasValue);
-
-  const retirementValue = retirementCandidates[0] ?? null;
-  const retirementNum = parseAmount(retirementValue);
-  if (retirementNum != null && retirementNum > 0) {
-    components.push({ label: 'Retirement', value: retirementValue, amountNum: retirementNum });
-  }
-
-  const kidsContributions = future.kidsSavings?.monthContributions;
-  const kidsNum = parseAmount(kidsContributions);
-  if (kidsNum != null && kidsNum > 0) {
-    components.push({ label: 'Kids savings', value: kidsContributions, amountNum: kidsNum });
-  }
-
-  const emergencyAdded = snapshot.emergencyFund?.monthAdded;
-  const emergencyNum = parseAmount(emergencyAdded);
-  if (emergencyNum != null && emergencyNum > 0) {
-    components.push({ label: 'Emergency fund', value: emergencyAdded, amountNum: emergencyNum });
-  }
-
-  const otherSavings = story.savings?.monthTotal;
-  const otherNum = parseAmount(otherSavings);
-  if (otherNum != null && otherNum > 0) {
-    const duplicatesExisting = components.some((component) => component.amountNum === otherNum);
-    if (!duplicatesExisting) {
-      components.push({ label: 'Other savings', value: otherSavings, amountNum: otherNum });
-    }
-  }
-
-  if (!components.length) return null;
-
-  const totalNum = components.reduce((sum, component) => sum + component.amountNum, 0);
-  if (totalNum <= 0) return null;
-
-  return {
-    total: formatCurrency(totalNum),
-    components: components.map(({ label, value }) => ({ label, value })),
-  };
-}
-
-/** @param {object} story @param {object} snapshot @param {object | undefined} meta */
+/** @param {object} story @param {object | undefined} meta */
 function buildWhatMadeDifferent(story, meta) {
   const incomeContext = story.income?.context?.trim();
   if (incomeContext) return incomeContext;
@@ -275,7 +226,7 @@ export function enrichMonth(sourceData, meta) {
   const snapshot = enrichSnapshot(sourceData.snapshot ?? {}, meta);
   const story = enrichStory(sourceData.story ?? {}, meta);
   const spending = sourceData.spending ?? {};
-  const futureProgress = buildFutureProgress(sourceData, snapshot, story);
+  const futureProgress = buildFutureProgress(sourceData);
   const overallPulse = resolveOverallPulse(sourceData, snapshot, story, spending, futureProgress);
 
   /** @type {Array<{ icon: string, label: string, value: string, chip?: { text: string, tone: string }, note?: string }>} */

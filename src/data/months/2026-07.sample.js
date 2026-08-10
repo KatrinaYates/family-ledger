@@ -134,6 +134,8 @@ export default {
     },
     "emergencyFund": {
       "value": "$0",
+      "target": "$0",
+      "monthContributions": "$0",
       "status": "Sample emergency fund status — lorem ipsum.",
       "insight": "Sed ut perspiciatis unde omnis iste natus error sit voluptatem.",
       "meetingNeeded": "Placeholder prompt: define sample emergency fund rules here."
@@ -165,6 +167,8 @@ export default {
     },
     "debt": {
       "total": "$0",
+      "monthPayments": "$0",
+      "measurementStatus": null,
       "status": "Sample debt status — demo placeholder.",
       "insight": "Nam libero tempore cum soluta nobis est eligendi optio cumque.",
       "loans": [
@@ -569,27 +573,18 @@ export default {
     "retirement": {
       "balance": "$0",
       "monthContributions": "$0",
-      "status": "Sample future retirement status — lorem ipsum placeholder.",
-      "goalNote": "Placeholder goal note text — dolor sit amet consectetur adipiscing elit.",
+      "balanceCaveat": "Sample data — balance is not a true month-end snapshot.",
       "projectionNote": "Placeholder projection note — sample data, all figures zero."
     },
-    "goals": [
-      "Sample goal one",
-      "Sample goal two",
-      "Sample goal three",
-      "Sample goal four",
-      "Sample goal five",
-      "Sample goal six",
-      "Sample goal seven"
-    ],
-    "upcomingExpenses": [
-      "Sample expense A",
-      "Sample expense B",
-      "Sample expense C",
-      "Sample expense D",
-      "Sample expense E",
-      "Sample expense F"
-    ]
+    "kidsSavings": {
+      "total": "$0",
+      "monthContributions": "$0",
+      "monthInterest": "$0",
+      "accounts": [],
+      "note": "Protected for the kids and excluded from household spendable cash."
+    },
+    "goals": [],
+    "upcoming": []
   },
   "meeting": {
     "prompts": [

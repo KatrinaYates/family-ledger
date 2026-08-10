@@ -1379,8 +1379,6 @@ main > .desk-scene {
 
 .month-section-page .snapshot-grid-main,
 .month-section-page .story-split-grid,
-.month-section-page .future-top-row,
-.month-section-page .future-goals-grid,
 .month-section-page .cfo-tier-grid {
   flex: none;
   min-height: auto;
@@ -2714,40 +2712,97 @@ main > .desk-scene {
   }
 }
 
-/* Future — full-width KPIs + balanced top row */
-.future-kpi-row .snapshot-kpi-row {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-bottom: 0;
+/* Future — extends Spending / Snapshot section patterns */
+.future-glance-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.future-top-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.95fr);
-  gap: 14px;
-  align-items: start;
-  width: 100%;
+.future-glance-hero {
+  text-align: center;
+  padding: 2px 0 4px;
 }
 
-.future-top-row .sticky-card,
-.future-known-panel {
-  height: auto;
-  align-self: start;
-}
-
-.future-goals-grid {
+.future-glance-hero .snapshot-kpi-value {
   margin-top: 0;
 }
 
-.month-section-page .future-top-row,
-.month-section-page .future-goals-grid {
+.future-glance-caption {
+  margin: 6px 0 0;
+  text-align: center;
+}
+
+.future-glance-panel .month-snapshot-future-progress-lines {
+  margin-top: 0;
+  padding-top: 10px;
+  border-top: 1px solid rgba(45, 53, 72, 0.08);
+}
+
+.future-glance-panel .month-snapshot-future-progress-lines li strong {
+  color: #126c6a;
+}
+
+.future-goal-list {
+  gap: 0;
+}
+
+.future-goal-list > li {
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(45, 53, 72, 0.08);
+}
+
+.future-goal-list > li:first-child {
+  padding-top: 0;
+}
+
+.future-goal-list > li:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.future-goal-row {
+  padding-left: 0;
+  border-left: none;
+}
+
+.future-goal-row .spending-pattern-detail strong {
+  color: #126c6a;
+}
+
+
+.future-goal-progress {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.future-goal-bar-fill {
+  background: linear-gradient(90deg, #9fd4cf 0%, #126c6a 100%);
+}
+
+.future-goal-context {
+  margin: 8px 0 0;
+}
+
+.future-goal-caveat {
+  font-style: italic;
+}
+
+.future-talk-prompts {
+  margin-top: 0;
+}
+
+.future-talk-prompts li {
+  line-height: 1.5;
+  color: #3d5862;
+}
+
+.month-section-page .future-page {
   flex: none;
   min-height: auto;
   overflow: visible;
 }
 
-.month-section-page .kids-savings-section {
-  width: 100%;
-}
 
 .mom-change-card {
   padding: 16px 20px;
@@ -3485,47 +3540,6 @@ textarea.editable-inline-input {
   gap: 12px;
 }
 
-/* Future page 2 — compact kid cards + goals grid */
-.future-page-2 .page-with-notes-body {
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  gap: 12px;
-  overflow: hidden;
-}
-
-.kids-savings-section {
-  flex-shrink: 0;
-}
-
-.kids-savings-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.kids-savings-card {
-  height: auto;
-}
-
-.kids-savings-card.panel-stack {
-  height: auto;
-}
-
-.kids-savings-growth {
-  margin: 0;
-}
-
-.kids-savings-household-note {
-  margin: 10px 0 0;
-  font-size: max(var(--text-support-min), 13px);
-  color: #737b84;
-}
-
-.future-page-2 .story-split-grid {
-  min-height: 0;
-  overflow: hidden;
-}
-
 .writing-area textarea {
   width: 100%;
   min-height: 190px;
@@ -3614,8 +3628,6 @@ textarea.editable-inline-input {
   .snapshot-debt-grid,
   .story-split-grid,
   .story-ending-grid,
-  .future-top-row,
-  .future-goals-grid,
   .handoff-summary-row,
   .handoff-feedback-grid {
     flex: none;
@@ -3624,16 +3636,6 @@ textarea.editable-inline-input {
     overflow: visible;
     grid-template-rows: auto;
     grid-template-columns: 1fr;
-  }
-
-  .kids-savings-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .future-page-2 .page-with-notes-body {
-    display: flex;
-    flex-direction: column;
-    overflow: visible;
   }
 
   .snapshot-panel,

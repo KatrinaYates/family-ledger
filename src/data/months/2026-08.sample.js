@@ -126,7 +126,7 @@ export default {
     },
     "future": {
       "goals": [],
-      "upcomingExpenses": [],
+      "upcoming": [],
       "retirement": {
         "balance": "—",
         "monthContributions": "—",
