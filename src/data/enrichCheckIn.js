@@ -1,9 +1,15 @@
 import { CHECK_IN_STALE_MS } from '../constants/financialCheckIn.js';
+import {
+  buildDailySpendBars,
+  buildStackedComposition,
+  parseCheckInAmount,
+  progressPercent,
+  sumAccountsByClassification,
+  sumAmounts,
+} from './checkInVisualHelpers.js';
 
 function parseAmount(value) {
-  if (value == null || value === '') return null;
-  const parsed = Number(String(value).replace(/[^0-9.-]/g, ''));
-  return Number.isFinite(parsed) ? parsed : null;
+  return parseCheckInAmount(value);
 }
 
 function formatCurrency(value) {
@@ -54,9 +60,40 @@ function classifyAccounts(accounts = []) {
   }));
 }
 
+function enrichCashVisuals(cash) {
+  const connected = parseAmount(cash.connectedTotal);
+  const available = parseAmount(cash.availableTotal);
+  const protectedAmount = parseAmount(cash.protectedTotal);
+  let neutral = sumAccountsByClassification(cash.accounts, 'neutral');
+
+  if (neutral === 0 && connected != null && available != null && protectedAmount != null) {
+    const remainder = connected - available - protectedAmount;
+    if (remainder > 0.01) neutral = remainder;
+  }
+
+  const composition = buildStackedComposition(
+    [
+      { key: 'available', label: 'Available', value: available, tone: 'green' },
+      { key: 'protected', label: 'Protected', value: protectedAmount, tone: 'yellow' },
+      { key: 'neutral', label: 'Neutral', value: neutral > 0 ? neutral : null, tone: 'slate' },
+    ].map((segment) => ({
+      ...segment,
+      valueLabel: displayAmount(segment.value),
+    })),
+    connected,
+  );
+
+  return composition;
+}
+
 function enrichBills(bills) {
   if (!bills) return null;
   const gap = parseAmount(bills.fundingGap);
+  const requiredTotal = parseAmount(bills.requiredTotal);
+  const fundedAmount =
+    requiredTotal != null && gap != null ? Math.max(0, requiredTotal - gap) : null;
+  const fundedPercent = progressPercent(fundedAmount, requiredTotal);
+
   const fundingStatus =
     gap == null
       ? null
@@ -69,16 +106,33 @@ function enrichBills(bills) {
     balanceLabel: displayAmount(bills.balance),
     requiredTotalLabel: displayAmount(bills.requiredTotal),
     fundingGapLabel: displayAmount(bills.fundingGap),
+    fundedAmountLabel: displayAmount(fundedAmount),
+    fundedPercent,
     fundingStatus,
     isFullyFunded: gap != null && gap <= 0,
-    buckets: (bills.buckets ?? []).map((bucket) => ({
-      ...bucket,
-      currentLabel: displayAmount(bucket.current),
-      targetLabel: displayAmount(bucket.target),
-    })),
+    buckets: (bills.buckets ?? []).map((bucket) => {
+      const current = parseAmount(bucket.current);
+      const target = parseAmount(bucket.target);
+      const bucketPercent = progressPercent(current, target);
+      return {
+        ...bucket,
+        currentLabel: displayAmount(bucket.current),
+        targetLabel: displayAmount(bucket.target),
+        progressPercent: bucketPercent,
+        statusLabel: bucket.funded ? 'Funded' : 'Short',
+        statusClass: bucket.funded ? 'is-funded' : 'is-short',
+        progressTone: bucket.funded ? 'green' : 'coral',
+      };
+    }),
     fundedSummary:
       bills.fundedCount != null && bills.requiredCount != null
         ? `${bills.fundedCount} of ${bills.requiredCount} required buckets funded`
+        : null,
+    fundingProgressLabel:
+      fundedPercent != null ? `${fundedPercent}% funded` : null,
+    fundingAriaLabel:
+      fundedPercent != null && requiredTotal != null
+        ? `Bills funding ${fundedPercent}% of ${displayAmount(requiredTotal)} required`
         : null,
   };
 }
@@ -104,13 +158,28 @@ function enrichEmergencyFund(emergencyFund) {
 
 function enrichKidsSavings(kidsSavings) {
   if (!kidsSavings) return null;
-  return {
-    ...kidsSavings,
-    totalLabel: displayAmount(kidsSavings.total),
-    accounts: (kidsSavings.accounts ?? []).map((account) => ({
+  const total = parseAmount(kidsSavings.total) ?? sumAmounts(kidsSavings.accounts);
+  const accounts = (kidsSavings.accounts ?? []).map((account) => {
+    const balance = parseAmount(account.balance);
+    const sharePercent = progressPercent(balance, total);
+    return {
       ...account,
       balanceLabel: displayAmount(account.balance),
-    })),
+      sharePercent,
+      target: parseAmount(account.target),
+      targetLabel: account.target != null ? displayAmount(account.target) : null,
+      progressPercent: account.target != null
+        ? progressPercent(balance, parseAmount(account.target))
+        : sharePercent,
+      barTone: account.target != null ? 'teal' : 'purple',
+      barMode: account.target != null ? 'target' : 'share',
+    };
+  });
+
+  return {
+    ...kidsSavings,
+    totalLabel: displayAmount(kidsSavings.total ?? total),
+    accounts,
   };
 }
 
@@ -121,15 +190,96 @@ function normalizeDebtItems(items = []) {
   }));
 }
 
+function enrichCreditCards(creditCards = []) {
+  return creditCards.map((item) => {
+    const balance = parseAmount(item.amount ?? item.balance);
+    const limit = parseAmount(item.limit ?? item.creditLimit);
+    const utilizationPercent = progressPercent(balance, limit);
+    return {
+      name: item.name,
+      amount: displayAmount(item.amount ?? item.balance) ?? '—',
+      balanceLabel: displayAmount(balance),
+      limitLabel: displayAmount(limit),
+      utilizationPercent,
+      balance,
+      limit,
+    };
+  });
+}
+
 function enrichDebt(debt) {
   if (!debt) return null;
+  const creditCards = enrichCreditCards(debt.creditCards);
+  const loans = normalizeDebtItems(debt.loans);
+
+  let cardsTotal = parseAmount(debt.creditCardsTotal);
+  let loansTotal = parseAmount(debt.loansTotal);
+  if (cardsTotal == null) cardsTotal = sumAmounts(debt.creditCards) || null;
+  if (loansTotal == null) loansTotal = sumAmounts(debt.loans) || null;
+
+  const total = parseAmount(debt.total) ?? (
+    cardsTotal != null && loansTotal != null ? cardsTotal + loansTotal : null
+  );
+
+  const composition = buildStackedComposition(
+    [
+      { key: 'cards', label: 'Credit cards', value: cardsTotal, tone: 'coral' },
+      { key: 'loans', label: 'Loans', value: loansTotal, tone: 'blue' },
+    ].map((segment) => ({
+      ...segment,
+      valueLabel: displayAmount(segment.value),
+    })),
+    total,
+  );
+
   return {
     ...debt,
-    creditCards: normalizeDebtItems(debt.creditCards),
-    loans: normalizeDebtItems(debt.loans),
-    totalLabel: displayAmount(debt.total),
-    creditCardsTotalLabel: displayAmount(debt.creditCardsTotal),
-    loansTotalLabel: displayAmount(debt.loansTotal),
+    creditCards,
+    loans,
+    totalLabel: displayAmount(debt.total ?? total),
+    creditCardsTotalLabel: displayAmount(debt.creditCardsTotal ?? cardsTotal),
+    loansTotalLabel: displayAmount(debt.loansTotal ?? loansTotal),
+    composition,
+  };
+}
+
+function enrichNetWorthVisuals(netWorth, debt) {
+  const connected = parseAmount(netWorth?.connected);
+  const debtTotal = parseAmount(debt?.total);
+  if (connected == null || debtTotal == null) return null;
+
+  const netEquity = Math.max(0, connected);
+  const composition = buildStackedComposition(
+    [
+      { key: 'debt', label: 'Connected debt', value: debtTotal, tone: 'coral' },
+      { key: 'equity', label: 'Net equity', value: netEquity, tone: 'teal' },
+    ].map((segment) => ({
+      ...segment,
+      valueLabel: displayAmount(segment.value),
+    })),
+    debtTotal + netEquity,
+  );
+
+  return composition;
+}
+
+function enrichRecentActivity(recentActivity) {
+  if (!recentActivity) return null;
+  const dailyBars = buildDailySpendBars(
+    recentActivity.dailySpend
+      ?? recentActivity.sevenDayDaily
+      ?? recentActivity.daily
+      ?? [],
+  );
+
+  return {
+    ...recentActivity,
+    sevenDaySpendLabel: displayAmount(recentActivity.sevenDaySpend),
+    items: recentActivity.items ?? [],
+    dailyBars: dailyBars?.map((bar) => ({
+      ...bar,
+      valueLabel: displayAmount(bar.value),
+    })) ?? null,
   };
 }
 
@@ -201,6 +351,7 @@ export function enrichCheckIn(snapshot) {
           protectedAccounts: classifyAccounts(
             (snapshot.cash.accounts ?? []).filter((a) => a.classification === 'protected'),
           ),
+          composition: enrichCashVisuals(snapshot.cash),
         }
       : null,
     bills: enrichBills(snapshot.bills),
@@ -218,15 +369,10 @@ export function enrichCheckIn(snapshot) {
       ? {
           ...snapshot.netWorth,
           connectedLabel: displayAmount(snapshot.netWorth.connected),
+          composition: enrichNetWorthVisuals(snapshot.netWorth, snapshot.debt),
         }
       : null,
-    recentActivity: snapshot.recentActivity
-      ? {
-          ...snapshot.recentActivity,
-          sevenDaySpendLabel: displayAmount(snapshot.recentActivity.sevenDaySpend),
-          items: snapshot.recentActivity.items ?? [],
-        }
-      : null,
+    recentActivity: enrichRecentActivity(snapshot.recentActivity),
   };
 }
 
