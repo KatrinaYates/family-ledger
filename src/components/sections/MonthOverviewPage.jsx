@@ -3,7 +3,6 @@ import { EditableBulletList } from '../meeting/MeetingFields';
 import { MetricKpiRow } from '../content/NotebookPrimitives';
 import { sectionFieldKey } from '../../utils/meetingKeys';
 import { SectionPageShell } from './SectionPageShell';
-import { MonthMoneySummary } from './MonthFlowVisual';
 import { FutureProgressKpi } from './FutureProgressKpi';
 
 function PriorityCard({ label, tone, children }) {
@@ -41,7 +40,6 @@ export function MonthOverviewPage({ data, month, section }) {
     endingPosition,
     endingPositionLabel,
     howItWent,
-    moneySummary,
     atAGlanceLabel,
     humanContextLabel,
   } = monthView;
@@ -91,12 +89,6 @@ export function MonthOverviewPage({ data, month, section }) {
           </div>
         </section>
       )}
-
-      <MonthMoneySummary
-        heading={moneySummary?.heading}
-        support={moneySummary?.support}
-        blocks={moneySummary?.blocks ?? []}
-      />
 
       <section className="month-snapshot-human paper-surface">
         <h2 className="month-snapshot-section-heading">{humanContextLabel}</h2>

@@ -6,7 +6,6 @@ const CLASSIFICATIONS = ['Planned', 'Unplanned', 'One-time'];
 
 function NotableRow({ item, saved, onUpdate, isLocked }) {
   const [expanded, setExpanded] = useState(false);
-  const hint = [item.category, saved.classification || item.classification].filter(Boolean).join(' · ');
 
   return (
     <li className="spending-notable-row">
@@ -14,13 +13,21 @@ function NotableRow({ item, saved, onUpdate, isLocked }) {
         <span className="spending-notable-name">{item.name}</span>
         <span className="spending-notable-amount">{item.amount}</span>
       </div>
-      {hint && <p className="spending-notable-hint">{hint}</p>}
+      {item.category && (
+        <p className="spending-notable-category">{item.category}</p>
+      )}
+      {item.context && (
+        <p className="spending-notable-context">{item.context}</p>
+      )}
+      {item.metadata && (
+        <p className="spending-notable-metadata">{item.metadata}</p>
+      )}
       {saved.note && !expanded ? (
         <div className="spending-inline-note">
           <span>{saved.note}</span>
           {!isLocked && (
             <button type="button" className="notebook-link-btn" onClick={() => setExpanded(true)}>
-              Edit note
+              Edit context
             </button>
           )}
         </div>
@@ -31,7 +38,7 @@ function NotableRow({ item, saved, onUpdate, isLocked }) {
           onClick={() => setExpanded(true)}
           disabled={isLocked}
         >
-          Add note
+          Add our context
         </button>
       ) : (
         <div className="spending-notable-expand">
@@ -53,7 +60,7 @@ function NotableRow({ item, saved, onUpdate, isLocked }) {
             className="inline-notes-area spending-inline-input"
             value={saved.note}
             onChange={(e) => onUpdate({ note: e.target.value })}
-            placeholder="Optional note..."
+            placeholder="Our context..."
             rows={2}
             readOnly={isLocked}
             aria-readonly={isLocked}
@@ -72,8 +79,8 @@ export function NotableSpending({ notableSpending, monthId }) {
   const seedFactory = () => (
     (notableSpending.items ?? []).map((item) => ({
       id: item.id,
-      classification: item.classification ?? '',
-      note: item.note ?? '',
+      classification: '',
+      note: '',
     }))
   );
   const { value: notes, setValue: setNotes, isLocked } = useMeetingJson(storageKey, seedFactory);

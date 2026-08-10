@@ -264,47 +264,95 @@ function buildOverviewInterpretation(spending, whatChanged, direction, priorLabe
 }
 
 /** @param {object} spending @param {Array<object>} changes */
-function buildPatternLines(spending, changes) {
-  /** @type {string[]} */
-  const lines = [];
+function buildPatternItems(spending) {
+  /** @type {Array<{ id: string, title?: string, detail?: string, support?: string, fallbackLine?: string }>} */
+  const items = [];
+  const seen = new Set();
 
-  for (const pattern of spending.patterns ?? []) {
-    if (pattern?.support?.trim()) lines.push(pattern.support.trim());
-    else if (pattern?.title && pattern?.detail) lines.push(`${pattern.title}: ${pattern.detail}`);
-  }
+  const addItem = (item) => {
+    const key = item.title?.trim() || item.fallbackLine?.trim() || '';
+    if (!key || seen.has(key.toLowerCase())) return;
+    seen.add(key.toLowerCase());
+    items.push(item);
+  };
 
-  const history = spending.categoryHistory ?? {};
-  for (const [category, amounts] of Object.entries(history)) {
-    if (!Array.isArray(amounts) || amounts.length < 3) continue;
-    const nums = amounts.map(parseAmount).filter((n) => n != null);
-    if (nums.length < 3) continue;
-    const lastThree = nums.slice(-3);
-    if (lastThree[0] < lastThree[1] && lastThree[1] < lastThree[2]) {
-      lines.push(`${category} frequency or amount increased compared with recent months.`);
+  for (const [index, pattern] of (spending.patterns ?? []).entries()) {
+    if (pattern?.title?.trim()) {
+      addItem({
+        id: pattern.id ?? `pattern-${index}`,
+        title: pattern.title.trim(),
+        detail: pattern.detail?.trim() || '',
+        support: pattern.support?.trim() || '',
+      });
+      continue;
+    }
+    if (pattern?.support?.trim()) {
+      addItem({ id: pattern.id ?? `pattern-${index}`, fallbackLine: pattern.support.trim() });
+    } else if (pattern?.detail?.trim()) {
+      addItem({ id: pattern.id ?? `pattern-${index}`, fallbackLine: pattern.detail.trim() });
     }
   }
 
-  for (const [category, amounts] of Object.entries(history)) {
-    if (!Array.isArray(amounts) || amounts.length < 2) continue;
-    const nums = amounts.map(parseAmount).filter((n) => n != null);
-    if (nums.length < 2) continue;
-    const current = nums[nums.length - 1];
-    const priorMonths = nums.slice(0, -1);
-    const average = priorMonths.reduce((sum, n) => sum + n, 0) / priorMonths.length;
-    if (average <= 0) continue;
-    const diff = current - average;
-    const threshold = meaningfulChangeThreshold(current);
-    if (diff >= threshold && diff / average >= 0.15) {
-      lines.push(`${category} spending was materially higher than your recent monthly norm.`);
+  for (const [index, merchant] of (spending.merchants ?? []).entries()) {
+    const title = merchant.title?.trim() || merchant.name?.trim();
+    if (!title) continue;
+
+    const detail = merchant.detail?.trim() || '';
+    const support = merchant.support?.trim() || '';
+    const note = merchant.note?.trim() || '';
+
+    if (!detail && !support && !note) continue;
+
+    addItem({
+      id: merchant.id ?? `merchant-${index}`,
+      title,
+      detail: detail || (support && note ? support : ''),
+      support: support && note ? note : (note && !detail ? note : support),
+    });
+  }
+
+  if (items.length < 2) {
+    const history = spending.categoryHistory ?? {};
+    for (const [category, amounts] of Object.entries(history)) {
+      if (!Array.isArray(amounts) || amounts.length < 3 || items.length >= 3) continue;
+      const nums = amounts.map(parseAmount).filter((n) => n != null);
+      if (nums.length < 3) continue;
+      const lastThree = nums.slice(-3);
+      if (lastThree[0] < lastThree[1] && lastThree[1] < lastThree[2]) {
+        addItem({
+          id: `history-${category}`,
+          title: `${category} frequency kept climbing`,
+          detail: `${formatCurrency(lastThree[2])} this month`,
+          support: `${formatCurrency(lastThree[1])} prior month · ${formatCurrency(lastThree[0])} two months ago`,
+        });
+      }
     }
   }
 
-  for (const merchant of spending.merchants ?? []) {
-    if (!merchant?.name || !merchant.note?.trim()) continue;
-    lines.push(merchant.note.trim());
+  if (items.length < 2) {
+    const history = spending.categoryHistory ?? {};
+    for (const [category, amounts] of Object.entries(history)) {
+      if (!Array.isArray(amounts) || amounts.length < 2 || items.length >= 3) continue;
+      const nums = amounts.map(parseAmount).filter((n) => n != null);
+      if (nums.length < 2) continue;
+      const current = nums[nums.length - 1];
+      const priorMonths = nums.slice(0, -1);
+      const average = priorMonths.reduce((sum, n) => sum + n, 0) / priorMonths.length;
+      if (average <= 0) continue;
+      const diff = current - average;
+      const threshold = meaningfulChangeThreshold(current);
+      if (diff >= threshold && diff / average >= 0.15) {
+        addItem({
+          id: `norm-${category}`,
+          title: `${category} ran above recent norm`,
+          detail: `${formatCurrency(current)} this month`,
+          support: `Recent average ${formatCurrency(average)}`,
+        });
+      }
+    }
   }
 
-  return [...new Set(lines)].slice(0, 2);
+  return items.slice(0, 3);
 }
 
 /** @param {object} spending */
@@ -463,15 +511,15 @@ function buildFeesWatch(spending) {
  * @param {Array<object>} changes
  */
 function buildSpendingWatch(spending, changes) {
-  const patternLines = buildPatternLines(spending, changes);
+  const patternItems = buildPatternItems(spending);
   const recurring = buildRecurringWatch(spending);
   const fees = buildFeesWatch(spending);
   const review = buildReviewItems(spending);
 
   return {
     patterns: {
-      status: patternLines.length ? 'alert' : 'ok',
-      lines: patternLines,
+      status: patternItems.length ? 'alert' : 'ok',
+      items: patternItems,
       okMessage: 'No unusual spending patterns detected.',
     },
     recurring,
@@ -527,6 +575,18 @@ function itemKey(name, amount) {
   return `${String(name).toLowerCase()}|${parseAmount(amount) ?? ''}`;
 }
 
+/** @param {object} purchase */
+function buildNotableMetadata(purchase) {
+  /** @type {string[]} */
+  const parts = [];
+  if (purchase.firstSeen || purchase.isNew) parts.push('First seen this quarter');
+  if (purchase.chargeCount) {
+    parts.push(`${purchase.chargeCount} ${purchase.chargeCount === 1 ? 'charge' : 'charges'}`);
+  }
+  if (purchase.frequencyNote?.trim()) parts.push(purchase.frequencyNote.trim());
+  return parts.length ? parts.join(' · ') : null;
+}
+
 /** @param {object} spending @param {number | null} totalSpend @param {Set<string>} recurringMerchants */
 function buildNotableSpending(spending, totalSpend, recurringMerchants) {
   const raw = spending.notableSpending ?? spending.notablePurchases ?? spending.bigPurchases ?? [];
@@ -543,10 +603,10 @@ function buildNotableSpending(spending, totalSpend, recurringMerchants) {
         amount: amount ?? (amountNum != null ? formatCurrencyDetailed(amountNum, true) : '—'),
         amountNum,
         category: purchase.category ?? null,
-        classification: purchase.classification ?? (purchase.isOneTime ? 'One-time' : null),
-        note: purchase.note?.trim() ?? '',
+        context: purchase.note?.trim() || purchase.context?.trim() || purchase.reason?.trim() || '',
+        metadata: buildNotableMetadata(purchase),
         isOneTime: Boolean(purchase.isOneTime),
-        isKnownOneTime: Boolean(purchase.isOneTime || purchase.category || purchase.classification),
+        isKnownOneTime: Boolean(purchase.isOneTime || purchase.category),
       };
     })
     .filter((purchase) => !isRecurringObligation(purchase, recurringMerchants))

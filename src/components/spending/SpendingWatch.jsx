@@ -59,6 +59,28 @@ function ExpandableContext({ itemId, storageKey, seedFactory, isLocked, placehol
   );
 }
 
+function PatternRow({ pattern }) {
+  if (pattern.fallbackLine) {
+    return (
+      <li className="spending-pattern-row spending-pattern-row-fallback">
+        {pattern.fallbackLine}
+      </li>
+    );
+  }
+
+  return (
+    <li className="spending-pattern-row">
+      <strong className="spending-pattern-title">{pattern.title}</strong>
+      {pattern.detail && (
+        <span className="spending-pattern-detail">{pattern.detail}</span>
+      )}
+      {pattern.support && (
+        <p className="spending-pattern-support">{pattern.support}</p>
+      )}
+    </li>
+  );
+}
+
 function RecurringModule({ recurring }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -140,10 +162,10 @@ export function SpendingWatch({ spendingWatch, monthId }) {
         <div className="spending-watch-dashboard">
           <div className="spending-watch-module">
             <span className="spending-watch-module-label">Patterns worth noticing</span>
-            {patterns?.status === 'alert' && patterns.lines?.length ? (
-              <ul className="spending-watch-sublist">
-                {patterns.lines.map((line) => (
-                  <li key={line}>{line}</li>
+            {patterns?.status === 'alert' && patterns.items?.length ? (
+              <ul className="spending-pattern-list">
+                {patterns.items.map((pattern) => (
+                  <PatternRow key={pattern.id} pattern={pattern} />
                 ))}
               </ul>
             ) : (

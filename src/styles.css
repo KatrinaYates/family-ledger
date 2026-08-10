@@ -2476,6 +2476,52 @@ main > .desk-scene {
   box-shadow: 0 0 0 2px rgba(111, 163, 78, 0.22);
 }
 
+.spending-pattern-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.spending-pattern-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-left: 14px;
+  border-left: 3px solid rgba(18, 108, 106, 0.18);
+}
+
+.spending-pattern-row-fallback {
+  font-size: max(var(--text-support-min), 14px);
+  line-height: 1.5;
+  color: #3d5862;
+  font-family: var(--font-data);
+}
+
+.spending-pattern-title {
+  font-size: max(var(--text-support-min), 14px);
+  font-weight: 700;
+  color: #2D3548;
+  font-family: var(--font-data);
+}
+
+.spending-pattern-detail {
+  font-size: max(var(--text-support-min), 13px);
+  color: #69737d;
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+}
+
+.spending-pattern-support {
+  margin: 2px 0 0;
+  font-size: max(var(--text-support-min), 13px);
+  line-height: 1.45;
+  color: #6d7480;
+  font-family: var(--font-data);
+}
+
 .spending-watch-review-list {
   list-style: none;
   margin: 0;
@@ -2550,6 +2596,32 @@ main > .desk-scene {
   color: #69737d;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+}
+
+.spending-notable-category {
+  margin: 4px 0 0;
+  font-size: max(var(--text-support-min), 12px);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #69737d;
+  font-family: var(--font-heading);
+}
+
+.spending-notable-context {
+  margin: 6px 0 0;
+  font-size: max(var(--text-support-min), 14px);
+  line-height: 1.45;
+  color: #3d5862;
+  font-family: var(--font-data);
+}
+
+.spending-notable-metadata {
+  margin: 4px 0 0;
+  font-size: max(var(--text-support-min), 12px);
+  line-height: 1.4;
+  color: #8a929c;
+  font-family: var(--font-data);
 }
 
 .spending-notable-hint {
@@ -4922,16 +4994,26 @@ textarea.editable-inline-input {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
+}
+
+.month-snapshot-future-progress-lines li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: baseline;
+  font-size: max(var(--text-support-min), 13px);
+  color: #69737d;
+  font-family: var(--font-data);
 }
 
 .month-snapshot-future-progress-lines li strong {
-  display: block;
-  font-size: clamp(20px, 1.8vw, 26px);
+  font-size: max(var(--text-support-min), 13px);
   font-family: var(--font-data);
   font-weight: 700;
   color: #2D3548;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
   line-height: 1.2;
 }
 
@@ -5014,14 +5096,6 @@ textarea.editable-inline-input {
   line-height: 1.45;
   color: #2D3548;
   font-family: var(--font-data);
-}
-
-.month-snapshot-money {
-  padding: 16px 18px;
-}
-
-.month-snapshot-money-support {
-  margin: 0 0 14px;
 }
 
 .month-snapshot-money-grid {
