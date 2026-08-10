@@ -32,12 +32,10 @@ export function enrichFuture(future) {
       ...retirement,
     },
     retirementPage: {
-      subtitle: 'Where retirement stands today and what we still need to define for meaningful projections.',
-      footerText: 'Goals and upcoming expenses continue on the next page →',
+      subtitle: 'Goals, retirement direction, and upcoming expenses — are we still on track toward what we want?',
     },
     goalsPage: {
       subtitle: 'Shared goals and expenses on the horizon — balance future progress with life today.',
-      footerText: 'End of Retirement & Future · Next: Money Meeting',
       closingInsight: future.closingInsight?.trim()
         || future.goalsPage?.closingInsight?.trim()
         || '',

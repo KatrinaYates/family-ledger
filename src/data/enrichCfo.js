@@ -42,7 +42,7 @@ export function enrichCfo(cfo = {}, meta) {
     priorities,
     tiers,
     overview: {
-      subtitle: `Prioritized recommendations based on ${label}'s full financial picture.`,
+      subtitle: `Prioritized recommendations based on ${label}'s financial picture and where we want to go.`,
     },
   };
 }

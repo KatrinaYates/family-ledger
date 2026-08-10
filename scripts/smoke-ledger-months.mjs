@@ -10,6 +10,7 @@ import sample202608 from '../src/data/months/2026-08.sample.js';
 import sample202609 from '../src/data/months/2026-09.sample.js';
 import { normalizeToContract, mergeMonthView, resolveMonthView } from '../src/data/normalizeLedgerMonth.js';
 import { enrichLedgerMonth } from '../src/data/enrichLedgerMonth.js';
+import { MONTH_SECTION_IDS, MONTH_SECTIONS } from '../src/data/monthSections.js';
 import { createBlankLedgerMonth } from '../src/repository/createBlankLedgerMonth.js';
 import { getComparisonMonthLabels } from '../src/utils/monthLabels.js';
 import {
@@ -60,6 +61,17 @@ try {
   assert(sampleFiles.includes('2026-08'), 'August sample file should exist');
   assert(sampleFiles.includes('2026-09'), 'September sample file should exist');
   assert(!sampleFiles.includes('2026-10'), 'October should not have a sample file');
+
+  assert(
+    JSON.stringify(MONTH_SECTION_IDS) === JSON.stringify([
+      'month', 'spending', 'future', 'cfo', 'decisions', 'actions', 'celebrate', 'close',
+    ]),
+    'monthSections order should place Future before CFO Advice',
+  );
+  assert(MONTH_SECTIONS.future?.number === '03', 'Future should be section 03');
+  assert(MONTH_SECTIONS.cfo?.number === '04', 'CFO Advice should be section 04');
+  assert(MONTH_SECTIONS.cfo?.title === 'CFO Advice', 'CFO section title should be CFO Advice');
+  assert(!Object.values(MONTH_SECTIONS).some((s) => /CFO Recommendations/i.test(s.title ?? '')), 'No CFO Recommendations title should remain');
 
   const samples = {
     '2026-07': sample202607,
@@ -225,6 +237,10 @@ try {
     assert(view.close?.subtitle, `${monthId} close section should be enriched`);
     assert(view.celebrate?.page?.subtitle, `${monthId} celebrate.page.subtitle should be enriched`);
     assert(view.actions?.page?.subtitle, `${monthId} actions.page.subtitle should be enriched`);
+    assert(!view.actions?.page?.footerText, `${monthId} actions should not include multi-page footerText`);
+    assert(!view.celebrate?.page?.footerText, `${monthId} celebrate should not include multi-page footerText`);
+    assert(!view.future?.retirementPage?.footerText, `${monthId} future should not include multi-page footerText`);
+    assert(!view.future?.goalsPage?.footerText, `${monthId} future goalsPage should not include multi-page footerText`);
   }
 } catch (error) {
   errors.push(`Unexpected error: ${error.message}`);

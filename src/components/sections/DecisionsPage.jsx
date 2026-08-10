@@ -66,7 +66,7 @@ export function DecisionsPage({ data, month, section }) {
       <MeetingUpdate update={decisions.currentUpdate} />
       {decisions.cfoOutcomes?.length > 0 && (
         <section className="decisions-cfo-outcomes" aria-label="CFO decisions">
-          <h2 className="section-inline-heading">From CFO recommendations</h2>
+          <h2 className="section-inline-heading">From CFO advice</h2>
           {decisions.cfoOutcomes.map((outcome) => (
             <CfoOutcomeReadout key={outcome.number} monthId={month.id} outcome={outcome} />
           ))}
