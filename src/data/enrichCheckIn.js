@@ -114,12 +114,19 @@ function enrichKidsSavings(kidsSavings) {
   };
 }
 
+function normalizeDebtItems(items = []) {
+  return items.map((item) => ({
+    name: item.name,
+    amount: displayAmount(item.amount ?? item.balance) ?? '—',
+  }));
+}
+
 function enrichDebt(debt) {
   if (!debt) return null;
   return {
     ...debt,
-    creditCards: debt.creditCards ?? [],
-    loans: debt.loans ?? [],
+    creditCards: normalizeDebtItems(debt.creditCards),
+    loans: normalizeDebtItems(debt.loans),
     totalLabel: displayAmount(debt.total),
     creditCardsTotalLabel: displayAmount(debt.creditCardsTotal),
     loansTotalLabel: displayAmount(debt.loansTotal),

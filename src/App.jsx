@@ -22,6 +22,7 @@ import { MeetingPages } from './components/meeting/MeetingPages';
 import { ActionsPages } from './components/actions/ActionsPages';
 import { CelebratePages } from './components/celebrate/CelebratePages';
 import { HandoffPages } from './components/handoff/HandoffPages';
+import { FinancialCheckInPage } from './components/checkin/FinancialCheckInPage';
 import {
   AnnualCover,
   ContentShell,
@@ -86,6 +87,11 @@ function buildBreadcrumbs(page, pageId) {
     return crumbs;
   }
 
+  if (page.type === 'check-in') {
+    crumbs.push({ label: 'Financial Check-In', pageId: null });
+    return crumbs;
+  }
+
   const monthData = getMonthCatalogEntry(page.monthId);
   const monthLabel = monthData?.label || 'Month';
 
@@ -114,6 +120,7 @@ function buildBreadcrumbs(page, pageId) {
 }
 
 function parentPageId(page) {
+  if (page.type === 'check-in') return 'cover';
   if (page.type === 'content') return `${page.monthId}-${page.sectionId}`;
   if (page.type === 'divider') return page.monthId;
   if (page.type === 'month' || page.type === 'inside') return 'cover';
@@ -376,6 +383,12 @@ export default function App() {
   let content;
   if (resolvedPage.type === 'cover') {
     content = <AnnualCover />;
+  } else if (resolvedPage.type === 'check-in') {
+    content = (
+      <ContentShell>
+        <FinancialCheckInPage />
+      </ContentShell>
+    );
   } else if (resolvedPage.type === 'inside') {
     content = <InsideCover month={displayMonth} insideCover={insideCover} />;
   } else if (resolvedPage.type === 'month') {
@@ -489,6 +502,14 @@ export default function App() {
       <div className="site-toolbar" aria-label="Notebook navigation">
         <BreadcrumbNav crumbs={breadcrumbs} onNavigate={navigateTo} />
         <div className="site-toolbar-actions">
+          <button
+            type="button"
+            className={`check-in-nav-link${resolvedPage.type === 'check-in' ? ' is-active' : ''}`}
+            onClick={() => navigateTo('check-in')}
+            aria-current={resolvedPage.type === 'check-in' ? 'page' : undefined}
+          >
+            💵 Financial Check-In
+          </button>
           {resolvedPage.monthId && (
             <div className="site-toolbar-utilities">
               <MonthLockStatus

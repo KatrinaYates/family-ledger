@@ -3638,3 +3638,322 @@ main > .desk-scene {
     transition: none;
   }
 }
+
+/* Financial Check-In — live household position (not month-scoped) */
+.check-in-page {
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
+  gap: 18px;
+}
+
+.check-in-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  font-size: var(--text-support-min);
+  color: rgba(45, 53, 72, 0.78);
+}
+
+.check-in-refreshed time {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.check-in-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.check-in-grid-ask-only {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.check-in-card {
+  min-height: 0;
+}
+
+.check-in-card-lead {
+  margin: 0 0 12px;
+  font-size: var(--text-support-min);
+  line-height: 1.45;
+  color: rgba(45, 53, 72, 0.82);
+}
+
+.check-in-cash-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.check-in-stat-block {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(45, 53, 72, 0.08);
+}
+
+.check-in-stat-block.is-available {
+  border-left: 4px solid var(--green);
+}
+
+.check-in-stat-block.is-protected {
+  border-left: 4px solid var(--sun);
+}
+
+.check-in-stat-label {
+  display: block;
+  font-size: var(--text-support-min);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.check-in-stat-value {
+  display: block;
+  font-size: var(--text-data-amount-min);
+  font-family: var(--font-data);
+}
+
+.check-in-stat-note {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: rgba(45, 53, 72, 0.72);
+}
+
+.check-in-bills-footer {
+  display: grid;
+  gap: 8px;
+  font-size: var(--text-support-min);
+}
+
+.check-in-bills-footer p {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+}
+
+.check-in-bills-footer .is-funded strong {
+  color: var(--green);
+}
+
+.check-in-bills-footer .is-short strong {
+  color: var(--coral);
+}
+
+.check-in-bills-count {
+  opacity: 0.85;
+}
+
+.check-in-bucket-list {
+  display: grid;
+  gap: 8px;
+}
+
+.check-in-bucket-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.45);
+  font-size: var(--text-support-min);
+}
+
+.check-in-bucket-status.is-funded {
+  color: var(--green);
+  font-weight: 700;
+}
+
+.check-in-bucket-status.is-short {
+  color: var(--coral);
+  font-weight: 700;
+}
+
+.check-in-protected-section + .check-in-protected-section {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px dashed rgba(45, 53, 72, 0.16);
+}
+
+.check-in-protected-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.check-in-protected-heading h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.check-in-account-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.check-in-account-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px dashed rgba(45, 53, 72, 0.12);
+  font-size: var(--text-data-min);
+}
+
+.check-in-emergency-stats {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: var(--text-support-min);
+}
+
+.check-in-emergency-stats p {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+}
+
+.check-in-progress {
+  position: relative;
+  height: 28px;
+  border-radius: 999px;
+  background: rgba(45, 53, 72, 0.08);
+  overflow: hidden;
+}
+
+.check-in-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--teal), var(--mint));
+  border-radius: inherit;
+}
+
+.check-in-progress-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.check-in-activity-spend {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 12px;
+  font-size: var(--text-data-min);
+}
+
+.check-in-activity-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.check-in-activity-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 12px;
+  padding: 8px 0;
+  border-bottom: 1px dashed rgba(45, 53, 72, 0.12);
+  font-size: var(--text-support-min);
+}
+
+.check-in-activity-list time {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  opacity: 0.72;
+}
+
+.check-in-ask-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.check-in-btn {
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  border: 1px solid rgba(45, 53, 72, 0.18);
+}
+
+.check-in-btn-primary {
+  background: var(--teal);
+  border-color: var(--deep);
+  color: #FFFDF8;
+}
+
+.check-in-btn-primary:hover:not(:disabled),
+.check-in-btn-primary:focus-visible:not(:disabled) {
+  background: var(--deep);
+}
+
+.check-in-btn-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.check-in-btn-secondary {
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--ink);
+}
+
+.check-in-empty-state {
+  padding: 28px 24px;
+  text-align: center;
+}
+
+.check-in-empty-state h2 {
+  margin: 0 0 8px;
+}
+
+.check-in-empty-state p {
+  margin: 0 0 16px;
+  color: rgba(45, 53, 72, 0.78);
+}
+
+.check-in-retirement-section + .check-in-networth-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px dashed rgba(45, 53, 72, 0.16);
+}
+
+@media (max-width: 1100px) {
+  .check-in-cash-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .check-in-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .check-in-bucket-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .check-in-nav-link {
+    font-size: 12px;
+    padding: 7px 12px;
+  }
+}

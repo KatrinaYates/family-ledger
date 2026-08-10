@@ -4,6 +4,7 @@ import { sectionPageCounts, sectionPageLabels } from '../data/sectionPageCounts'
 const GLOBAL_PAGES = [
     { id: 'cover', type: 'cover', label: 'Front Cover' },
     { id: 'inside', type: 'inside', label: 'Inside Cover' },
+    { id: 'check-in', type: 'check-in', label: 'Financial Check-In' },
 ];
 
 /** @param {string} monthId @param {string} monthLabel @param {Record<string, { title?: string }>} [sections] */

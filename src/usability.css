@@ -500,6 +500,32 @@
   gap: 18px;
 }
 
+.check-in-nav-link {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border: 1px solid rgba(245, 230, 211, 0.35);
+  border-radius: 999px;
+  background: rgba(255, 249, 237, 0.08);
+  color: #F5E6D3;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.check-in-nav-link:hover,
+.check-in-nav-link:focus-visible {
+  background: rgba(255, 249, 237, 0.16);
+  border-color: rgba(255, 249, 237, 0.55);
+  color: #FFF9ED;
+}
+
+.check-in-nav-link.is-active {
+  background: rgba(255, 249, 237, 0.92);
+  border-color: rgba(255, 249, 237, 0.92);
+  color: var(--ink);
+}
+
 .site-toolbar-utilities {
   display: flex;
   align-items: center;
