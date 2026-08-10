@@ -2402,7 +2402,6 @@ main > .desk-scene {
 
 .spending-watch-module {
   display: grid;
-  grid-template-columns: 110px minmax(0, 1fr);
   gap: 10px 14px;
   align-items: start;
   padding: 12px 0;
@@ -2451,14 +2450,30 @@ main > .desk-scene {
   list-style: none;
   margin: 0;
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   font-size: max(var(--text-support-min), 14px);
-  line-height: 1.45;
+  line-height: 1.5;
   color: #3d5862;
   font-family: var(--font-data);
 }
 
-.spending-watch-sublist li + li {
-  margin-top: 4px;
+.spending-watch-sublist li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.spending-watch-sublist li::before {
+  content: '';
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  margin-top: 0.38em;
+  border-radius: 999px;
+  background: linear-gradient(145deg, var(--green) 0%, #8bc34a 100%);
+  box-shadow: 0 0 0 2px rgba(111, 163, 78, 0.22);
 }
 
 .spending-watch-review-list {
