@@ -93,4 +93,39 @@
  * @property {string | null} completedAt
  */
 
+/**
+ * @typedef {'available' | 'protected' | 'neutral'} CashClassification
+ */
+
+/**
+ * @typedef {Object} CheckInCashAccount
+ * @property {string} name
+ * @property {number | string} balance
+ * @property {CashClassification} [classification]
+ * @property {string} [purpose]
+ */
+
+/**
+ * @typedef {Object} CheckInBillBucket
+ * @property {string} name
+ * @property {number | string} current
+ * @property {number | string} target
+ * @property {boolean} [funded]
+ */
+
+/**
+ * @typedef {Object} FinancialCheckInSnapshot
+ * @property {string} [householdId]
+ * @property {string} [refreshedAt]
+ * @property {string} [status]
+ * @property {Object} [cash]
+ * @property {Object} [bills]
+ * @property {Object} [kidsSavings]
+ * @property {Object} [emergencyFund]
+ * @property {Object} [debt]
+ * @property {Object} [retirement]
+ * @property {Object} [netWorth]
+ * @property {Object} [recentActivity]
+ */
+
 export {};

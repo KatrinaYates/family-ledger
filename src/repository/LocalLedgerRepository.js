@@ -15,6 +15,7 @@ import {
     ValidationError,
 } from './errors.js';
 import { dispatchLedgerMonthsUpdated, dispatchLedgerMonthUpdated } from '../utils/meetingEvents.js';
+import { FINANCIAL_CHECK_IN_KEY } from '../constants/financialCheckIn.js';
 
 const ACTIONS_KEY = 'fl-actions';
 const WORKFLOW_KEY_PREFIX = 'fl-ledger-workflow-';
@@ -416,5 +417,11 @@ export class LocalLedgerRepository extends LedgerRepository {
 
     async isUsingLocalData(monthId) {
         return isUsingLocalData(monthId);
+    }
+
+    async getLatestFinancialCheckIn() {
+        const value = await this.getMeetingEntry(null, FINANCIAL_CHECK_IN_KEY);
+        if (!value || typeof value !== 'object') return null;
+        return value;
     }
 }

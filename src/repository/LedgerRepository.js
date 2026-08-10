@@ -36,4 +36,5 @@ export class LedgerRepository {
     lockMonth(_monthId, _options) { throw new Error('Not implemented'); }
     unlockMonth(_monthId, _reason, _options) { throw new Error('Not implemented'); }
     isUsingLocalData(_monthId) { throw new Error('Not implemented'); }
+    getLatestFinancialCheckIn() { throw new Error('Not implemented'); }
 }
