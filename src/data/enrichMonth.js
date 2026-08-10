@@ -47,17 +47,6 @@ function spendingMovementNote(spending, meta) {
   return change || pct || '';
 }
 
-/** @param {string | undefined} insight @param {string | undefined} status */
-function movementNote(insight, status) {
-  const statusText = status?.trim();
-  if (statusText && statusText.length < 48 && !statusText.toLowerCase().includes('review')) {
-    return statusText;
-  }
-  const insightText = insight?.trim();
-  if (insightText && insightText.length < 120) return insightText;
-  return '';
-}
-
 /** @param {object} story @param {object} snapshot */
 function buildFutureProgress(story, snapshot) {
   const saved = story.savings?.total ?? story.savings?.monthTotal;
@@ -156,11 +145,17 @@ function buildDerivedOverallPulse({ snapshot, story, spending, futureProgress })
     positives.push(`spending fell ${pct}`);
   }
 
-  const debtDir = directionFromStatus(snapshot.debt?.status) ?? directionFromStatus(snapshot.debt?.insight);
+  const debtChange = snapshot.monthChanges?.debt?.change;
+  const debtDir = directionFromStatus(debtChange)
+    ?? directionFromStatus(snapshot.debt?.status)
+    ?? directionFromStatus(snapshot.debt?.insight);
   if (debtDir === 'down') positives.push('debt declined');
   else if (debtDir === 'up') cautions.push('debt increased');
 
-  const nwDir = directionFromStatus(snapshot.netWorth?.status) ?? directionFromStatus(snapshot.netWorth?.insight);
+  const netWorthChange = snapshot.monthChanges?.netWorth?.change;
+  const nwDir = directionFromStatus(netWorthChange)
+    ?? directionFromStatus(snapshot.netWorth?.status)
+    ?? directionFromStatus(snapshot.netWorth?.insight);
   if (nwDir === 'up') positives.push('net worth moved up');
   else if (nwDir === 'down') cautions.push('net worth slipped');
 
@@ -231,8 +226,22 @@ function futureProgressComponents(futureProgress) {
   return components.length ? components : undefined;
 }
 
+/** @param {object | undefined} change @param {string} endingValue */
+function buildMonthlyChangeCard(change, endingValue) {
+  if (!change) return null;
+  const value = hasValue(change.change) ? change.change : '—';
+  const noteParts = [];
+  if (hasValue(endingValue)) noteParts.push(`Ended at ${endingValue}`);
+  if (change.note?.trim()) noteParts.push(change.note.trim());
+  return {
+    value,
+    chip: statusChip(change.status, hasValue(change.change) ? 'This month' : 'Change unavailable'),
+    note: noteParts.join(' · '),
+  };
+}
+
 /**
- * Monthly Snapshot enrichment — headline month-end orientation.
+ * Monthly Snapshot enrichment — month activity first, ending position second.
  * @param {object} sourceData
  * @param {object | undefined} meta
  */
@@ -270,42 +279,62 @@ export function enrichMonth(sourceData, meta) {
   }
 
   const monthEndCash = story.endingPosition?.totalCash ?? snapshot.cash?.total;
-  if (hasValue(monthEndCash)) {
-    const cashNotes = [];
-    if (hasValue(snapshot.cash?.availableTotal)) {
-      cashNotes.push(`${snapshot.cash.availableTotal} available`);
-    }
-    if (hasValue(snapshot.cash?.protectedTotal)) {
-      cashNotes.push(`${snapshot.cash.protectedTotal} protected`);
-    }
+  const cashChange = buildMonthlyChangeCard(snapshot.monthChanges?.cash, monthEndCash);
+  if (cashChange) {
     kpis.push({
       icon: '💵',
-      label: 'Month-end cash',
-      value: monthEndCash,
-      chip: statusChip(snapshot.cash?.status, 'Connected'),
-      note: cashNotes.join(' · '),
+      label: 'Cash change',
+      ...cashChange,
+    });
+  } else if (hasValue(monthEndCash)) {
+    kpis.push({
+      icon: '💵',
+      label: 'Cash change',
+      value: '—',
+      chip: { text: 'Change unavailable', tone: 'blue' },
+      note: `Ended at ${monthEndCash}`,
     });
   }
 
-  if (hasValue(snapshot.debt?.total)) {
+  const debtChange = buildMonthlyChangeCard(snapshot.monthChanges?.debt, snapshot.debt?.total);
+  if (debtChange) {
     kpis.push({
       icon: '💳',
-      label: 'Debt',
-      value: snapshot.debt.total,
-      chip: statusChip(snapshot.debt?.status, 'Connected'),
-      note: movementNote(snapshot.debt?.insight, snapshot.debt?.status),
+      label: 'Debt change',
+      ...debtChange,
+    });
+  } else if (hasValue(snapshot.debt?.total)) {
+    kpis.push({
+      icon: '💳',
+      label: 'Debt change',
+      value: '—',
+      chip: { text: 'Change unavailable', tone: 'blue' },
+      note: `Ended at ${snapshot.debt.total}`,
     });
   }
 
-  if (hasValue(snapshot.netWorth?.value)) {
+  const netWorthChange = buildMonthlyChangeCard(snapshot.monthChanges?.netWorth, snapshot.netWorth?.value);
+  if (netWorthChange) {
     kpis.push({
       icon: '📈',
-      label: 'Net worth',
-      value: snapshot.netWorth.value,
-      chip: statusChip(snapshot.netWorth?.status, 'Connected'),
-      note: movementNote(snapshot.netWorth?.insight, snapshot.netWorth?.status),
+      label: 'Net worth change',
+      ...netWorthChange,
+    });
+  } else if (hasValue(snapshot.netWorth?.value)) {
+    kpis.push({
+      icon: '📈',
+      label: 'Net worth change',
+      value: '—',
+      chip: { text: 'Change unavailable', tone: 'blue' },
+      note: `Ended at ${snapshot.netWorth.value}`,
     });
   }
+
+  const endingPosition = [
+    hasValue(monthEndCash) ? { label: 'Cash', value: monthEndCash } : null,
+    hasValue(snapshot.debt?.total) ? { label: 'Debt', value: snapshot.debt.total } : null,
+    hasValue(snapshot.netWorth?.value) ? { label: 'Net worth', value: snapshot.netWorth.value } : null,
+  ].filter(Boolean);
 
   const biggestWin = meta?.biggestWin?.trim()
     || snapshot.overview?.biggestWin?.trim()
@@ -348,11 +377,13 @@ export function enrichMonth(sourceData, meta) {
   }
 
   return {
-    subtitle: `Where we finished ${label} and what changed.`,
+    subtitle: `What changed in ${label}, plus where we finished the month.`,
     atAGlanceLabel: `${label} at a glance`,
+    endingPositionLabel: `End of ${label}`,
     overallPulse,
     kpis,
     futureProgress,
+    endingPosition,
     howItWent,
     moneySummary: {
       heading: 'Money this month',
