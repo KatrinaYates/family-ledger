@@ -26,11 +26,11 @@ export function AskChatGPTCard({ enriched }) {
 
   return (
     <PanelCard
-      title="Ask ChatGPT about this"
+      title="Ask the financial advisor"
       className="check-in-card check-in-ask-card"
     >
       <p className="check-in-card-lead">
-        Prepare a question about your current situation. Copy the prompt, then open ChatGPT to paste it there.
+        Prepare a question about your current situation. Copy the prepared prompt to share with your financial advisor.
       </p>
       <label className="prompt-field check-in-ask-field">
         <span className="prompt-field-label">Your question</span>
@@ -43,7 +43,7 @@ export function AskChatGPTCard({ enriched }) {
       </label>
       <div className="check-in-ask-actions">
         <button type="button" className="check-in-btn check-in-btn-primary" onClick={openChatGPT}>
-          Ask ChatGPT →
+          Ask the financial advisor →
         </button>
         <button type="button" className="check-in-btn check-in-btn-secondary" onClick={copyPrompt}>
           {copied ? 'Copied!' : 'Copy prepared prompt'}
