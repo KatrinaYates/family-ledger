@@ -5,31 +5,35 @@ export function FutureComingUp({ comingUpLabel, comingUp }) {
   const items = comingUp ?? [];
 
   return (
-    <section className="spending-block" aria-label={comingUpLabel}>
-      <h2 className="month-snapshot-section-heading">{comingUpLabel}</h2>
-      <div className="paper-surface spending-panel-surface">
+    <section
+      className={`future-coming-up ${items.length === 0 ? 'is-empty' : ''}`.trim()}
+      aria-label={comingUpLabel}
+    >
+      <article className="paper-surface spending-panel-surface">
+        <h2 className="spending-watch-module-label future-footer-panel-label">
+          {comingUpLabel}
+        </h2>
+
         {items.length === 0 ? (
-          <p className="panel-note">Nothing major is currently on the horizon.</p>
+          <p className="future-coming-up-empty">Nothing major on the horizon.</p>
         ) : (
-          <ul className="spending-change-list">
+          <ul className="future-coming-up-list">
             {items.map((item) => (
-              <li key={item.id ?? item.title} className="spending-change-row">
-                <div className="spending-change-row-main">
-                  <span className="spending-change-category">{item.title}</span>
-                  {item.amount && (
-                    <span className="spending-change-amount">{item.amount}</span>
-                  )}
-                </div>
+              <li key={item.id ?? item.title} className="future-coming-up-item">
+                <span className="future-coming-up-title">{item.title}</span>
+                {item.amount && (
+                  <strong className="future-coming-up-amount">{item.amount}</strong>
+                )}
                 {(item.date || item.context) && (
-                  <p className="spending-change-reason">
+                  <span className="future-coming-up-meta">
                     {[item.date, item.context].filter(Boolean).join(' · ')}
-                  </p>
+                  </span>
                 )}
               </li>
             ))}
           </ul>
         )}
-      </div>
+      </article>
     </section>
   );
 }

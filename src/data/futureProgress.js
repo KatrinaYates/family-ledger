@@ -5,9 +5,22 @@ function hasValue(value) {
   return Boolean(value && value !== '—');
 }
 
+/** @param {object} sourceData */
+export function resolveDebtPayments(sourceData) {
+  const debt = sourceData.snapshot?.debt ?? {};
+  if (hasValue(debt.monthPayments)) return debt.monthPayments;
+
+  const items = sourceData.story?.debtPayments?.items ?? [];
+  const total = items.reduce((sum, item) => {
+    const amount = parseAmount(item.amount);
+    return amount != null ? sum + amount : sum;
+  }, 0);
+  return total > 0 ? formatCurrencyDetailed(total, true) : null;
+}
+
 /**
  * Monthly future-directed contributions — shared by Snapshot and Future.
- * Counts contributions only; never ending balances or interest.
+ * Counts contributions and debt payments; never ending balances or interest.
  * @param {object} sourceData
  */
 export function buildFutureProgress(sourceData) {
@@ -48,6 +61,12 @@ export function buildFutureProgress(sourceData) {
     if (!duplicatesExisting) {
       components.push({ label: 'Other savings', value: otherSavings, amountNum: otherNum });
     }
+  }
+
+  const debtPayments = resolveDebtPayments(sourceData);
+  const debtNum = parseAmount(debtPayments);
+  if (debtNum != null && debtNum > 0) {
+    components.push({ label: 'Debt payments', value: debtPayments, amountNum: debtNum });
   }
 
   if (!components.length) return null;

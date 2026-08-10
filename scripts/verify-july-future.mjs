@@ -46,7 +46,8 @@ const fp = buildFutureProgress(record.sourceData);
 const { month, future } = record.generatedAnalysis;
 
 const checks = [
-  ['future progress total', fp?.total === '$1,509.68'],
+  ['future progress total', fp?.total === '$3,089.07'],
+  ['debt in future progress', fp?.components?.some((c) => c.label === 'Debt payments' && c.value === '$1,579.39')],
   ['emergency uses contributions not interest-inflated monthAdded', fp?.components?.find((c) => c.label === 'Emergency fund')?.value === '$10.86'],
   ['snapshot/future parity', month.futureProgress?.total === future.futureProgress?.total],
   ['four goals', future.goals?.length === 4],

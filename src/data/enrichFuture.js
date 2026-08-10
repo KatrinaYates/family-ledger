@@ -1,4 +1,4 @@
-import { buildFutureProgress } from './futureProgress.js';
+import { buildFutureProgress, resolveDebtPayments } from './futureProgress.js';
 import { formatCurrencyDetailed, parseAmount } from './spendingAnalysis.js';
 
 /** @param {string | undefined} value */
@@ -11,19 +11,6 @@ function formatContribution(value) {
   if (!hasValue(value)) return null;
   const trimmed = String(value).trim();
   return trimmed.startsWith('+') ? trimmed : `+${trimmed}`;
-}
-
-/** @param {object} sourceData */
-function resolveDebtPayments(sourceData) {
-  const debt = sourceData.snapshot?.debt ?? {};
-  if (hasValue(debt.monthPayments)) return debt.monthPayments;
-
-  const items = sourceData.story?.debtPayments?.items ?? [];
-  const total = items.reduce((sum, item) => {
-    const amount = parseAmount(item.amount);
-    return amount != null ? sum + amount : sum;
-  }, 0);
-  return total > 0 ? formatCurrencyDetailed(total, true) : null;
 }
 
 /** @param {object} sourceData @param {{ total?: string, components?: Array<{ label: string, value: string }> } | null} futureProgress */
@@ -49,6 +36,7 @@ function buildSummary(sourceData, futureProgress) {
   }
 
   if (labels.has('other savings')) phrases.push('other savings goals');
+  if (labels.has('debt payments')) phrases.push('paying down debt');
 
   if (!phrases.length) return '';
 
@@ -175,36 +163,6 @@ function buildGoals(sourceData) {
   return goals;
 }
 
-/** @param {object} sourceData @param {{ total?: string, components?: Array<{ label: string, value: string }> } | null} futureProgress */
-function buildMonthlyActivity(sourceData, futureProgress) {
-  /** @type {Array<object>} */
-  const items = [];
-
-  for (const component of futureProgress?.components ?? []) {
-    items.push({
-      label: component.label,
-      value: formatContribution(component.value) ?? component.value,
-      type: 'contribution',
-    });
-  }
-
-  const debtPayments = resolveDebtPayments(sourceData);
-  if (hasValue(debtPayments)) {
-    const debt = sourceData.snapshot?.debt ?? {};
-    const baselineUnavailable = debt.measurementStatus === 'historical_baseline_unavailable';
-    items.push({
-      label: 'Debt payments',
-      value: debtPayments,
-      type: 'debt-payment',
-      context: baselineUnavailable
-        ? 'Debt payment activity is known, but principal reduction cannot yet be measured.'
-        : null,
-    });
-  }
-
-  return items;
-}
-
 /** @param {object} future */
 function buildComingUp(future) {
   const upcoming = future.upcoming ?? [];
@@ -248,23 +206,19 @@ export function enrichFuture(sourceData, meta) {
   const future = sourceData.future ?? {};
   const futureProgress = buildFutureProgress(sourceData);
   const goals = buildGoals(sourceData);
-  const monthlyActivity = buildMonthlyActivity(sourceData, futureProgress);
   const comingUp = buildComingUp(future);
   const summary = buildSummary(sourceData, futureProgress);
   const discussionPrompts = buildDiscussionPrompts(sourceData, goals);
-  const label = meta?.month?.trim() || 'This month';
 
   return {
     subtitle: 'Are we moving toward the life and goals we actually care about?',
     futureProgress,
     summary,
     goals,
-    monthlyActivity,
     comingUp,
     discussionPrompts,
     atAGlanceLabel: `Future at a Glance`,
     goalsLabel: 'Our Goals',
-    activityLabel: `What Changed in ${label}`,
     comingUpLabel: 'Coming Up',
     talkTogetherLabel: 'Talk About Together',
   };

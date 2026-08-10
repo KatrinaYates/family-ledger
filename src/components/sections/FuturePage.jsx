@@ -2,12 +2,15 @@ import React from 'react';
 import { SectionPageShell } from './SectionPageShell';
 import { FutureAtAGlance } from '../future/FutureAtAGlance';
 import { FutureGoals } from '../future/FutureGoals';
-import { FutureMonthlyActivity } from '../future/FutureMonthlyActivity';
 import { FutureComingUp } from '../future/FutureComingUp';
 import { FutureTalkTogether } from '../future/FutureTalkTogether';
 
 export function FuturePage({ data, month, section }) {
   const { future } = data;
+  const hasGlance = Boolean(future.futureProgress?.total);
+  const hasGoals = Boolean(future.goals?.length);
+  const hasTalk = Boolean(future.discussionPrompts?.length);
+  const showFooter = hasGlance || hasGoals || hasTalk;
 
   return (
     <SectionPageShell
@@ -17,28 +20,34 @@ export function FuturePage({ data, month, section }) {
       data={data}
       subtitle={future.subtitle}
     >
-      <div className="spending-page future-page">
-        <FutureAtAGlance
-          atAGlanceLabel={future.atAGlanceLabel}
-          futureProgress={future.futureProgress}
-          summary={future.summary}
-        />
-        <FutureGoals
-          goalsLabel={future.goalsLabel}
-          goals={future.goals}
-        />
-        <FutureMonthlyActivity
-          activityLabel={future.activityLabel}
-          monthlyActivity={future.monthlyActivity}
-        />
-        <FutureComingUp
-          comingUpLabel={future.comingUpLabel}
-          comingUp={future.comingUp}
-        />
-        <FutureTalkTogether
-          talkTogetherLabel={future.talkTogetherLabel}
-          discussionPrompts={future.discussionPrompts}
-        />
+      <div className="future-page">
+        {hasGlance && (
+          <FutureAtAGlance
+            atAGlanceLabel={future.atAGlanceLabel}
+            futureProgress={future.futureProgress}
+            summary={future.summary}
+          />
+        )}
+
+        {hasGoals && (
+          <FutureGoals
+            goalsLabel={future.goalsLabel}
+            goals={future.goals}
+          />
+        )}
+
+        {showFooter && (
+          <div className="future-footer">
+            <FutureComingUp
+              comingUpLabel={future.comingUpLabel}
+              comingUp={future.comingUp}
+            />
+            <FutureTalkTogether
+              talkTogetherLabel={future.talkTogetherLabel}
+              discussionPrompts={future.discussionPrompts}
+            />
+          </div>
+        )}
       </div>
     </SectionPageShell>
   );

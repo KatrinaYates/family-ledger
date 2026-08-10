@@ -157,7 +157,6 @@
  * @property {{ total?: string, components?: Array<{ label: string, value: string }> } | null} futureProgress
  * @property {string} summary
  * @property {Array<Object>} goals
- * @property {Array<Object>} monthlyActivity
  * @property {Array<Object>} comingUp
  * @property {string[]} discussionPrompts
  */

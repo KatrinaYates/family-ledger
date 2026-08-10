@@ -256,7 +256,6 @@ try {
     assert(!view.celebrate?.page?.footerText, `${monthId} celebrate should not include multi-page footerText`);
     assert(view.future?.subtitle, `${monthId} future section should expose subtitle`);
     assert(Array.isArray(view.future?.goals), `${monthId} future.goals should be an array`);
-    assert(Array.isArray(view.future?.monthlyActivity), `${monthId} future.monthlyActivity should be an array`);
     assert(Array.isArray(view.future?.comingUp), `${monthId} future.comingUp should be an array`);
     assert(Array.isArray(view.future?.discussionPrompts), `${monthId} future.discussionPrompts should be an array`);
     assert(view.future?.retirementPage == null, `${monthId} future should not expose legacy retirementPage`);
