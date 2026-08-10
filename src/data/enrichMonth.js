@@ -59,25 +59,20 @@ function movementNote(insight, status) {
 }
 
 /** @param {object} story @param {object} snapshot */
-function savedInvestedLabel(story, snapshot) {
+function buildFutureProgress(story, snapshot) {
   const saved = story.savings?.total ?? story.savings?.monthTotal;
   const invested = story.investments?.monthContributions ?? snapshot.retirement?.monthContributions;
-  const parts = [];
-  if (hasValue(saved)) parts.push(saved);
-  if (hasValue(invested)) parts.push(invested);
-  if (!parts.length) return null;
 
-  if (hasValue(saved) && hasValue(invested)) {
-    return { value: parts.join(' + '), note: 'Savings and retirement contributions' };
-  }
-  if (hasValue(invested)) {
-    return { value: invested, note: 'Retirement contributions' };
-  }
-  return { value: saved, note: 'Saved this month' };
+  /** @type {{ saved?: string, invested?: string }} */
+  const progress = {};
+  if (hasValue(saved)) progress.saved = saved;
+  if (hasValue(invested)) progress.invested = invested;
+
+  return Object.keys(progress).length ? progress : null;
 }
 
-/** @param {object} sourceData @param {object} story @param {object} snapshot @param {object | undefined} meta */
-function buildWhatMadeDifferent(sourceData, story, meta) {
+/** @param {object} story @param {object} snapshot @param {object | undefined} meta */
+function buildWhatMadeDifferent(story, meta) {
   const incomeContext = story.income?.context?.trim();
   if (incomeContext) return incomeContext;
 
@@ -106,8 +101,8 @@ function buildWhatMadeDifferent(sourceData, story, meta) {
   return '';
 }
 
-/** @param {object} snapshot @param {object | undefined} meta @param {object} sourceData */
-function buildNeedsAttention(snapshot, meta, sourceData) {
+/** @param {object} snapshot @param {object | undefined} meta */
+function buildNeedsAttention(snapshot, meta) {
   const focus = meta?.biggestFocus?.trim() || snapshot.overview?.biggestFocus?.trim();
   if (focus) return focus;
 
@@ -127,18 +122,113 @@ function buildNeedsAttention(snapshot, meta, sourceData) {
   return '';
 }
 
-/** @param {object} snapshot @param {object} story */
-function buildOverallPulse(snapshot, story) {
-  const pulse = snapshot.overview?.pulseInsight?.trim();
-  if (pulse) return pulse;
+/** @param {string | undefined} text */
+function directionFromStatus(text) {
+  if (!text) return null;
+  const lower = text.toLowerCase();
+  if (/(down|lower|declin|reduc|paid down|decreas)/.test(lower)) return 'down';
+  if (/(up|higher|increas|grew|rose)/.test(lower)) return 'up';
+  return null;
+}
 
-  const closing = story.explanation?.closing?.trim();
-  if (closing) return closing;
+/** @param {string | undefined} changePercent */
+function spendingDirection(changePercent) {
+  if (!hasValue(changePercent) || changePercent === '0%') return null;
+  return changePercent.trim().startsWith('-') ? 'down' : 'up';
+}
 
-  const netInsight = snapshot.netWorth?.insight?.trim();
-  if (netInsight && netInsight.length <= 160) return netInsight;
+/**
+ * Synthesize a one-sentence overall pulse from reliable month signals.
+ * @param {object} params
+ */
+function buildDerivedOverallPulse({ snapshot, story, spending, futureProgress }) {
+  /** @type {string[]} */
+  const positives = [];
+  /** @type {string[]} */
+  const cautions = [];
+
+  const spendDir = spendingDirection(spending.changePercent);
+  if (spendDir === 'up') {
+    const pct = spending.changePercent?.trim().replace(/^\+/, '') ?? '';
+    cautions.push(`spending rose ${pct}`);
+  } else if (spendDir === 'down') {
+    const pct = spending.changePercent?.trim().replace(/^-/, '') ?? '';
+    positives.push(`spending fell ${pct}`);
+  }
+
+  const debtDir = directionFromStatus(snapshot.debt?.status) ?? directionFromStatus(snapshot.debt?.insight);
+  if (debtDir === 'down') positives.push('debt declined');
+  else if (debtDir === 'up') cautions.push('debt increased');
+
+  const nwDir = directionFromStatus(snapshot.netWorth?.status) ?? directionFromStatus(snapshot.netWorth?.insight);
+  if (nwDir === 'up') positives.push('net worth moved up');
+  else if (nwDir === 'down') cautions.push('net worth slipped');
+
+  if (futureProgress?.invested) positives.push('retirement contributions continued');
+  if (futureProgress?.saved) positives.push('savings progressed');
+
+  const cashInsight = snapshot.cash?.insight?.trim();
+  const cashStatus = snapshot.cash?.status?.trim().toLowerCase() ?? '';
+  if (cashStatus.includes('tight') || /tight|pressure|buffer/.test(cashInsight ?? '')) {
+    cautions.push('cash flexibility narrowed');
+  } else if (cashStatus.includes('healthy') || /healthy|strong|comfortable/.test(cashInsight ?? '')) {
+    positives.push('cash stayed healthy');
+  }
+
+  const oneTimeGroup = (story.income?.groups ?? []).find((g) => /one-time/i.test(g.label ?? ''));
+  const hasOneTime = oneTimeGroup?.items?.some((item) => hasValue(item.amount) && item.amount !== '$0');
+  if (hasOneTime) positives.push('one-time income shaped the month');
+
+  const pickedPos = positives.slice(0, 2);
+  const pickedCaution = cautions.slice(0, 2);
+
+  if (!pickedPos.length && !pickedCaution.length) return '';
+
+  if (pickedPos.length && pickedCaution.length) {
+    const lead = pickedPos.join(' and ');
+    const concern = pickedCaution.join(', ');
+    return `${lead.charAt(0).toUpperCase()}${lead.slice(1)}, but ${concern} need attention.`;
+  }
+
+  if (pickedCaution.length) {
+    const lead = pickedCaution.join(' and ');
+    return `${lead.charAt(0).toUpperCase()}${lead.slice(1)} need attention this month.`;
+  }
+
+  const lead = pickedPos.join(' and ');
+  return `${lead.charAt(0).toUpperCase()}${lead.slice(1)} made for a solid month overall.`;
+}
+
+/**
+ * Resolve purpose-built overall pulse with safe fallbacks.
+ * @param {object} sourceData
+ * @param {object} snapshot
+ * @param {object} story
+ * @param {object} spending
+ * @param {{ saved?: string, invested?: string } | null} futureProgress
+ */
+function resolveOverallPulse(sourceData, snapshot, story, spending, futureProgress) {
+  const authored = sourceData.meta?.overallPulse?.trim()
+    || snapshot.overview?.overallPulse?.trim()
+    || sourceData.monthAnalysis?.overallPulse?.trim();
+  if (authored) return authored;
+
+  const derived = buildDerivedOverallPulse({ snapshot, story, spending, futureProgress });
+  if (derived) return derived;
 
   return '';
+}
+
+/**
+ * @param {{ saved?: string, invested?: string } | null} futureProgress
+ */
+function futureProgressComponents(futureProgress) {
+  if (!futureProgress) return undefined;
+  /** @type {Array<{ label: string, value: string }>} */
+  const components = [];
+  if (futureProgress.saved) components.push({ label: 'saved', value: futureProgress.saved });
+  if (futureProgress.invested) components.push({ label: 'invested', value: futureProgress.invested });
+  return components.length ? components : undefined;
 }
 
 /**
@@ -151,6 +241,8 @@ export function enrichMonth(sourceData, meta) {
   const snapshot = enrichSnapshot(sourceData.snapshot ?? {}, meta);
   const story = enrichStory(sourceData.story ?? {}, meta);
   const spending = sourceData.spending ?? {};
+  const futureProgress = buildFutureProgress(story, snapshot);
+  const overallPulse = resolveOverallPulse(sourceData, snapshot, story, spending, futureProgress);
 
   /** @type {Array<{ icon: string, label: string, value: string, chip?: { text: string, tone: string }, note?: string }>} */
   const kpis = [];
@@ -215,17 +307,6 @@ export function enrichMonth(sourceData, meta) {
     });
   }
 
-  const savedInvested = savedInvestedLabel(story, snapshot);
-  if (savedInvested) {
-    kpis.push({
-      icon: '🌱',
-      label: 'Saved / invested',
-      value: savedInvested.value,
-      chip: { text: 'Progress', tone: 'purple' },
-      note: savedInvested.note,
-    });
-  }
-
   const biggestWin = meta?.biggestWin?.trim()
     || snapshot.overview?.biggestWin?.trim()
     || sourceData.celebrate?.biggestWin?.trim()
@@ -233,32 +314,50 @@ export function enrichMonth(sourceData, meta) {
 
   const howItWent = {
     heading: `How ${label} went`,
-    pulse: buildOverallPulse(snapshot, story),
+    pulse: overallPulse,
     biggestWin,
-    needsAttention: buildNeedsAttention(snapshot, meta, sourceData),
-    whatMadeDifferent: buildWhatMadeDifferent(sourceData, story, meta),
+    needsAttention: buildNeedsAttention(snapshot, meta),
+    whatMadeDifferent: buildWhatMadeDifferent(story, meta),
   };
 
-  /** @type {Array<{ label: string, value: string }>} */
-  const moneyFlowItems = [];
+  /** @type {Array<{ key: string, title: string, subtitle: string, value?: string, components?: Array<{ label: string, value: string }> }>} */
+  const moneyBlocks = [];
   if (hasValue(incomeTotal)) {
-    moneyFlowItems.push({ label: 'Money in', value: incomeTotal });
+    moneyBlocks.push({
+      key: 'in',
+      title: 'Money in',
+      subtitle: 'Income',
+      value: incomeTotal,
+    });
   }
   if (hasValue(spending.total)) {
-    moneyFlowItems.push({ label: 'Spending', value: spending.total });
+    moneyBlocks.push({
+      key: 'spent',
+      title: 'Spent',
+      subtitle: 'Spending',
+      value: spending.total,
+    });
   }
-  if (savedInvested) {
-    moneyFlowItems.push({ label: 'Saved / invested', value: savedInvested.value });
+  if (futureProgress) {
+    moneyBlocks.push({
+      key: 'progress',
+      title: 'Future progress',
+      subtitle: 'Savings + investing',
+      components: futureProgressComponents(futureProgress),
+    });
   }
 
   return {
     subtitle: `Where we finished ${label} and what changed.`,
     atAGlanceLabel: `${label} at a glance`,
+    overallPulse,
     kpis,
+    futureProgress,
     howItWent,
-    moneyFlow: {
-      items: moneyFlowItems,
-      independent: true,
+    moneySummary: {
+      heading: 'Money this month',
+      support: moneyBlocks.length >= 2 ? 'Three views of how money moved this month.' : '',
+      blocks: moneyBlocks,
     },
     humanContextLabel: "What the numbers don't know",
   };

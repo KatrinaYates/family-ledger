@@ -198,7 +198,10 @@ try {
     assert(view.month?.subtitle, `${monthId} month section should be enriched`);
     assert(Array.isArray(view.month?.kpis), `${monthId} month.kpis should be an array`);
     assert(view.month?.howItWent, `${monthId} month.howItWent should be enriched`);
+    assert(typeof view.month?.overallPulse === 'string', `${monthId} month.overallPulse should be a string`);
+    assert(view.month?.moneySummary?.blocks, `${monthId} month.moneySummary.blocks should exist`);
     const kpiLabels = (view.month?.kpis ?? []).map((k) => k.label);
+    assert(!kpiLabels.includes('Saved / invested'), `${monthId} should not use Saved / invested KPI label`);
     if (kpiLabels.includes('Debt') && kpiLabels.includes('Net worth')) {
       assert(kpiLabels.indexOf('Debt') !== kpiLabels.indexOf('Net worth'), `${monthId} debt and net worth should be separate KPIs`);
     }

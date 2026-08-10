@@ -3,7 +3,8 @@ import { EditableBulletList } from '../meeting/MeetingFields';
 import { MetricKpiRow } from '../content/NotebookPrimitives';
 import { sectionFieldKey } from '../../utils/meetingKeys';
 import { SectionPageShell } from './SectionPageShell';
-import { MonthFlowVisual } from './MonthFlowVisual';
+import { MonthMoneySummary } from './MonthFlowVisual';
+import { FutureProgressKpi } from './FutureProgressKpi';
 
 function PriorityCard({ label, tone, children }) {
   if (!children?.trim()) return null;
@@ -17,7 +18,16 @@ function PriorityCard({ label, tone, children }) {
 
 export function MonthOverviewPage({ data, month, section }) {
   const { month: monthView } = data;
-  const { kpis, howItWent, moneyFlow, atAGlanceLabel, humanContextLabel } = monthView;
+  const {
+    kpis,
+    futureProgress,
+    howItWent,
+    moneySummary,
+    atAGlanceLabel,
+    humanContextLabel,
+  } = monthView;
+
+  const showGlance = kpis.length > 0 || futureProgress;
 
   return (
     <SectionPageShell
@@ -27,10 +37,15 @@ export function MonthOverviewPage({ data, month, section }) {
       data={data}
       subtitle={monthView.subtitle}
     >
-      {kpis.length > 0 && (
+      {showGlance && (
         <section className="month-snapshot-glance" aria-label={atAGlanceLabel}>
           <h2 className="month-snapshot-section-heading">{atAGlanceLabel}</h2>
-          <MetricKpiRow items={kpis} className="month-snapshot-kpi-row" />
+          <div className="month-snapshot-kpi-grid">
+            {kpis.length > 0 && (
+              <MetricKpiRow items={kpis} className="month-snapshot-kpi-row" />
+            )}
+            <FutureProgressKpi futureProgress={futureProgress} />
+          </div>
         </section>
       )}
 
@@ -57,7 +72,11 @@ export function MonthOverviewPage({ data, month, section }) {
         </section>
       )}
 
-      <MonthFlowVisual items={moneyFlow?.items ?? []} />
+      <MonthMoneySummary
+        heading={moneySummary?.heading}
+        support={moneySummary?.support}
+        blocks={moneySummary?.blocks ?? []}
+      />
 
       <section className="month-snapshot-human paper-surface">
         <h2 className="month-snapshot-section-heading">{humanContextLabel}</h2>

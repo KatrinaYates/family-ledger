@@ -1,27 +1,38 @@
 import React from 'react';
 
-export function MonthFlowVisual({ items = [] }) {
-  if (items.length === 0) return null;
+/**
+ * Parallel month money summary — independent views, not a sequential flow.
+ * @param {{ heading?: string, support?: string, blocks?: Array<{ key: string, title: string, subtitle: string, value?: string, components?: Array<{ label: string, value: string }> }> }} props
+ */
+export function MonthMoneySummary({ heading = 'Money this month', support, blocks = [] }) {
+  if (blocks.length === 0) return null;
 
   return (
-    <section className="month-snapshot-flow paper-surface" aria-label="Money flow this month">
-      <h2 className="month-snapshot-section-heading">Money flow</h2>
-      <ol className="month-snapshot-flow-steps">
-        {items.map((step, index) => (
-          <li key={step.label} className="month-snapshot-flow-step">
-            <div className="month-snapshot-flow-step-body">
-              <span className="month-snapshot-flow-label">{step.label}</span>
-              <strong className="month-snapshot-flow-value">{step.value}</strong>
-            </div>
-            {index < items.length - 1 && (
-              <span className="month-snapshot-flow-arrow" aria-hidden="true">↓</span>
+    <section className="month-snapshot-money paper-surface" aria-label={heading}>
+      <h2 className="month-snapshot-section-heading">{heading}</h2>
+      {support && <p className="panel-note month-snapshot-money-support">{support}</p>}
+      <div className="month-snapshot-money-grid">
+        {blocks.map((block) => (
+          <article key={block.key} className="month-snapshot-money-block">
+            <span className="month-snapshot-money-block-title">{block.title}</span>
+            {block.components?.length ? (
+              <ul className="month-snapshot-money-block-components">
+                {block.components.map((item) => (
+                  <li key={item.label}>
+                    <strong>{item.value}</strong>
+                    <span>{item.label}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              block.value && (
+                <strong className="month-snapshot-money-block-value">{block.value}</strong>
+              )
             )}
-          </li>
+            <span className="month-snapshot-money-block-subtitle">{block.subtitle}</span>
+          </article>
         ))}
-      </ol>
-      <p className="month-snapshot-flow-note panel-note">
-        Broad month-end picture — not a strict accounting reconciliation.
-      </p>
+      </div>
     </section>
   );
 }
