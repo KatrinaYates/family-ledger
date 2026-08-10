@@ -89,10 +89,10 @@ export function PageContinuedHint({ children }) {
   return <p className="page-continued-hint">{children}</p>;
 }
 
-export function ScrollBody({ children, label, className = '' }) {
+export function ScrollBody({ children, label, className = '', capped = false }) {
   return (
     <div
-      className={`scroll-body ${className}`.trim()}
+      className={`scroll-body${capped ? ' scroll-body-capped' : ''} ${className}`.trim()}
       role="region"
       aria-label={label}
     >

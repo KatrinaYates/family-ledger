@@ -1,7 +1,7 @@
 import React from 'react';
 import { useMeetingJson, useMeetingNotes } from '../../hooks/useMeetingField';
 import { useMonthContext } from '../../context/MonthContext';
-import { pageNotesKey } from '../../utils/meetingKeys';
+import { sectionNotesKey } from '../../utils/meetingKeys';
 
 function newId(prefix = 'item') {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -54,9 +54,9 @@ function FieldSaveError({ message }) {
   );
 }
 
-export function SectionNotes({ pageId, label = 'Meeting notes' }) {
+export function SectionNotes({ sectionId, label = 'Meeting notes' }) {
   const { monthId } = useMonthContext();
-  const { value: notes, setValue: setNotes, isLocked, saveError } = useMeetingNotes(pageNotesKey(monthId, pageId));
+  const { value: notes, setValue: setNotes, isLocked, saveError } = useMeetingNotes(sectionNotesKey(monthId, sectionId));
   const hasNotes = notes.trim().length > 0;
 
   return (
@@ -180,12 +180,12 @@ export function EditableQuestions({ storageKey, seedQuestions = [] }) {
         <div className="editable-question" key={item.id}>
           <label className="editable-question-label">
             <span>Question {index + 1}</span>
-            <input
-              type="text"
-              className="editable-inline-input"
+            <textarea
+              className="editable-inline-input editable-question-prompt"
               value={item.question}
               onChange={(e) => updateQuestion(item.id, e.target.value)}
               placeholder="What do we need to discuss?"
+              rows={2}
               readOnly={isLocked}
             />
           </label>
@@ -221,9 +221,10 @@ export function EditableQuestions({ storageKey, seedQuestions = [] }) {
   );
 }
 
-export function EditableDecisionList({ storageKey, seedDecisions = [] }) {
+export function EditableDecisionList({ storageKey, outcomeStorageKey, seedDecisions = [] }) {
   const { value: items, setValue: setItems, isLocked, saveError: listSaveError } = useMeetingJson(storageKey, () => seedChecklistItems(seedDecisions));
-  const { value: decision, setValue: setDecision, isLocked: isOutcomeLocked, saveError: outcomeSaveError } = useMeetingNotes(`${storageKey}-outcome`);
+  const outcomeKey = outcomeStorageKey ?? `${storageKey}-outcome`;
+  const { value: decision, setValue: setDecision, isLocked: isOutcomeLocked, saveError: outcomeSaveError } = useMeetingNotes(outcomeKey);
   const readOnly = isLocked || isOutcomeLocked;
   const saveError = listSaveError || outcomeSaveError;
 
@@ -248,7 +249,7 @@ export function EditableDecisionList({ storageKey, seedDecisions = [] }) {
       <ul className="decision-checklist">
         {items.map((item) => (
           <li key={item.id}>
-            <label className="editable-checklist-row">
+            <label className="editable-checklist-row editable-decision-row">
               <input
                 type="checkbox"
                 checked={Boolean(item.checked)}
@@ -256,12 +257,12 @@ export function EditableDecisionList({ storageKey, seedDecisions = [] }) {
                 disabled={readOnly}
                 aria-label={item.text || 'Decision option'}
               />
-              <input
-                type="text"
-                className="editable-inline-input"
+              <textarea
+                className="editable-inline-input editable-decision-input"
                 value={item.text}
                 onChange={(e) => updateText(item.id, e.target.value)}
                 placeholder="Decision option..."
+                rows={2}
                 readOnly={readOnly}
               />
             </label>
@@ -457,11 +458,11 @@ export function MeetingEmergencyBand({ storageKey, label, title, description, ch
   );
 }
 
-export function PageWithNotes({ pageId, children }) {
+export function PageWithNotes({ sectionId, children }) {
   return (
     <div className="page-with-notes">
       <div className="page-with-notes-body">{children}</div>
-      <SectionNotes pageId={pageId} />
+      <SectionNotes sectionId={sectionId} />
     </div>
   );
 }

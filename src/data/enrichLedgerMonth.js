@@ -1,19 +1,13 @@
-import { enrichSnapshot } from './enrichSnapshot.js';
-import { enrichStory } from './enrichStory.js';
+import { enrichMonth } from './enrichMonth.js';
 import { enrichSpending } from './enrichSpending.js';
 import { enrichCfo } from './enrichCfo.js';
 import { enrichFuture } from './enrichFuture.js';
-import { enrichMeeting } from './enrichMeeting.js';
+import { enrichDecisions } from './enrichDecisions.js';
 import { enrichActions } from './enrichActions.js';
 import { enrichCelebrate } from './enrichCelebrate.js';
-import { enrichHandoff } from './enrichHandoff.js';
+import { enrichClose } from './enrichClose.js';
 import { normalizeSourceFields } from './normalizeLedgerMonth.js';
 import { applyBlankSourceDefaults } from './blankSourceDefaults.js';
-
-/** @param {object | undefined} meta */
-function monthLabel(meta) {
-    return meta?.month?.trim() || 'the month';
-}
 
 /**
  * Pure enrichment — presentation output only. Never mutates meeting entries or actions.
@@ -21,18 +15,17 @@ function monthLabel(meta) {
  */
 export function buildGeneratedAnalysis(sourceData) {
     const meta = sourceData.meta ?? {};
-    const label = monthLabel(meta);
+    const cfo = enrichCfo(sourceData.cfo, meta);
 
     return {
-        snapshot: enrichSnapshot(sourceData.snapshot, meta),
-        story: enrichStory(sourceData.story, meta),
+        month: enrichMonth(sourceData, meta),
         spending: enrichSpending(sourceData.spending, meta),
-        cfo: enrichCfo(sourceData.cfo, meta),
+        cfo,
         future: enrichFuture(sourceData.future, meta),
-        meeting: enrichMeeting(sourceData.meeting, meta),
+        decisions: enrichDecisions(sourceData, cfo, meta),
         actions: enrichActions(sourceData.actions),
         celebrate: enrichCelebrate(sourceData.celebrate, meta),
-        handoff: enrichHandoff(sourceData.handoff, meta),
+        close: enrichClose(sourceData, meta),
     };
 }
 

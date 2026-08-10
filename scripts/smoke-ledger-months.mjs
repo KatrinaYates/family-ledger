@@ -71,8 +71,8 @@ try {
     const record = loadSampleRecord(raw, monthId);
     const view = mergeMonthView(record);
     assert(view.meta?.month, `${monthId} should expose meta.month in merged view`);
-    assert(view.snapshot, `${monthId} should expose snapshot section`);
-    assert(view.story, `${monthId} should expose story section`);
+    assert(view.month, `${monthId} should expose month section`);
+    assert(view.spending, `${monthId} should expose spending section`);
     assert(view.actions, `${monthId} should expose actions section`);
     assert(record.schemaVersion === 1, `${monthId} should use schemaVersion 1`);
     assert(record.generation, `${monthId} should include generation block`);
@@ -99,38 +99,21 @@ try {
 
   // Stale generated_analysis must not override fresher source_data on read.
   const staleRecord = loadSampleRecord(samples['2026-07'], '2026-07');
-  staleRecord.sourceData.snapshot = {
-    ...staleRecord.sourceData.snapshot,
-    cash: {
-      ...(staleRecord.sourceData.snapshot?.cash ?? {}),
-      total: '$17,799.42',
-      status: 'Connected',
-    },
+  staleRecord.sourceData.spending = {
+    ...staleRecord.sourceData.spending,
+    total: '$5,432.10',
   };
   staleRecord.generatedAnalysis = {
     ...staleRecord.generatedAnalysis,
-    snapshot: {
-      ...(staleRecord.generatedAnalysis.snapshot ?? {}),
-      overview: {
-        ...(staleRecord.generatedAnalysis.snapshot?.overview ?? {}),
-        kpis: [
-          { icon: '💵', label: 'Connected Cash', value: '—', chip: { text: 'Needs month-end detail', tone: 'blue' }, note: '' },
-        ],
-      },
-      cash: {
-        ...(staleRecord.generatedAnalysis.snapshot?.cash ?? {}),
-        total: '—',
-      },
+    spending: {
+      ...(staleRecord.generatedAnalysis.spending ?? {}),
+      total: '$0',
     },
   };
   const repairedView = resolveMonthView(staleRecord);
   assert(
-    repairedView.snapshot?.overview?.kpis?.find((kpi) => kpi.label === 'Connected Cash')?.value === '$17,799.42',
-    'resolveMonthView should derive cash KPI from source_data, not stale generated_analysis',
-  );
-  assert(
-    repairedView.snapshot?.cash?.total === '$17,799.42',
-    'resolveMonthView should expose updated cash total from source_data',
+    repairedView.spending?.total === '$5,432.10',
+    'resolveMonthView should derive spending from source_data, not stale generated_analysis',
   );
 
   const augustLabels = getComparisonMonthLabels('2026-08', 'August');
@@ -212,13 +195,15 @@ try {
   for (const monthId of ['2026-08', '2026-09']) {
     const record = loadSampleRecord(samples[monthId], monthId);
     const view = mergeMonthView(record);
-    assert(Array.isArray(view.story?.bills?.items), `${monthId} story.bills.items should be an array`);
-    assert(Array.isArray(view.story?.lifestyle?.items), `${monthId} story.lifestyle.items should be an array`);
-    assert(Array.isArray(view.story?.debtPayments?.items), `${monthId} story.debtPayments.items should be an array`);
+    assert(view.month?.subtitle, `${monthId} month section should be enriched`);
+    assert(Array.isArray(view.month?.kpis), `${monthId} month.kpis should be an array`);
     assert(Array.isArray(view.spending?.changes), `${monthId} spending.changes should be an array`);
     assert(Array.isArray(view.spending?.unexpected), `${monthId} spending.unexpected should be an array`);
-    assert(Array.isArray(view.snapshot?.debt?.loans), `${monthId} snapshot.debt.loans should be an array`);
+    assert(Array.isArray(view.cfo?.priorities), `${monthId} cfo.priorities should be an array`);
     assert(view.cfo?.priorities?.[0]?.decisions != null, `${monthId} cfo priorities should include decisions`);
+    assert(view.cfo?.priorities?.[0]?.tier, `${monthId} cfo priorities should include tier`);
+    assert(view.decisions?.subtitle, `${monthId} decisions section should be enriched`);
+    assert(view.close?.subtitle, `${monthId} close section should be enriched`);
     assert(view.celebrate?.page?.subtitle, `${monthId} celebrate.page.subtitle should be enriched`);
     assert(view.actions?.page?.subtitle, `${monthId} actions.page.subtitle should be enriched`);
   }

@@ -3,25 +3,46 @@ function monthLabel(meta) {
   return meta?.month?.trim() || 'the month';
 }
 
+const TIER_LABELS = {
+  first: 'Do this first',
+  next: 'Consider next',
+  watch: 'Watch',
+};
+
+/** @param {number} index @param {number} total */
+function assignTier(index, total) {
+  if (index === 0) return 'first';
+  if (index === 1 && total > 1) return 'next';
+  return 'watch';
+}
+
 export function enrichCfo(cfo = {}, meta) {
   const label = monthLabel(meta);
-  const priorities = (cfo.priorities ?? []).map((p, index, arr) => ({
-    ...p,
-    decisions: p.decisions ?? [],
-    page: index + 1,
-    totalPages: arr.length,
-    eyebrowSuffix: `Section 04 · Page ${index + 1} of ${arr.length}`,
-    footerText:
-      index < arr.length - 1
-        ? `Priority ${index + 2} continues on the next page →`
-        : 'End of CFO Recs · Next: Retirement & Future',
-  }));
+  const rawPriorities = cfo.priorities ?? [];
+
+  const priorities = rawPriorities.map((p, index, arr) => {
+    const tier = p.tier ?? assignTier(index, arr.length);
+    return {
+      ...p,
+      tier,
+      tierLabel: TIER_LABELS[tier] ?? TIER_LABELS.watch,
+      number: p.number ?? index + 1,
+      decisions: p.decisions ?? [],
+    };
+  });
+
+  const tiers = {
+    first: priorities.filter((p) => p.tier === 'first'),
+    next: priorities.filter((p) => p.tier === 'next'),
+    watch: priorities.filter((p) => p.tier === 'watch'),
+  };
 
   return {
     ...cfo,
     priorities,
+    tiers,
     overview: {
-      subtitle: `Three prioritized recommendations based on ${label}'s full financial picture.`,
+      subtitle: `Prioritized recommendations based on ${label}'s full financial picture.`,
     },
   };
 }

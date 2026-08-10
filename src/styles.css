@@ -1333,28 +1333,115 @@ main > .desk-scene {
   font-weight: 700;
 }
 
-/* Content shell (paginated section pages) */
-.content-shell-inner {
+/* Content shell — page-level scroll for monthly sections + check-in */
+.working-page.content-shell {
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.working-content.content-shell-inner {
   display: flex;
   flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
+  position: relative;
+  inset: auto;
+  left: auto;
+  right: auto;
+  top: auto;
+  bottom: auto;
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
 }
 
 .content-body {
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-  position: relative;
+  flex: none;
+  min-height: auto;
+  overflow: visible;
 }
 
-/* Financial Snapshot — reference layout */
+.month-section-page {
+  height: auto;
+  min-height: min-content;
+  overflow: visible;
+  gap: 18px;
+  padding-bottom: 32px;
+}
+
+/* Section pages scroll at the shell — panels grow with content */
+.month-section-page .page-with-notes,
+.month-section-page .page-with-notes-body {
+  flex: none;
+  min-height: auto;
+  overflow: visible;
+  gap: 14px;
+}
+
+.month-section-page .snapshot-grid-main,
+.month-section-page .story-split-grid,
+.month-section-page .spending-page-2-side,
+.month-section-page .spending-top-row,
+.month-section-page .future-top-row,
+.month-section-page .future-goals-grid,
+.month-section-page .cfo-tier-grid {
+  flex: none;
+  min-height: auto;
+  overflow: visible;
+  align-items: start;
+}
+
+.month-section-page .snapshot-side,
+.month-section-page .snapshot-final-side {
+  overflow: visible;
+  max-height: none;
+}
+
+.month-section-page .panel-stack,
+.month-section-page .snapshot-panel,
+.month-section-page .snapshot-large-panel {
+  min-height: auto;
+  overflow: visible;
+  max-height: none;
+}
+
+.month-section-page .spending-page-2-side .panel-stack {
+  flex: none;
+  min-height: auto;
+}
+
+.month-section-page .panel-body {
+  overflow: visible;
+}
+
+.panel-stack {
+  height: auto;
+}
+
+.panel-body,
+.scroll-body {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow: visible;
+  overflow-x: hidden;
+}
+
+.scroll-body-capped {
+  max-height: min(42vh, 420px);
+  overflow-y: auto;
+}
+
+.scroll-body-capped-host .ranked-table {
+  max-height: min(42vh, 420px);
+  overflow-y: auto;
+  display: block;
+}
+
 .snapshot-page {
-  height: 100%;
+  height: auto;
   display: flex;
   flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
+  min-height: min-content;
+  overflow: visible;
   font-family: var(--font-data);
 }
 
@@ -1451,14 +1538,14 @@ main > .desk-scene {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  height: 100%;
+  height: auto;
 }
 
 .panel-body,
 .scroll-body {
-  flex: 1;
+  flex: 0 1 auto;
   min-height: 0;
-  overflow-y: auto;
+  overflow: visible;
   overflow-x: hidden;
   margin-top: 8px;
   padding-right: 4px;
@@ -1467,19 +1554,24 @@ main > .desk-scene {
 }
 
 .panel-body {
+  overflow: visible;
+}
+
+.scroll-body-capped,
+.scroll-body.scroll-body-capped {
   overflow-y: auto;
 }
 
-/* Standalone cards must not expand to fill the page (prevents overlap with headers) */
+/* Standalone cards — grow with content on scrollable section pages */
 .panel-stack.panel-stack-auto,
 .meeting-update-card {
   flex: 0 0 auto;
   height: auto;
-  max-height: min(38vh, 320px);
+  max-height: none;
 }
 
 .meeting-update-card .panel-body {
-  overflow-y: auto;
+  overflow: visible;
 }
 
 .scroll-body::-webkit-scrollbar {
@@ -1674,6 +1766,7 @@ main > .desk-scene {
   line-height: 1.45;
   color: #6d7480;
   font-family: var(--font-data);
+  overflow-wrap: anywhere;
 }
 
 .insight-banner {
@@ -2191,6 +2284,106 @@ main > .desk-scene {
   margin-bottom: 12px;
 }
 
+/* Spending — compact top row: categories + unexpected side by side */
+.spending-top-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.95fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.month-section-page .spending-top-row {
+  flex: none;
+  min-height: auto;
+}
+
+.spending-categories-panel {
+  align-self: start;
+}
+
+.spending-categories-panel .ranked-table {
+  margin-top: 4px;
+}
+
+.spending-categories-panel .ranked-row {
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  padding: 7px 0;
+  font-size: max(var(--text-support-min), 14px);
+  gap: 8px;
+}
+
+.spending-categories-panel .ranked-row.head {
+  padding-top: 0;
+}
+
+.spending-unexpected-side {
+  min-width: 0;
+}
+
+/* Spending — bottom row: changes left, purchases + questions right (wider) */
+.spending-page-2-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: 14px;
+  align-items: start;
+  width: 100%;
+}
+
+.spending-page-2-side {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  min-width: 0;
+}
+
+.month-section-page .spending-page-2-grid {
+  flex: none;
+  min-height: auto;
+  overflow: visible;
+}
+
+.month-section-page .spending-page-2-side .panel-stack {
+  width: 100%;
+  flex: none;
+  min-height: auto;
+}
+
+/* Future — full-width KPIs + balanced top row */
+.future-kpi-row .snapshot-kpi-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 0;
+}
+
+.future-top-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.95fr);
+  gap: 14px;
+  align-items: start;
+  width: 100%;
+}
+
+.future-top-row .sticky-card,
+.future-known-panel {
+  height: auto;
+  align-self: start;
+}
+
+.future-goals-grid {
+  margin-top: 0;
+}
+
+.month-section-page .future-top-row,
+.month-section-page .future-goals-grid {
+  flex: none;
+  min-height: auto;
+  overflow: visible;
+}
+
+.month-section-page .kids-savings-section {
+  width: 100%;
+}
+
 .spending-hero-row .snapshot-kpi-row {
   grid-template-columns: repeat(2, 1fr);
   margin-bottom: 0;
@@ -2339,8 +2532,9 @@ main > .desk-scene {
 
 .decision-checklist li {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  align-items: center;
+  align-items: flex-start;
   padding: 10px 0;
   border-bottom: 1px dashed #d8d0c2;
   font-size: max(var(--text-data-min), 16px);
@@ -2350,13 +2544,21 @@ main > .desk-scene {
 
 .decision-checklist li:last-child { border-bottom: 0; }
 
-.decision-checklist label {
+.decision-checklist label,
+.editable-decision-row {
   display: flex;
   gap: 10px;
-  align-items: center;
-  flex: 1;
+  align-items: flex-start;
+  flex: 1 1 100%;
   min-width: 0;
   cursor: pointer;
+}
+
+.editable-decision-input,
+.editable-question-prompt {
+  width: 100%;
+  resize: vertical;
+  min-height: 2.8em;
 }
 
 .action-table { margin-top: 4px; }
@@ -2515,6 +2717,11 @@ main > .desk-scene {
   line-height: 1.35;
 }
 
+textarea.editable-inline-input {
+  resize: vertical;
+  min-height: 2.5em;
+}
+
 .editable-inline-input:hover,
 .editable-cell-input:hover {
   border-color: #e5ddd0;
@@ -2580,7 +2787,8 @@ main > .desk-scene {
   font-family: var(--font-heading);
 }
 
-.editable-question-label .editable-inline-input {
+.editable-question-label .editable-inline-input,
+.editable-question-label .editable-question-prompt {
   display: block;
   width: 100%;
   box-sizing: border-box;
@@ -2619,7 +2827,8 @@ main > .desk-scene {
 
 .meeting-remove-btn {
   flex-shrink: 0;
-  align-self: center;
+  align-self: flex-start;
+  margin-top: 2px;
   color: #8a6b6b;
   font-size: 12px;
   white-space: nowrap;
@@ -3051,6 +3260,10 @@ main > .desk-scene {
   .story-ending-grid,
   .spending-changes-grid,
   .spending-category-grid,
+  .spending-top-row,
+  .spending-page-2-grid,
+  .future-top-row,
+  .future-goals-grid,
   .handoff-summary-row,
   .handoff-feedback-grid {
     flex: none;
@@ -4241,4 +4454,147 @@ main > .desk-scene {
     font-size: 12px;
     padding: 7px 12px;
   }
+}
+
+/* CFO tier stack */
+.cfo-tier-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cfo-tier-card {
+  padding: 16px 18px;
+}
+
+.cfo-tier-card-header {
+  margin-bottom: 12px;
+}
+
+.cfo-tier-label {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--deep);
+  background: #E1F2EE;
+  border-radius: 999px;
+  padding: 4px 10px;
+  margin-bottom: 8px;
+}
+
+.cfo-tier-title {
+  margin: 0;
+  font-size: clamp(22px, 2.2vw, 30px);
+  font-family: var(--font-heading);
+  color: #31515A;
+}
+
+.cfo-tier-grid {
+  align-items: start;
+}
+
+.cfo-tier-card .snapshot-panel,
+.cfo-tier-card .snapshot-large-panel {
+  overflow: visible;
+}
+
+/* Decisions section */
+.decisions-cfo-outcomes {
+  margin: 16px 0;
+}
+
+.section-inline-heading {
+  margin: 0 0 10px;
+  font-size: 18px;
+  font-family: var(--font-heading);
+  color: #31515A;
+}
+
+.decisions-outcome-card {
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+
+.decisions-outcome-title {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.decisions-prompt-grid {
+  margin-top: 12px;
+}
+
+/* Close month readiness */
+.close-readiness-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.close-readiness-list li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(45, 53, 72, 0.08);
+}
+
+.close-readiness-list li.is-done {
+  color: #126C6A;
+}
+
+.close-readiness-detail {
+  font-weight: 400;
+  color: #69737d;
+}
+
+/* Ledger feedback utility */
+.ledger-feedback-btn {
+  border: 1px solid rgba(18, 108, 106, 0.2);
+  background: #fff;
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+
+.ledger-feedback-btn:hover {
+  background: #E1F2EE;
+}
+
+.ledger-feedback-dialog {
+  border: none;
+  border-radius: 16px;
+  padding: 0;
+  max-width: min(560px, 92vw);
+  box-shadow: var(--shadow-soft);
+}
+
+.ledger-feedback-dialog::backdrop {
+  background: rgba(45, 53, 72, 0.45);
+}
+
+.ledger-feedback-form {
+  padding: 22px 24px 18px;
+}
+
+.ledger-feedback-header h2 {
+  margin: 0 0 6px;
+  font-family: var(--font-heading);
+}
+
+.ledger-feedback-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.ledger-feedback-footer {
+  display: flex;
+  justify-content: flex-end;
 }

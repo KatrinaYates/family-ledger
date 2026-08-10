@@ -1,27 +1,25 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { months, getMonthCatalogEntry } from './data/months';
+import { MONTH_SECTIONS } from './data/monthSections';
 import { ledgerRepository } from './repository';
 import { MonthProvider } from './context/MonthContext';
 import { useLedgerMonths } from './hooks/useLedgerMonths';
 import { useLedgerMonth } from './hooks/useLedgerMonth';
 import { useWorkflow } from './hooks/useWorkflow';
-import {
-  buildNotebookPages,
-} from './utils/notebookPages';
+import { buildNotebookPages } from './utils/notebookPages';
 import { normalizePageId } from './utils/normalizePageId';
 import { createBlankLedgerMonth } from './repository/createBlankLedgerMonth.js';
 import { dispatchLedgerMonthsUpdated } from './utils/meetingEvents';
 import { useBootLoading, LedgerLoader } from './context/BootGate.jsx';
 import { useInsideCoverFields } from './hooks/useInsideCoverFields';
-import { SnapshotPages } from './components/snapshot/SnapshotPages';
-import { StoryPages } from './components/story/StoryPages';
-import { SpendingPages } from './components/spending/SpendingPages';
-import { CfoPages } from './components/cfo/CfoPages';
-import { FuturePages } from './components/future/FuturePages';
-import { MeetingPages } from './components/meeting/MeetingPages';
-import { ActionsPages } from './components/actions/ActionsPages';
-import { CelebratePages } from './components/celebrate/CelebratePages';
-import { HandoffPages } from './components/handoff/HandoffPages';
+import { MonthOverviewPage } from './components/sections/MonthOverviewPage';
+import { SpendingPage } from './components/sections/SpendingPage';
+import { CfoPage } from './components/sections/CfoPage';
+import { FuturePage } from './components/sections/FuturePage';
+import { DecisionsPage } from './components/sections/DecisionsPage';
+import { ActionsPage } from './components/sections/ActionsPage';
+import { CelebratePage } from './components/sections/CelebratePage';
+import { CloseMonthPage } from './components/sections/CloseMonthPage';
 import { FinancialCheckInPage } from './components/checkin/FinancialCheckInPage';
 import {
   AnnualCover,
@@ -29,23 +27,22 @@ import {
   InsideCover,
   MonthChapterPage,
   NotebookShell,
-  SectionDivider,
   sectionTabs,
 } from './components/LedgerComponents';
 import { DataQualityNotes } from './components/DataQualityNotes';
 import { HouseholdAccessMenu } from './supabase/HouseholdAccessMenu.jsx';
 import { MonthLockStatus } from './components/MonthLockStatus.jsx';
+import { LedgerFeedbackButton, LedgerFeedbackPanel } from './components/LedgerFeedbackPanel';
 
-const sections = {
-  snapshot:{number:'01',title:'Financial Snapshot',description:'A quick read on where our financial life stands.',inside:'Connected net worth • Cash • Emergency fund • Retirement • Debt',how:'Start with the big picture before diving into details.',prompt:'What changed most this month?',noteTone:'blue',tone:'teal'},
-  story:{number:'02',title:'Monthly Story',description:'Turn the numbers into a shared story about the month.',inside:'What happened • Patterns • Context • Surprises',how:'Describe the month without blame or over-explaining.',prompt:'What would the numbers miss?',noteTone:'green',tone:'green'},
-  spending:{number:'03',title:'Spending',description:'See where money flowed and what deserves attention.',inside:'Categories • Trends • unusual charges • subscriptions',how:'Look for patterns, not tiny imperfections.',prompt:'What spending felt worth it?',noteTone:'yellow',tone:'yellow'},
-  cfo:{number:'04',title:'CFO Recs',description:'Prioritized financial recommendations based on the full picture.',inside:'Best next move • risks • opportunities • tradeoffs',how:'Choose fewer, higher-impact moves.',prompt:'What creates the most relief?',noteTone:'coral',tone:'coral'},
-  future:{number:'05',title:'Retirement & Future',description:'Connect this month’s choices to the life we are building.',inside:'Retirement • goals • education • long-term planning',how:'Balance future progress with real life today.',prompt:'What does future-us need?',noteTone:'lav',tone:'lav'},
-  meeting:{number:'06',title:'Money Meeting',description:'A guided space for the conversation itself.',inside:'Prompts • notes • decisions • open questions',how:'Talk like teammates. Capture what matters.',prompt:'Curiosity over criticism. ♡',noteTone:'blue',tone:'blue'},
-  actions:{number:'07',title:'Action Plan',description:'Turn insight into a realistic set of next moves.',inside:'Owners • due dates • priorities • carryovers',how:'Make every action specific and small enough to finish.',prompt:'Tiny steps still count.',noteTone:'pink',tone:'pink'},
-  celebrate:{number:'08',title:'Celebrate',description:'Pause long enough to notice the progress we made.',inside:'Wins • gratitude • milestones • proud moments',how:'Celebrate effort and direction, not only perfect results.',prompt:'We are building this together!',noteTone:'green',tone:'green'},
-  handoff:{number:'09',title:'CFO Handoff',description:'Leave a clean record for next month and future-us.',inside:'Carryovers • reminders • watch items • next-month context',how:'Write what we will be glad to remember later.',prompt:'What should the next month know?',noteTone:'blue',tone:'slate'},
+const sectionComponents = {
+  month: MonthOverviewPage,
+  spending: SpendingPage,
+  cfo: CfoPage,
+  future: FuturePage,
+  decisions: DecisionsPage,
+  actions: ActionsPage,
+  celebrate: CelebratePage,
+  close: CloseMonthPage,
 };
 
 function isTypingTarget(target) {
@@ -58,20 +55,13 @@ function isTypingTarget(target) {
 function pageFromHash(allPages) {
   const rawId = window.location.hash.replace('#/', '');
   const id = normalizePageId(rawId);
-
   if (allPages.some((page) => page.id === id)) return id;
-
-  if (id.endsWith('-work')) {
-    const legacy = normalizePageId(id.replace('-work', '-1'));
-    if (allPages.some((page) => page.id === legacy)) return legacy;
-  }
-
   return 'cover';
 }
 
 const COVER_PAGE = { id: 'cover', type: 'cover', label: 'Front Cover' };
 
-function buildBreadcrumbs(page, pageId) {
+function buildBreadcrumbs(page) {
   if (!page) {
     return [{ label: 'The Family Ledger', pageId: null }];
   }
@@ -103,17 +93,8 @@ function buildBreadcrumbs(page, pageId) {
   if (page.monthId) crumbs.push({ label: monthLabel, pageId: page.monthId });
 
   if (page.sectionId) {
-    const sectionTitle = sections[page.sectionId]?.title || page.sectionId;
-    const dividerPageId = `${page.monthId}-${page.sectionId}`;
-    if (page.type === 'divider') {
-      crumbs.push({ label: sectionTitle, pageId: null });
-      return crumbs;
-    }
-    crumbs.push({ label: sectionTitle, pageId: dividerPageId });
-  }
-
-  if (page.type === 'content') {
-    crumbs.push({ label: `Page ${page.pageInSection} of ${page.totalInSection}`, pageId: null });
+    const sectionTitle = MONTH_SECTIONS[page.sectionId]?.title || page.sectionId;
+    crumbs.push({ label: sectionTitle, pageId: null });
   }
 
   return crumbs;
@@ -121,8 +102,7 @@ function buildBreadcrumbs(page, pageId) {
 
 function parentPageId(page) {
   if (page.type === 'check-in') return 'cover';
-  if (page.type === 'content') return `${page.monthId}-${page.sectionId}`;
-  if (page.type === 'divider') return page.monthId;
+  if (page.type === 'content') return page.monthId;
   if (page.type === 'month' || page.type === 'inside') return 'cover';
   return null;
 }
@@ -151,13 +131,6 @@ function BreadcrumbNav({ crumbs, onNavigate }) {
   );
 }
 
-const contentPageProps = (page, month, monthData) => ({
-  page: page.pageInSection,
-  totalInSection: page.totalInSection,
-  data: monthData,
-  month,
-});
-
 function MonthNotebookShell({ children }) {
   return <ContentShell>{children}</ContentShell>;
 }
@@ -170,7 +143,7 @@ export default function App() {
     [monthIds, catalogMonthIds],
   );
   const notebookPages = useMemo(
-    () => buildNotebookPages(navigableMonthIds, sections),
+    () => buildNotebookPages(navigableMonthIds, MONTH_SECTIONS),
     [navigableMonthIds],
   );
 
@@ -179,6 +152,7 @@ export default function App() {
   const defaultMonthId = monthIds[0] ?? months[0]?.id ?? '2026-07';
 
   const [bootComplete, setBootComplete] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   const [pageId, setPageId] = useState(() => {
     const rawId = window.location.hash.replace('#/', '');
@@ -217,8 +191,7 @@ export default function App() {
     () => getMonthCatalogEntry(resolvedPage.monthId || activeMonth) || months[0],
     [resolvedPage.monthId, activeMonth],
   );
-  const activeSection = resolvedPage.sectionId || 'snapshot';
-  const section = sections[activeSection];
+  const activeSection = resolvedPage.sectionId || 'month';
 
   const contextMonthId = resolvedPage.monthId || activeMonth;
   const { workflow } = useWorkflow(contextMonthId);
@@ -356,13 +329,16 @@ export default function App() {
   }, [goNext, goNextMonth, goPrevious, goPreviousMonth, goUpBreadcrumb]);
 
   const breadcrumbs = useMemo(
-    () => buildBreadcrumbs(resolvedPage, pageId),
-    [resolvedPage, pageId],
+    () => buildBreadcrumbs(resolvedPage),
+    [resolvedPage],
   );
 
   const jumpToMonthLock = useCallback(() => {
-    navigateTo(`${contextMonthId}-handoff-2`);
+    navigateTo(`${contextMonthId}-close`);
   }, [contextMonthId, navigateTo]);
+
+  const showMonthUtilities = Boolean(resolvedPage.monthId);
+  const showSections = resolvedPage.type === 'content';
 
   if (
     monthsLoading ||
@@ -424,79 +400,21 @@ export default function App() {
         <LedgerLoader inline aria-label="Filling in your page" />
       </ContentShell>
     );
-  } else if (resolvedPage.type === 'divider') {
-    content = <SectionDivider section={section} month={displayMonth} />;
-  } else if (resolvedPage.type === 'content' && activeSection === 'snapshot') {
-    content = (
+  } else if (resolvedPage.type === 'content' && resolvedPage.sectionId) {
+    const Section = sectionComponents[resolvedPage.sectionId];
+    const sectionMeta = MONTH_SECTIONS[resolvedPage.sectionId];
+    content = Section ? (
       <MonthNotebookShell>
-        <SnapshotPages {...contentPageProps(resolvedPage, displayMonth, monthData)} />
+        <Section data={monthData} month={displayMonth} section={sectionMeta} />
       </MonthNotebookShell>
-    );
-  } else if (resolvedPage.type === 'content' && activeSection === 'story') {
-    content = (
-      <MonthNotebookShell>
-        <StoryPages {...contentPageProps(resolvedPage, displayMonth, monthData)} />
-      </MonthNotebookShell>
-    );
-  } else if (resolvedPage.type === 'content' && activeSection === 'spending') {
-    content = (
-      <MonthNotebookShell>
-        <SpendingPages {...contentPageProps(resolvedPage, displayMonth, monthData)} />
-      </MonthNotebookShell>
-    );
-  } else if (resolvedPage.type === 'content' && activeSection === 'cfo') {
-    content = (
-      <MonthNotebookShell>
-        <CfoPages {...contentPageProps(resolvedPage, displayMonth, monthData)} />
-      </MonthNotebookShell>
-    );
-  } else if (resolvedPage.type === 'content' && activeSection === 'future') {
-    content = (
-      <MonthNotebookShell>
-        <FuturePages {...contentPageProps(resolvedPage, displayMonth, monthData)} />
-      </MonthNotebookShell>
-    );
-  } else if (resolvedPage.type === 'content' && activeSection === 'meeting') {
-    content = (
-      <MonthNotebookShell>
-        <MeetingPages {...contentPageProps(resolvedPage, displayMonth, monthData)} />
-      </MonthNotebookShell>
-    );
-  } else if (resolvedPage.type === 'content' && activeSection === 'actions') {
-    content = (
-      <MonthNotebookShell>
-        <ActionsPages {...contentPageProps(resolvedPage, displayMonth, monthData)} />
-      </MonthNotebookShell>
-    );
-  } else if (resolvedPage.type === 'content' && activeSection === 'celebrate') {
-    content = (
-      <MonthNotebookShell>
-        <CelebratePages {...contentPageProps(resolvedPage, displayMonth, monthData)} />
-      </MonthNotebookShell>
-    );
-  } else if (resolvedPage.type === 'content' && activeSection === 'handoff') {
-    content = (
-      <MonthNotebookShell>
-        <HandoffPages {...contentPageProps(resolvedPage, displayMonth, monthData)} />
-      </MonthNotebookShell>
+    ) : (
+      <AnnualCover />
     );
   } else {
     content = <AnnualCover />;
   }
 
-  const showSections = resolvedPage.type === 'divider' || resolvedPage.type === 'content';
-
-  const wrappedContent = resolvedPage.monthId ? (
-    <MonthProvider
-      monthId={monthContextValue.monthId}
-      month={monthContextValue.month}
-      workflow={monthContextValue.workflow}
-    >
-      {content}
-    </MonthProvider>
-  ) : content;
-
-  return (
+  const appBody = (
     <main>
       <a className="skip-link" href="#notebook-content">Skip to notebook page</a>
       <div className="site-toolbar" aria-label="Notebook navigation">
@@ -510,8 +428,9 @@ export default function App() {
           >
             💵 Financial Check-In
           </button>
-          {resolvedPage.monthId && (
+          {showMonthUtilities && (
             <div className="site-toolbar-utilities">
+              <LedgerFeedbackButton onClick={() => setFeedbackOpen(true)} />
               <MonthLockStatus
                 monthId={contextMonthId}
                 month={displayMonth}
@@ -536,7 +455,7 @@ export default function App() {
         activeMonth={activeMonth}
         onMonthSelect={navigateToMonth}
         activeSection={activeSection}
-        onSectionSelect={(id) => navigateTo(`${activeMonth}-${id}-1`)}
+        onSectionSelect={(id) => navigateTo(`${activeMonth}-${id}`)}
         showSections={showSections}
         showLeftPage={resolvedPage.type !== 'cover'}
         onPagePrevious={goPrevious}
@@ -544,8 +463,24 @@ export default function App() {
         hasPrevious={pageIndex > 0}
         hasNext={pageIndex >= 0 && pageIndex < notebookPages.length - 1}
       >
-        <div id="notebook-content">{wrappedContent}</div>
+        <div id="notebook-content">{content}</div>
       </NotebookShell>
+      <LedgerFeedbackPanel
+        monthId={contextMonthId}
+        monthLabel={displayMonth?.label}
+        open={feedbackOpen}
+        onClose={() => setFeedbackOpen(false)}
+      />
     </main>
+  );
+
+  return (
+    <MonthProvider
+      monthId={monthContextValue.monthId}
+      month={monthContextValue.month}
+      workflow={monthContextValue.workflow}
+    >
+      {appBody}
+    </MonthProvider>
   );
 }

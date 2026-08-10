@@ -19,17 +19,13 @@ const illustrations = {
     sun: sunIllustration,
 };
 
-export const sectionTabs = [
-    ["snapshot", "Snapshot", "Snap"],
-    ["story", "Monthly Story", "Story"],
-    ["spending", "Spending", "Spend"],
-    ["cfo", "CFO Recs", "CFO"],
-    ["future", "Retirement & Future", "Future"],
-    ["meeting", "Money Meeting", "Meet"],
-    ["actions", "Action Plan", "Actions"],
-    ["celebrate", "Celebrate", "Win"],
-    ["handoff", "CFO Handoff", "Handoff"],
-];
+import { MONTH_SECTION_IDS, MONTH_SECTIONS } from '../data/monthSections';
+
+export const sectionTabs = MONTH_SECTION_IDS.map((id) => [
+  id,
+  MONTH_SECTIONS[id].title,
+  MONTH_SECTIONS[id].title.split(' ')[0],
+]);
 
 export function Illustration({name, className = ""}) {
     const src = illustrations[name];
@@ -295,36 +291,6 @@ export function MonthChapterPage({ month, chapterMeta }) {
             <FocusPocket title={`${month.label} Focus`}>
                 <p>{focus}</p>
             </FocusPocket>
-        </div>
-    );
-}
-
-export function SectionDivider({section, month}) {
-    return (
-        <div className="subchapter">
-            <div className="margin-line" />
-            <div className={`subchapter-ribbon ${section.tone}`}>SECTION {section.number}</div>
-            <StickyNote tone={section.noteTone} className="subchapter-note">
-                {section.prompt}
-            </StickyNote>
-            <div className="subchapter-content">
-                <MonthDateBadge month={month} />
-                <h1 className="notebook-page-title" tabIndex="-1">
-                    {section.title}
-                </h1>
-                <div className="subchapter-intro">{section.description}</div>
-                <div className="preview-grid">
-                    <div className="preview-card">
-                        <h3>Inside this section</h3>
-                        <p>{section.inside}</p>
-                    </div>
-                    <div className="preview-card">
-                        <h3>How to use it</h3>
-                        <p>{section.how}</p>
-                    </div>
-                </div>
-            </div>
-            <Illustration name={month.illustration} className="subchapter-doodle" />
         </div>
     );
 }

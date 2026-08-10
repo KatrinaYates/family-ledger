@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useMonthContext } from '../context/MonthContext';
 import { ledgerRepository } from '../repository';
-import { meetingKey as buildMeetingKey } from '../utils/meetingKeys';
+import { sectionFieldKey } from '../utils/meetingKeys';
 import { dispatchMeetingUpdated } from '../utils/meetingEvents';
 import { getErrorMessage } from '../utils/getErrorMessage';
 import { useAsyncGuard } from './useAsyncGuard';
@@ -127,9 +127,9 @@ export function useMeetingJson(storageKey, initialFactory) {
     return { value, setValue, isLocked, loading, saving, saveError };
 }
 
-/** @param {string} section @param {number | string} page @param {string} field @param {string} [initial] */
-export function useMeetingField(section, page, field, initial = '') {
+/** @param {string} section @param {string} field @param {string} [initial] */
+export function useMeetingField(section, field, initial = '') {
     const { monthId } = useMonthContext();
-    const key = buildMeetingKey(monthId, section, page, field);
+    const key = sectionFieldKey(monthId, section, field);
     return useMeetingNotes(key, initial);
 }
