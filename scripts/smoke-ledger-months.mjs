@@ -206,7 +206,18 @@ try {
       assert(kpiLabels.indexOf('Debt') !== kpiLabels.indexOf('Net worth'), `${monthId} debt and net worth should be separate KPIs`);
     }
     assert(Array.isArray(view.spending?.changes), `${monthId} spending.changes should be an array`);
-    assert(Array.isArray(view.spending?.unexpected), `${monthId} spending.unexpected should be an array`);
+    assert(view.spending?.overview?.currentTotal, `${monthId} spending.overview should include currentTotal`);
+    assert(view.spending?.overview?.priorTotal != null, `${monthId} spending.overview should include priorTotal`);
+    assert(view.spending?.overview?.changeAmount != null, `${monthId} spending.overview should include changeAmount`);
+    assert(view.spending?.categories?.items != null, `${monthId} spending.categories.items should exist`);
+    assert(view.spending?.whatChanged, `${monthId} spending.whatChanged should be enriched`);
+    assert(view.spending?.spendingWatch, `${monthId} spending.spendingWatch should be enriched`);
+    assert(view.spending?.notableSpending, `${monthId} spending.notableSpending should be enriched`);
+    assert(view.spending?.pulse == null, `${monthId} spending should not expose removed pulse key`);
+    assert(view.spending?.notablePurchases == null, `${monthId} spending should not expose removed notablePurchases key`);
+    assert(view.spending?.watchList == null, `${monthId} spending should not expose removed watchList key`);
+    assert(!view.spending?.overview?.continuedText, `${monthId} spending should not include multi-page continuedText`);
+    assert(!view.spending?.changesPage?.footerText, `${monthId} spending should not include multi-page footerText`);
     assert(Array.isArray(view.cfo?.priorities), `${monthId} cfo.priorities should be an array`);
     assert(view.cfo?.priorities?.[0]?.decisions != null, `${monthId} cfo priorities should include decisions`);
     assert(view.cfo?.priorities?.[0]?.tier, `${monthId} cfo priorities should include tier`);

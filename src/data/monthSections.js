@@ -24,8 +24,8 @@ export const MONTH_SECTIONS = {
   spending: {
     number: '02',
     title: 'Spending',
-    description: 'Where did our money go, and what changed?',
-    inside: 'Categories • trends • purchases • surprises',
+    description: 'Where did our money go, what changed, and what deserves attention?',
+    inside: 'Pulse • categories • patterns • recurring • takeaways',
     how: 'Look for patterns worth discussing, not tiny imperfections.',
     prompt: 'What spending felt worth it?',
     noteTone: 'yellow',

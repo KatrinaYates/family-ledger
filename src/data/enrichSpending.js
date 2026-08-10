@@ -1,22 +1,16 @@
 import { getComparisonMonthLabels } from '../utils/monthLabels.js';
+import { analyzeSpending } from './spendingAnalysis.js';
 
 /** @param {object | undefined} meta @param {string} [monthId] */
 function monthLabel(meta, monthId) {
   return meta?.month?.trim() || monthId || 'the month';
 }
 
-function formatChangeLabel(change, changePercent) {
-  if (!change || change === '—') return '—';
-  if (!changePercent || changePercent === '—') return String(change);
-  return `${change} (${changePercent})`;
-}
-
 export function enrichSpending(spending = {}, meta) {
-  const label = monthLabel(meta);
-  const priorMonth = spending.priorMonth ?? '—';
-  const change = spending.change ?? '—';
-  const changePercent = spending.changePercent ?? '—';
+  const label = monthLabel(meta, meta?.monthId);
   const comparisonLabels = getComparisonMonthLabels(meta?.monthId, label);
+  const analysis = analyzeSpending(spending, meta);
+
   return {
     ...spending,
     topCategories: (spending.topCategories ?? []).map((cat, index) => ({
@@ -29,17 +23,7 @@ export function enrichSpending(spending = {}, meta) {
     changes: spending.changes ?? spending.momChanges ?? [],
     questions: spending.questions ?? [],
     comparisonLabels,
-    overview: {
-      subtitle: `Where money flowed in ${label} — excluding transfers so spending is not double-counted.`,
-      momLabel: 'vs prior month',
-      changeLabel: formatChangeLabel(change, changePercent),
-      continuedText: 'Category changes and big purchases continue on the next page →',
-    },
-    changesPage: {
-      subtitle: 'What shifted from the prior month, which purchases stood out, and what to discuss together.',
-      comparisonLabels,
-      closingInsight: spending.closingInsight?.trim() || spending.changesPage?.closingInsight?.trim() || '',
-      footerText: 'End of Spending · Next: CFO Recs',
-    },
+    subtitle: 'Where did our money go, what changed, and what deserves attention?',
+    ...analysis,
   };
 }
