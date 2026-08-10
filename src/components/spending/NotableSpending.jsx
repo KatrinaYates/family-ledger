@@ -91,8 +91,11 @@ export function NotableSpending({ notableSpending, monthId }) {
   };
 
   return (
-    <section className="spending-block" aria-label="Notable one-time spending">
-      <h2 className="month-snapshot-section-heading">Notable One-Time Spending</h2>
+    <section className="spending-block" aria-label="Big purchases and one-time spending">
+      <h2 className="month-snapshot-section-heading">Big Purchases & One-Time Spending</h2>
+      <p className="panel-note spending-block-intro">
+        Large expenses that materially shaped the month, excluding normal recurring obligations.
+      </p>
       <div className="paper-surface spending-panel-surface">
         {notableSpending.hasItems ? (
           <ul className="spending-notable-list">
