@@ -3640,11 +3640,36 @@ main > .desk-scene {
 }
 
 /* Financial Check-In — live household position (not month-scoped) */
-.check-in-page {
+.working-page.content-shell:has(.check-in-page) {
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.working-content.content-shell-inner:has(.check-in-page) {
+  position: relative;
+  inset: auto;
+  left: auto;
+  right: auto;
+  top: auto;
+  bottom: auto;
   height: auto;
   min-height: 100%;
   overflow: visible;
+}
+
+.content-body:has(.check-in-page) {
+  flex: none;
+  min-height: auto;
+  overflow: visible;
+}
+
+.check-in-page {
+  height: auto;
+  min-height: min-content;
+  overflow: visible;
   gap: 18px;
+  padding-bottom: 32px;
 }
 
 .check-in-meta {
