@@ -43,7 +43,7 @@ function staticEntries(monthId) {
     { key: sectionFieldKey(monthId, 'decisions', 'questions'), label: 'Open questions', group: 'questions', type: 'questions' },
     { key: sectionFieldKey(monthId, 'spending', 'unexpected'), label: 'Likely unexpected spending', group: 'lists', type: 'bullets' },
     { key: sectionFieldKey(monthId, 'spending', 'questions'), label: 'Spending discussion questions', group: 'questions', type: 'questions' },
-    { key: sectionFieldKey(monthId, 'month', 'human-context'), label: 'Human context', group: 'lists', type: 'bullets' },
+    { key: sectionFieldKey(monthId, 'month', 'human-context'), label: "What the numbers don't know", group: 'lists', type: 'bullets' },
     { key: sectionFieldKey(monthId, 'future', 'still-to-define'), label: 'Future — still to define', group: 'lists', type: 'bullets' },
     { key: sectionFieldKey(monthId, 'future', 'goals'), label: 'Shared goals', group: 'lists', type: 'bullets' },
     { key: sectionFieldKey(monthId, 'future', 'upcoming'), label: 'Upcoming expenses', group: 'lists', type: 'bullets' },

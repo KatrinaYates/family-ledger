@@ -13,10 +13,10 @@ export const MONTH_SECTION_IDS = [
 export const MONTH_SECTIONS = {
   month: {
     number: '01',
-    title: 'The Month',
-    description: 'What happened this month — the story behind the numbers.',
-    inside: 'Income • shifts • wins • context',
-    how: 'Understand the month before deciding what to do next.',
+    title: 'Monthly Snapshot',
+    description: 'Where we finished the month and what changed — headline orientation before the details.',
+    inside: 'Income • spending • cash • debt • net worth • progress',
+    how: 'Orient to the month in seconds before diving into categories and decisions.',
     prompt: 'What would the numbers miss?',
     noteTone: 'teal',
     tone: 'teal',

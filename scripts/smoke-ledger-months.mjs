@@ -197,6 +197,11 @@ try {
     const view = mergeMonthView(record);
     assert(view.month?.subtitle, `${monthId} month section should be enriched`);
     assert(Array.isArray(view.month?.kpis), `${monthId} month.kpis should be an array`);
+    assert(view.month?.howItWent, `${monthId} month.howItWent should be enriched`);
+    const kpiLabels = (view.month?.kpis ?? []).map((k) => k.label);
+    if (kpiLabels.includes('Debt') && kpiLabels.includes('Net worth')) {
+      assert(kpiLabels.indexOf('Debt') !== kpiLabels.indexOf('Net worth'), `${monthId} debt and net worth should be separate KPIs`);
+    }
     assert(Array.isArray(view.spending?.changes), `${monthId} spending.changes should be an array`);
     assert(Array.isArray(view.spending?.unexpected), `${monthId} spending.unexpected should be an array`);
     assert(Array.isArray(view.cfo?.priorities), `${monthId} cfo.priorities should be an array`);

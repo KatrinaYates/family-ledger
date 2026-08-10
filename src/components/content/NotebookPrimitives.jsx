@@ -57,9 +57,9 @@ export function MetricKpi({ icon, label, value, chip, note, indicator }) {
   );
 }
 
-export function MetricKpiRow({ items = [] }) {
+export function MetricKpiRow({ items = [], className = '' }) {
   return (
-    <section className="snapshot-kpi-row" aria-label="Key metrics">
+    <section className={`snapshot-kpi-row ${className}`.trim()} aria-label="Key metrics">
       {items.map((item) => (
         <MetricKpi key={item.label} {...item} />
       ))}
