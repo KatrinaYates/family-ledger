@@ -1,5 +1,6 @@
 import React from 'react';
 import { AllocationTable, PanelCard } from '../content/NotebookPrimitives';
+import { StackedValueBar } from './CheckInVisuals';
 
 export function CashPositionCard({ cash }) {
   if (!cash) return null;
@@ -17,7 +18,21 @@ export function CashPositionCard({ cash }) {
       scrollLabel="Cash accounts by classification"
       className="check-in-card check-in-cash-card"
     >
+      {cash.composition && (
+        <StackedValueBar
+          composition={cash.composition}
+          ariaLabel={`Connected cash composition: available ${cash.availableTotalLabel || 'unknown'}, protected ${cash.protectedTotalLabel || 'unknown'}`}
+          className="check-in-cash-composition"
+        />
+      )}
+
       <div className="check-in-cash-summary">
+        {cash.connectedTotalLabel && (
+          <div className="check-in-stat-block">
+            <span className="check-in-stat-label">Connected cash</span>
+            <strong className="check-in-stat-value">{cash.connectedTotalLabel}</strong>
+          </div>
+        )}
         {cash.availableTotalLabel && (
           <div className="check-in-stat-block is-available">
             <span className="check-in-stat-label">Available household cash</span>
@@ -33,6 +48,7 @@ export function CashPositionCard({ cash }) {
           </div>
         )}
       </div>
+
       {hasAccounts && (
         <AllocationTable
           rows={(cash.accounts ?? []).map((account) => ({

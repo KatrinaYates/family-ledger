@@ -1,5 +1,6 @@
 import React from 'react';
 import { DashedList, PanelCard } from '../content/NotebookPrimitives';
+import { StackedValueBar } from './CheckInVisuals';
 
 export function RetirementNetWorthCard({ retirement, netWorth }) {
   if (!retirement && !netWorth) return null;
@@ -32,6 +33,13 @@ export function RetirementNetWorthCard({ retirement, netWorth }) {
             <h3>Connected net worth</h3>
             <strong className="panel-total">{netWorth.connectedLabel}</strong>
           </div>
+          {netWorth.composition && (
+            <StackedValueBar
+              composition={netWorth.composition}
+              ariaLabel={`Net worth composition: debt and net equity totaling connected net worth ${netWorth.connectedLabel}`}
+              className="check-in-networth-composition"
+            />
+          )}
         </section>
       )}
 

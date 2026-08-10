@@ -1,17 +1,27 @@
 import React from 'react';
 import { PanelCard } from '../content/NotebookPrimitives';
+import { MiniBalanceBar, ProgressBar } from './CheckInVisuals';
 
-function AccountList({ accounts }) {
-  if (!accounts?.length) return null;
+function KidsAccountVisual({ account }) {
+  const barLabel = account.barMode === 'target'
+    ? `${account.name} toward target`
+    : `${account.name} share of kids' savings`;
+
   return (
-    <ul className="check-in-account-list">
-      {accounts.map((account) => (
-        <li key={account.name}>
-          <span>{account.name}</span>
-          <strong>{account.balanceLabel}</strong>
-        </li>
-      ))}
-    </ul>
+    <div className="check-in-kids-account">
+      <MiniBalanceBar
+        label={account.name}
+        valueLabel={account.balanceLabel}
+        percent={account.progressPercent}
+        tone={account.barTone}
+        ariaLabel={`${barLabel}: ${account.balanceLabel}${account.targetLabel ? ` of ${account.targetLabel}` : ''}`}
+      />
+      {account.targetLabel && (
+        <p className="check-in-kids-target-note">
+          Target: <strong>{account.targetLabel}</strong>
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -42,7 +52,11 @@ export function ProtectedCashCard({ kidsSavings, emergencyFund }) {
             )}
           </div>
           <p className="check-in-card-lead">Protected kids&apos; money — not part of available household cash.</p>
-          <AccountList accounts={kidsSavings.accounts} />
+          <div className="check-in-kids-list">
+            {(kidsSavings.accounts ?? []).map((account) => (
+              <KidsAccountVisual key={account.name} account={account} />
+            ))}
+          </div>
         </section>
       )}
 
@@ -64,20 +78,12 @@ export function ProtectedCashCard({ kidsSavings, emergencyFund }) {
             )}
           </div>
           {emergencyFund.progressPercent != null && (
-            <div
-              className="check-in-progress"
-              role="progressbar"
-              aria-valuenow={emergencyFund.progressPercent}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-label="Emergency fund progress toward target"
-            >
-              <div
-                className="check-in-progress-fill"
-                style={{ width: `${emergencyFund.progressPercent}%` }}
-              />
-              <span className="check-in-progress-label">{emergencyFund.progressPercent}% of target</span>
-            </div>
+            <ProgressBar
+              percent={emergencyFund.progressPercent}
+              label={`${emergencyFund.progressPercent}% of target`}
+              tone="teal"
+              ariaLabel={`Emergency fund ${emergencyFund.balanceLabel} of ${emergencyFund.targetLabel} target, ${emergencyFund.progressPercent}%`}
+            />
           )}
         </section>
       )}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { PanelCard } from '../content/NotebookPrimitives';
+import { MiniBarChart } from './CheckInVisuals';
 
 export function RecentActivityCard({ recentActivity }) {
   if (!recentActivity) return null;
@@ -7,8 +8,9 @@ export function RecentActivityCard({ recentActivity }) {
   const hasSpend = recentActivity.sevenDaySpendLabel;
   const items = recentActivity.items ?? [];
   const hasItems = items.length > 0;
+  const hasDailyBars = (recentActivity.dailyBars ?? []).length > 0;
 
-  if (!hasSpend && !hasItems) return null;
+  if (!hasSpend && !hasItems && !hasDailyBars) return null;
 
   return (
     <PanelCard
@@ -22,9 +24,19 @@ export function RecentActivityCard({ recentActivity }) {
           <strong>{recentActivity.sevenDaySpendLabel}</strong>
         </p>
       )}
+
+      {hasDailyBars && (
+        <MiniBarChart
+          bars={recentActivity.dailyBars}
+          ariaLabel={`Seven-day spending by day, total ${recentActivity.sevenDaySpendLabel || 'unknown'}`}
+          className="check-in-activity-chart"
+        />
+      )}
+
       {recentActivity.summary && (
         <p className="check-in-card-lead">{recentActivity.summary}</p>
       )}
+
       {hasItems && (
         <ul className="check-in-activity-list">
           {items.map((item, index) => (

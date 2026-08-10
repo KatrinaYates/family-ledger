@@ -1,18 +1,27 @@
 import React from 'react';
 import { PanelCard } from '../content/NotebookPrimitives';
+import { MiniBalanceBar, ProgressBar } from './CheckInVisuals';
 
 function BucketRow({ bucket }) {
-  const statusClass = bucket.funded ? 'is-funded' : 'is-short';
-  const statusLabel = bucket.funded ? 'Funded' : 'Short';
-
   return (
-    <div className={`check-in-bucket-row ${statusClass}`}>
-      <span className="check-in-bucket-name">{bucket.name}</span>
-      <span className="check-in-bucket-amounts">
-        {bucket.currentLabel}
-        {bucket.targetLabel ? ` / ${bucket.targetLabel}` : ''}
-      </span>
-      <span className={`check-in-bucket-status ${statusClass}`}>{statusLabel}</span>
+    <div className={`check-in-bucket-row ${bucket.statusClass}`}>
+      <div className="check-in-bucket-copy">
+        <span className="check-in-bucket-name">{bucket.name}</span>
+        <span className="check-in-bucket-amounts">
+          {bucket.currentLabel}
+          {bucket.targetLabel ? ` / ${bucket.targetLabel}` : ''}
+        </span>
+        <span className={`check-in-bucket-status ${bucket.statusClass}`}>{bucket.statusLabel}</span>
+      </div>
+      {bucket.progressPercent != null && (
+        <ProgressBar
+          percent={bucket.progressPercent}
+          label={`${bucket.progressPercent}%`}
+          tone={bucket.progressTone}
+          ariaLabel={`${bucket.name} bucket ${bucket.currentLabel}${bucket.targetLabel ? ` of ${bucket.targetLabel}` : ''}, ${bucket.statusLabel}`}
+          className="check-in-bucket-progress"
+        />
+      )}
     </div>
   );
 }
@@ -43,10 +52,10 @@ export function BillsFundingCard({ bills }) {
               <strong>{bills.requiredTotalLabel}</strong>
             </p>
           )}
-          {bills.fundingStatus && (
+          {bills.fundingGapLabel && (
             <p className={bills.isFullyFunded ? 'is-funded' : 'is-short'}>
-              <span>{bills.isFullyFunded ? 'Status' : 'Still needed'}</span>
-              <strong>{bills.fundingStatus}</strong>
+              <span>Funding gap</span>
+              <strong>{bills.isFullyFunded ? 'Fully funded' : bills.fundingGapLabel}</strong>
             </p>
           )}
           {bills.fundedSummary && <p className="check-in-bills-count">{bills.fundedSummary}</p>}
@@ -56,6 +65,33 @@ export function BillsFundingCard({ bills }) {
       <p className="check-in-card-lead">
         Bills account money is committed, not spendable. Required buckets exclude the credit card estimate bucket.
       </p>
+
+      {bills.fundedPercent != null && (
+        <div className="check-in-bills-progress-block">
+          <div className="check-in-bills-progress-header">
+            <span>Bills funding progress</span>
+            <strong>{bills.fundingProgressLabel}</strong>
+          </div>
+          <ProgressBar
+            percent={bills.fundedPercent}
+            label={bills.fundingProgressLabel}
+            tone={bills.isFullyFunded ? 'green' : 'yellow'}
+            ariaLabel={bills.fundingAriaLabel}
+          />
+          <div className="check-in-bills-progress-stats">
+            {bills.balanceLabel && (
+              <p><span>Current Bills balance</span><strong>{bills.balanceLabel}</strong></p>
+            )}
+            {bills.requiredTotalLabel && (
+              <p><span>Required total</span><strong>{bills.requiredTotalLabel}</strong></p>
+            )}
+            {bills.fundedAmountLabel && (
+              <p><span>Funded amount</span><strong>{bills.fundedAmountLabel}</strong></p>
+            )}
+          </div>
+        </div>
+      )}
+
       {(bills.buckets ?? []).length > 0 && (
         <div className="check-in-bucket-list" role="list">
           {bills.buckets.map((bucket) => (
