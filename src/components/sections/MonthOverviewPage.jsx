@@ -16,11 +16,30 @@ function PriorityCard({ label, tone, children }) {
   );
 }
 
+function EndingPositionStrip({ label, items }) {
+  if (!items?.length) return null;
+  return (
+    <div className="month-snapshot-ending-position" aria-label={label}>
+      <div className="month-snapshot-ending-position-label">{label}</div>
+      <div className="stat-pills month-snapshot-ending-position-pills">
+        {items.map((item) => (
+          <div key={item.label} className="stat-pill paper-surface">
+            <span>{item.label}</span>
+            <strong>{item.value}</strong>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function MonthOverviewPage({ data, month, section }) {
   const { month: monthView } = data;
   const {
     kpis,
     futureProgress,
+    endingPosition,
+    endingPositionLabel,
     howItWent,
     moneySummary,
     atAGlanceLabel,
@@ -46,6 +65,7 @@ export function MonthOverviewPage({ data, month, section }) {
             )}
             <FutureProgressKpi futureProgress={futureProgress} />
           </div>
+          <EndingPositionStrip label={endingPositionLabel} items={endingPosition} />
         </section>
       )}
 
