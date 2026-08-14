@@ -73,7 +73,10 @@ export function DecisionsPage({ data, month, section }) {
       badge="Decide together"
       badgeVariant="talk"
     >
-      <div className="decisions-page">
+      <div
+        className="decisions-page"
+        style={{ '--content-block-max-cqw': '100cqw', width: '100%', maxWidth: '100%' }}
+      >
         <MeetingUpdate update={decisions.currentUpdate} />
 
         {decisions.cfoOutcomes?.length > 0 && (
