@@ -7,6 +7,7 @@ import {
 } from '../content/NotebookPrimitives';
 import { CardGrid, PanelSurface, SectionBlock } from '../notebook';
 import { SectionPageShell } from './SectionPageShell';
+import './reviewPages.css';
 
 function difficultyTone(difficulty) {
   const value = difficulty?.toLowerCase() ?? '';
