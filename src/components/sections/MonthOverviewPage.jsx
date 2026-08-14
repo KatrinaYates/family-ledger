@@ -18,11 +18,17 @@ const GLANCE_KPI_SYMBOLS = {
   'Net worth change': NOTEBOOK_SYMBOLS.growth,
 };
 
+function hasReviewValue(value) {
+  return value != null && String(value).trim() !== '' && String(value).trim() !== '—';
+}
+
 function mapGlanceKpis(kpis) {
-  return kpis.map((kpi) => ({
-    ...kpi,
-    icon: GLANCE_KPI_SYMBOLS[kpi.label] ?? NOTEBOOK_SYMBOLS.neutral,
-  }));
+  return kpis
+    .filter((kpi) => hasReviewValue(kpi.value))
+    .map((kpi) => ({
+      ...kpi,
+      icon: GLANCE_KPI_SYMBOLS[kpi.label] ?? NOTEBOOK_SYMBOLS.neutral,
+    }));
 }
 
 export function MonthOverviewPage({ data, month, section }) {
@@ -49,6 +55,8 @@ export function MonthOverviewPage({ data, month, section }) {
   const monthLabel = month.label || data.meta?.month || 'this month';
 
   const showGlance = glanceKpis.length > 0 || endingPosition.length > 0;
+  const whatMadeDifferent = data.spending?.overview?.interpretation
+    || howItWent.whatMadeDifferent;
   const priorityCards = [
     howItWent.biggestWin && {
       key: 'win',
@@ -62,11 +70,11 @@ export function MonthOverviewPage({ data, month, section }) {
       tone: 'focus',
       body: howItWent.needsAttention,
     },
-    howItWent.whatMadeDifferent && {
+    whatMadeDifferent && {
       key: 'context',
       label: `What made ${monthLabel} different`,
       tone: 'context',
-      body: howItWent.whatMadeDifferent,
+      body: whatMadeDifferent,
     },
   ].filter(Boolean);
   const showHowItWent = Boolean(howItWent.pulse || priorityCards.length);
