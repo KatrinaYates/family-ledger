@@ -68,7 +68,10 @@ export function CfoPage({ data, month, section }) {
       data={data}
       subtitle={cfo.overview?.subtitle}
     >
-      <div className="cfo-advice-page">
+      <div
+        className="cfo-advice-page"
+        style={{ '--content-block-max-cqw': '100cqw', width: '100%', maxWidth: '100%' }}
+      >
         {first && (
           <SectionBlock label="Start Here" className="cfo-primary-recommendation">
             <RecommendationCard priority={first} featured />
