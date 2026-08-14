@@ -1,5 +1,6 @@
 import React from 'react';
 import { SectionPageShell } from './SectionPageShell';
+import { CardGrid } from '../notebook';
 import { SpendingOverview } from '../spending/SpendingOverview';
 import { SpendingCategoryBars } from '../spending/SpendingCategoryBars';
 import { SpendingChangeSummary } from '../spending/SpendingChangeSummary';
@@ -20,15 +21,19 @@ export function SpendingPage({ data, month, section }) {
     >
       <div className="spending-page">
         <SpendingOverview overview={spending.overview} />
-        <div className="spending-split-row">
+
+        <CardGrid layout="mainSidebar" className="spending-detail-row">
           <SpendingCategoryBars categories={spending.categories} />
           <SpendingChangeSummary whatChanged={spending.whatChanged} />
-        </div>
-        <div className="spending-split-row">
+        </CardGrid>
+
+        <CardGrid layout="mainSidebar" className="spending-secondary-row">
           <SpendingWatch spendingWatch={spending.spendingWatch} monthId={month.id} />
-          <NotableSpending notableSpending={spending.notableSpending} monthId={month.id} />
-        </div>
-        <SpendingTakeaway monthId={month.id} />
+          <div className="spending-side-stack">
+            <NotableSpending notableSpending={spending.notableSpending} monthId={month.id} />
+            <SpendingTakeaway monthId={month.id} />
+          </div>
+        </CardGrid>
       </div>
     </SectionPageShell>
   );

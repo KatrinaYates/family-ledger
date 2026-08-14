@@ -307,9 +307,9 @@ export function enrichMonth(sourceData, meta) {
   }
 
   const endingPosition = [
-    hasValue(monthEndCash) ? { label: 'Cash', value: monthEndCash } : null,
-    hasValue(snapshot.debt?.total) ? { label: 'Debt', value: snapshot.debt.total } : null,
-    hasValue(snapshot.netWorth?.value) ? { label: 'Net worth', value: snapshot.netWorth.value } : null,
+    hasValue(monthEndCash) ? { label: 'Cash', value: monthEndCash, tone: 'safety' } : null,
+    hasValue(snapshot.debt?.total) ? { label: 'Debt', value: snapshot.debt.total, tone: 'focus' } : null,
+    hasValue(snapshot.netWorth?.value) ? { label: 'Net worth', value: snapshot.netWorth.value, tone: 'win' } : null,
   ].filter(Boolean);
 
   const biggestWin = meta?.biggestWin?.trim()

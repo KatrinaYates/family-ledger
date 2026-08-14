@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { NOTEBOOK_SYMBOLS } from './content/NotebookPrimitives';
 import { useOptionalMonthContext } from '../context/MonthContext';
 import { useWorkflow } from '../hooks/useWorkflow';
 
@@ -6,17 +7,17 @@ export const MONTH_LOCK_SCROLL_KEY = 'fl-scroll-to-lock';
 
 const STATUS_COPY = {
   draft: {
-    icon: '✏️',
+    icon: NOTEBOOK_SYMBOLS.edit,
     label: 'Draft',
     detail: 'Meeting notes editable',
   },
   meeting_ready: {
-    icon: '📋',
+    icon: NOTEBOOK_SYMBOLS.ready,
     label: 'Meeting ready',
     detail: 'Meeting notes editable',
   },
   locked: {
-    icon: '🔒',
+    icon: NOTEBOOK_SYMBOLS.lock,
     label: 'Locked',
     detail: 'Meeting notes protected',
   },
@@ -77,7 +78,7 @@ export function MonthLockStatus({ monthId, month, onJumpToLock }) {
         aria-busy="true"
         aria-label={ariaLabel}
       >
-        <span className="month-lock-status-icon" aria-hidden="true">⏳</span>
+        <span className="month-lock-status-icon notebook-symbol" aria-hidden="true">…</span>
         <span className="month-lock-status-text">Checking…</span>
       </div>
     );
@@ -91,7 +92,7 @@ export function MonthLockStatus({ monthId, month, onJumpToLock }) {
       aria-label={ariaLabel}
       title={`${copy.label} — ${monthLabel}. Go to lock controls.`}
     >
-      <span className="month-lock-status-icon" aria-hidden="true">{copy.icon}</span>
+      <span className="month-lock-status-icon notebook-symbol" aria-hidden="true">{copy.icon}</span>
       <span className="month-lock-status-month">{monthLabel}</span>
     </button>
   );

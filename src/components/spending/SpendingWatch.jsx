@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
+import { ExpandableContextNote, InsightList, PanelOkLine } from '../content/NotebookPrimitives';
+import { PanelModule, PanelSurface, SectionBlock } from '../notebook';
 import { useMeetingJson } from '../../hooks/useMeetingField';
 import { sectionFieldKey } from '../../utils/meetingKeys';
 
-function ExpandableContext({ itemId, storageKey, seedFactory, isLocked, placeholder = 'Add context...' }) {
+function PersistedExpandableContext({
+  itemId,
+  storageKey,
+  seedFactory,
+  isLocked,
+  placeholder = 'Add context...',
+}) {
   const { value: contexts, setValue: setContexts } = useMeetingJson(storageKey, seedFactory);
-  const [expanded, setExpanded] = useState(false);
-
   const context = contexts.find((entry) => entry.id === itemId)?.context ?? '';
 
   const updateContext = (next) => {
@@ -18,66 +24,13 @@ function ExpandableContext({ itemId, storageKey, seedFactory, isLocked, placehol
     });
   };
 
-  if (context && !expanded) {
-    return (
-      <div className="spending-inline-note">
-        <span>{context}</span>
-        {!isLocked && (
-          <button type="button" className="notebook-link-btn" onClick={() => setExpanded(true)}>
-            Edit
-          </button>
-        )}
-      </div>
-    );
-  }
-
-  if (!expanded) {
-    return (
-      <button
-        type="button"
-        className="notebook-link-btn"
-        onClick={() => setExpanded(true)}
-        disabled={isLocked}
-      >
-        Add context
-      </button>
-    );
-  }
-
   return (
-    <textarea
-      className="inline-notes-area spending-inline-input"
+    <ExpandableContextNote
       value={context}
-      onChange={(e) => updateContext(e.target.value)}
-      onBlur={() => { if (!context.trim()) setExpanded(false); }}
-      placeholder={placeholder}
-      rows={2}
+      onChange={updateContext}
       readOnly={isLocked}
-      aria-readonly={isLocked}
-      autoFocus
+      placeholder={placeholder}
     />
-  );
-}
-
-function PatternRow({ pattern }) {
-  if (pattern.fallbackLine) {
-    return (
-      <li className="spending-pattern-row spending-pattern-row-fallback">
-        {pattern.fallbackLine}
-      </li>
-    );
-  }
-
-  return (
-    <li className="spending-pattern-row">
-      <strong className="spending-pattern-title">{pattern.title}</strong>
-      {pattern.detail && (
-        <span className="spending-pattern-detail">{pattern.detail}</span>
-      )}
-      {pattern.support && (
-        <p className="spending-pattern-support">{pattern.support}</p>
-      )}
-    </li>
   );
 }
 
@@ -92,54 +45,51 @@ function RecurringModule({ recurring }) {
   const showViewAll = recurring.viewAllCount && recurring.viewAllCount > previewCount;
 
   return (
-    <div className="spending-watch-module">
-      <div className="spending-watch-module-body">
-        <span className="spending-watch-module-label">Subscriptions & recurring</span>
-        {recurring.summary && (
-          <span className="spending-watch-module-value">{recurring.summary}</span>
-        )}
+    <PanelModule label="Subscriptions & recurring">
+      {recurring.summary && (
+        <span className="panel-module__value">{recurring.summary}</span>
+      )}
 
-        {recurring.stable && (
-          <span className="spending-watch-ok">✓ {recurring.stableMessage}</span>
-        )}
+      {recurring.stable && (
+        <PanelOkLine>{recurring.stableMessage}</PanelOkLine>
+      )}
 
-        {recurring.changes?.length > 0 && (
-          <ul className="spending-watch-sublist">
-            {recurring.changes.slice(0, expanded ? undefined : previewCount).map((change) => (
-              <li key={change.label}>{change.label}{change.amount ? ` · ${change.amount}` : ''}</li>
-            ))}
-          </ul>
-        )}
+      {recurring.changes?.length > 0 && (
+        <ul className="spending-watch-sublist">
+          {recurring.changes.slice(0, expanded ? undefined : previewCount).map((change) => (
+            <li key={change.label}>{change.label}{change.amount ? ` · ${change.amount}` : ''}</li>
+          ))}
+        </ul>
+      )}
 
-        {reviewGroups.length > 0 && (
-          <div className="spending-watch-recurring-review">
-            {reviewGroups.slice(0, expanded ? undefined : 2).map((group, index) => (
-              <p className="spending-watch-review-reason" key={group.id ?? group.name ?? index}>
-                <strong>{group.name ?? 'Worth reviewing'}{group.amount ? ` · ${group.amount}` : ''}</strong>
-                {group.note ? ` — ${group.note}` : ''}
-              </p>
-            ))}
-          </div>
-        )}
+      {reviewGroups.length > 0 && (
+        <div className="spending-watch-recurring-review">
+          {reviewGroups.slice(0, expanded ? undefined : 2).map((group, index) => (
+            <p className="spending-watch-review-reason" key={group.id ?? group.name ?? index}>
+              <strong>{group.name ?? 'Worth reviewing'}{group.amount ? ` · ${group.amount}` : ''}</strong>
+              {group.note ? ` — ${group.note}` : ''}
+            </p>
+          ))}
+        </div>
+      )}
 
-        {showViewAll && (
-          <button type="button" className="notebook-link-btn" onClick={() => setExpanded(!expanded)}>
-            {expanded ? 'Show less' : `View all ${recurring.viewAllCount} →`}
-          </button>
-        )}
+      {showViewAll && (
+        <button type="button" className="notebook-link-btn" onClick={() => setExpanded(!expanded)}>
+          {expanded ? 'Show less' : `View all ${recurring.viewAllCount} →`}
+        </button>
+      )}
 
-        {expanded && allCharges.length > 0 && (
-          <ul className="spending-watch-sublist">
-            {allCharges.map((charge, index) => (
-              <li key={charge.id ?? charge.name ?? index}>
-                {charge.name ?? charge.label}{charge.amount ? ` · ${charge.amount}` : ''}
-                {charge.frequency ? ` · ${String(charge.frequency).toLowerCase()}` : ''}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </div>
+      {expanded && allCharges.length > 0 && (
+        <ul className="spending-watch-sublist">
+          {allCharges.map((charge, index) => (
+            <li key={charge.id ?? charge.name ?? index}>
+              {charge.name ?? charge.label}{charge.amount ? ` · ${charge.amount}` : ''}
+              {charge.frequency ? ` · ${String(charge.frequency).toLowerCase()}` : ''}
+            </li>
+          ))}
+        </ul>
+      )}
+    </PanelModule>
   );
 }
 
@@ -156,68 +106,58 @@ export function SpendingWatch({ spendingWatch, monthId }) {
   const hasReview = review?.hasItems;
 
   return (
-    <section className="spending-block" aria-label="Spending watch">
-      <h2 className="month-snapshot-section-heading">Spending Watch</h2>
-      <div className="paper-surface spending-panel-surface">
-        <div className="spending-watch-dashboard">
-          <div className="spending-watch-module">
-            <span className="spending-watch-module-label">Patterns worth noticing</span>
-            {patterns?.status === 'alert' && patterns.items?.length ? (
-              <ul className="spending-pattern-list">
-                {patterns.items.map((pattern) => (
-                  <PatternRow key={pattern.id} pattern={pattern} />
-                ))}
-              </ul>
+    <SectionBlock label="Spending Watch" className="spending-watch">
+      <PanelSurface className="spending-watch-panel">
+        <PanelModule label="Patterns worth noticing">
+          {patterns?.status === 'alert' && patterns.items?.length ? (
+            <InsightList items={patterns.items} />
+          ) : (
+            <PanelOkLine>{patterns?.okMessage}</PanelOkLine>
+          )}
+        </PanelModule>
+
+        <RecurringModule recurring={recurring} />
+
+        {fees && (
+          <PanelModule label="Fees">
+            {fees.status === 'ok' ? (
+              <PanelOkLine>{fees.okMessage}</PanelOkLine>
             ) : (
-              <span className="spending-watch-ok">✓ {patterns?.okMessage}</span>
+              <>
+                <span className="panel-module__value">{fees.total} found</span>
+                <ul className="spending-watch-sublist">
+                  {fees.items.map((item) => (
+                    <li key={item.name}>{item.name} · {item.amount}</li>
+                  ))}
+                </ul>
+              </>
             )}
-          </div>
+          </PanelModule>
+        )}
 
-          <RecurringModule recurring={recurring} />
-
-          {fees && (
-            <div className="spending-watch-module">
-              <span className="spending-watch-module-label">Fees</span>
-              {fees.status === 'ok' ? (
-                <span className="spending-watch-ok">✓ {fees.okMessage}</span>
-              ) : (
-                <div className="spending-watch-module-body">
-                  <span className="spending-watch-module-value">{fees.total} found</span>
-                  <ul className="spending-watch-sublist">
-                    {fees.items.map((item) => (
-                      <li key={item.name}>{item.name} · {item.amount}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-
-          {hasReview && (
-            <div className="spending-watch-module spending-watch-module-review">
-              <span className="spending-watch-module-label">Transactions to review</span>
-              <ul className="spending-watch-review-list">
-                {review.items.map((item) => (
-                  <li key={item.id} className="spending-watch-review-row">
-                    <div className="spending-watch-review-main">
-                      <span className="spending-watch-review-name">
-                        {item.name}{item.amount ? ` · ${item.amount}` : ''}
-                      </span>
-                      <ExpandableContext
-                        itemId={item.id}
-                        storageKey={storageKey}
-                        seedFactory={seedFactory}
-                        isLocked={isLocked}
-                      />
-                    </div>
-                    <p className="spending-watch-review-reason">{item.reason}</p>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      </div>
-    </section>
+        {hasReview && (
+          <PanelModule label="Transactions to review" className="panel-module--review">
+            <ul className="spending-watch-review-list">
+              {review.items.map((item) => (
+                <li key={item.id} className="spending-watch-review-row">
+                  <div className="spending-watch-review-main">
+                    <span className="spending-watch-review-name">
+                      {item.name}{item.amount ? ` · ${item.amount}` : ''}
+                    </span>
+                    <PersistedExpandableContext
+                      itemId={item.id}
+                      storageKey={storageKey}
+                      seedFactory={seedFactory}
+                      isLocked={isLocked}
+                    />
+                  </div>
+                  <p className="spending-watch-review-reason">{item.reason}</p>
+                </li>
+              ))}
+            </ul>
+          </PanelModule>
+        )}
+      </PanelSurface>
+    </SectionBlock>
   );
 }

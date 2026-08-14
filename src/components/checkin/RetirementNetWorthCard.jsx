@@ -1,5 +1,5 @@
 import React from 'react';
-import { DashedList, PanelCard } from '../content/NotebookPrimitives';
+import { DashedList, PanelCard, ToneChip } from '../content/NotebookPrimitives';
 import { StackedValueBar } from './CheckInVisuals';
 
 export function RetirementNetWorthCard({ retirement, netWorth }) {
@@ -22,7 +22,7 @@ export function RetirementNetWorthCard({ retirement, netWorth }) {
             <h3>Retirement</h3>
             <strong className="panel-total">{retirement.totalLabel}</strong>
           </div>
-          <span className="snapshot-chip purple">{retirement.protectionLabel}</span>
+          <ToneChip tone="protected">{retirement.protectionLabel}</ToneChip>
           <p className="check-in-card-lead">Long-term money — never counted as available household cash.</p>
         </section>
       )}

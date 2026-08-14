@@ -31,7 +31,7 @@ function PriorityCard({ priority, monthId }) {
       </header>
       <div className="snapshot-grid-main cfo-tier-grid">
         <SummaryPanel title="Recommendation detail" rows={summaryRows}>
-          {priority.note && <WarningBanner>{priority.note}</WarningBanner>}
+          {priority.note && <WarningBanner compact label={null}>{priority.note}</WarningBanner>}
         </SummaryPanel>
         <aside className="snapshot-side">
           <PanelCard title="Decisions to make">

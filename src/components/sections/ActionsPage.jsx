@@ -1,9 +1,9 @@
 import React from 'react';
 import {
-  PanelCard,
+  PanelHeading,
   ScrollBody,
-  StickyCard,
 } from '../content/NotebookPrimitives';
+import { PanelSurface, DecorativeStickyNote } from '../notebook';
 import { ActionPlan } from '../actions/ActionPlan';
 import { SectionPageShell } from './SectionPageShell';
 
@@ -14,18 +14,23 @@ export function ActionsPage({ data, month, section }) {
 
   return (
     <SectionPageShell sectionId="actions" section={section} month={month} data={data} subtitle={actions.page?.subtitle}>
-      <StickyCard label="Monthly focus" tone="focus">
-        <p>{actions.monthlyFocus}</p>
-      </StickyCard>
-      <PanelCard title="Action plan" className="actions-table-panel">
+      <div className="actions-page-focus">
+        <DecorativeStickyNote tone="green" title="Monthly focus">
+          {actions.monthlyFocus}
+        </DecorativeStickyNote>
+      </div>
+      <PanelSurface className="panel-stack actions-table-panel">
+        <PanelHeading title="Action plan" />
         {useCappedScroll ? (
           <ScrollBody label="Action items" capped>
             <ActionPlan seedRows={actionItems} />
           </ScrollBody>
         ) : (
-          <ActionPlan seedRows={actionItems} />
+          <div className="panel-body">
+            <ActionPlan seedRows={actionItems} />
+          </div>
         )}
-      </PanelCard>
+      </PanelSurface>
     </SectionPageShell>
   );
 }

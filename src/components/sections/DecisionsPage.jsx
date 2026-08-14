@@ -2,10 +2,10 @@ import React from 'react';
 import {
   PanelCard,
   PromptField,
+  QuestionList,
 } from '../content/NotebookPrimitives';
 import { useMeetingNotes } from '../../hooks/useMeetingField';
 import { cfoDecisionOutcomeKey, sectionFieldKey } from '../../utils/meetingKeys';
-import { EditableQuestions } from '../meeting/MeetingFields';
 import { SectionPageShell } from './SectionPageShell';
 
 function MeetingUpdate({ update }) {
@@ -78,9 +78,10 @@ export function DecisionsPage({ data, month, section }) {
         <PromptField label="Parking lot" value={parkingLotField.value} onChange={parkingLotField.setValue} />
       </div>
       <PanelCard title="Open questions">
-        <EditableQuestions
+        <QuestionList
+          editable
           storageKey={sectionFieldKey(month.id, 'decisions', 'questions')}
-          seedQuestions={decisions.questions}
+          items={decisions.questions}
         />
       </PanelCard>
       {decisions.insight && (

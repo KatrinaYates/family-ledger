@@ -1,35 +1,28 @@
 import React from 'react';
+import {
+  MetricKpiRow,
+  NOTEBOOK_SYMBOLS,
+  StatPills,
+  StickyCard,
+} from '../content/NotebookPrimitives';
+import { CardGrid, PanelSurface, SectionBlock } from '../notebook';
 import { EditableBulletList } from '../meeting/MeetingFields';
-import { MetricKpiRow } from '../content/NotebookPrimitives';
 import { sectionFieldKey } from '../../utils/meetingKeys';
 import { SectionPageShell } from './SectionPageShell';
-import { FutureProgressKpi } from './FutureProgressKpi';
 
-function PriorityCard({ label, tone, children }) {
-  if (!children?.trim()) return null;
-  return (
-    <article className={`month-snapshot-priority-card tone-${tone}`}>
-      <h3 className="month-snapshot-priority-label">{label}</h3>
-      <p className="month-snapshot-priority-text">{children}</p>
-    </article>
-  );
-}
+const GLANCE_KPI_SYMBOLS = {
+  Income: NOTEBOOK_SYMBOLS.cash,
+  Spending: NOTEBOOK_SYMBOLS.focus,
+  'Cash change': NOTEBOOK_SYMBOLS.cash,
+  'Debt change': NOTEBOOK_SYMBOLS.focus,
+  'Net worth change': NOTEBOOK_SYMBOLS.growth,
+};
 
-function EndingPositionStrip({ label, items }) {
-  if (!items?.length) return null;
-  return (
-    <div className="month-snapshot-ending-position" aria-label={label}>
-      <div className="month-snapshot-ending-position-label">{label}</div>
-      <div className="stat-pills month-snapshot-ending-position-pills">
-        {items.map((item) => (
-          <div key={item.label} className="stat-pill paper-surface">
-            <span>{item.label}</span>
-            <strong>{item.value}</strong>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+function mapGlanceKpis(kpis) {
+  return kpis.map((kpi) => ({
+    ...kpi,
+    icon: GLANCE_KPI_SYMBOLS[kpi.label] ?? NOTEBOOK_SYMBOLS.neutral,
+  }));
 }
 
 export function MonthOverviewPage({ data, month, section }) {
@@ -44,7 +37,39 @@ export function MonthOverviewPage({ data, month, section }) {
     humanContextLabel,
   } = monthView;
 
-  const showGlance = kpis.length > 0 || futureProgress;
+  const glanceKpis = [
+    ...mapGlanceKpis(kpis),
+    ...(futureProgress?.total ? [{
+      icon: NOTEBOOK_SYMBOLS.win,
+      label: 'Future progress',
+      value: futureProgress.total,
+      chip: { text: 'This month', tone: 'protected' },
+    }] : []),
+  ];
+  const monthLabel = month.label || data.meta?.month || 'this month';
+
+  const showGlance = glanceKpis.length > 0 || endingPosition.length > 0;
+  const priorityCards = [
+    howItWent.biggestWin && {
+      key: 'win',
+      label: 'Biggest win',
+      tone: 'win',
+      body: howItWent.biggestWin,
+    },
+    howItWent.needsAttention && {
+      key: 'focus',
+      label: 'Needs attention',
+      tone: 'focus',
+      body: howItWent.needsAttention,
+    },
+    howItWent.whatMadeDifferent && {
+      key: 'context',
+      label: `What made ${monthLabel} different`,
+      tone: 'context',
+      body: howItWent.whatMadeDifferent,
+    },
+  ].filter(Boolean);
+  const showHowItWent = Boolean(howItWent.pulse || priorityCards.length);
 
   return (
     <SectionPageShell
@@ -54,52 +79,59 @@ export function MonthOverviewPage({ data, month, section }) {
       data={data}
       subtitle={monthView.subtitle}
     >
-      {showGlance && (
-        <section className="month-snapshot-glance" aria-label={atAGlanceLabel}>
-          <h2 className="month-snapshot-section-heading">{atAGlanceLabel}</h2>
-          <div className="month-snapshot-kpi-grid">
-            {kpis.length > 0 && (
-              <MetricKpiRow items={kpis} className="month-snapshot-kpi-row" />
+      <div className="month-snapshot-page">
+        {showGlance && (
+          <SectionBlock label={atAGlanceLabel} className="month-snapshot-glance">
+            {glanceKpis.length > 0 && (
+              <MetricKpiRow items={glanceKpis} className="month-snapshot-kpi-row" />
             )}
-            <FutureProgressKpi futureProgress={futureProgress} />
-          </div>
-          <EndingPositionStrip label={endingPositionLabel} items={endingPosition} />
-        </section>
-      )}
+            {endingPosition.length > 0 && (
+              <StatPills
+                label={endingPositionLabel}
+                items={endingPosition}
+                className="month-snapshot-ending-position"
+              />
+            )}
+          </SectionBlock>
+        )}
 
-      {(howItWent.pulse || howItWent.biggestWin || howItWent.needsAttention || howItWent.whatMadeDifferent) && (
-        <section className="month-snapshot-how" aria-label={howItWent.heading}>
-          <h2 className="month-snapshot-section-heading">{howItWent.heading}</h2>
-          {howItWent.pulse && (
-            <div className="month-snapshot-pulse insight-banner">
-              <span className="month-snapshot-pulse-label">Overall financial pulse</span>
-              <p>{howItWent.pulse}</p>
-            </div>
-          )}
-          <div className="month-snapshot-priority-grid">
-            <PriorityCard label="Biggest win" tone="win">
-              {howItWent.biggestWin}
-            </PriorityCard>
-            <PriorityCard label="Needs attention" tone="focus">
-              {howItWent.needsAttention}
-            </PriorityCard>
-            <PriorityCard label={`What made ${month.label || data.meta?.month || 'this month'} different`} tone="context">
-              {howItWent.whatMadeDifferent}
-            </PriorityCard>
-          </div>
-        </section>
-      )}
+        {showHowItWent && (
+          <SectionBlock label={howItWent.heading} className="month-snapshot-how">
+            {howItWent.pulse && (
+              <StickyCard label="Overall financial pulse" tone="ready" fill>
+                <p>{howItWent.pulse}</p>
+              </StickyCard>
+            )}
+            {priorityCards.length > 0 && (
+              <CardGrid columns={3} className="month-snapshot-priority-grid">
+                {priorityCards.map((card) => (
+                  <StickyCard
+                    key={card.key}
+                    variant="priority"
+                    label={card.label}
+                    tone={card.tone}
+                    fill
+                  >
+                    {card.body}
+                  </StickyCard>
+                ))}
+              </CardGrid>
+            )}
+          </SectionBlock>
+        )}
 
-      <section className="month-snapshot-human paper-surface">
-        <h2 className="month-snapshot-section-heading">{humanContextLabel}</h2>
-        <p className="panel-note month-snapshot-human-hint">
-          Things the data cannot automatically understand — reimbursements, guests, intentional choices, life events.
-        </p>
-        <EditableBulletList
-          storageKey={sectionFieldKey(month.id, 'month', 'human-context')}
-          seedItems={[]}
-        />
-      </section>
+        <SectionBlock label={humanContextLabel} className="month-snapshot-human">
+          <PanelSurface>
+            <p className="panel-note month-snapshot-human-hint">
+              Things the data cannot automatically understand — reimbursements, guests, intentional choices, life events.
+            </p>
+            <EditableBulletList
+              storageKey={sectionFieldKey(month.id, 'month', 'human-context')}
+              seedItems={[]}
+            />
+          </PanelSurface>
+        </SectionBlock>
+      </div>
     </SectionPageShell>
   );
 }

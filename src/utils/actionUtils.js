@@ -2,6 +2,13 @@
 
 export const ACTION_STATUSES = ['not_started', 'in_progress', 'done', 'deferred'];
 
+export const DEFAULT_ACTION_OWNER_OPTIONS = [
+  { value: '', label: 'Unassigned' },
+  { value: 'Person A', label: 'Person A' },
+  { value: 'Person B', label: 'Person B' },
+  { value: 'Both', label: 'Both' },
+];
+
 export const ACTION_STATUS_LABELS = {
   not_started: 'Not started',
   in_progress: 'In progress',

@@ -1,5 +1,6 @@
 import React from 'react';
 import { PanelCard } from '../content/NotebookPrimitives';
+import { NotebookBarFill } from '../notebook/KitComponents';
 import { MiniBalanceBar, ProgressBar } from './CheckInVisuals';
 
 function BucketRow({ bucket }) {
@@ -14,12 +15,12 @@ function BucketRow({ bucket }) {
         <span className={`check-in-bucket-status ${bucket.statusClass}`}>{bucket.statusLabel}</span>
       </div>
       {bucket.progressPercent != null && (
-        <ProgressBar
+        <NotebookBarFill
           percent={bucket.progressPercent}
+          tone={`tone-${bucket.progressTone}`}
           label={`${bucket.progressPercent}%`}
-          tone={bucket.progressTone}
-          ariaLabel={`${bucket.name} bucket ${bucket.currentLabel}${bucket.targetLabel ? ` of ${bucket.targetLabel}` : ''}, ${bucket.statusLabel}`}
           className="check-in-bucket-progress"
+          ariaLabel={`${bucket.name} bucket ${bucket.currentLabel}${bucket.targetLabel ? ` of ${bucket.targetLabel}` : ''}, ${bucket.statusLabel}`}
         />
       )}
     </div>

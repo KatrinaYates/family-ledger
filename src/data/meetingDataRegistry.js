@@ -41,6 +41,7 @@ function staticEntries(monthId) {
     { key: sectionFieldKey(monthId, 'decisions', 'stressful'), label: 'What felt stressful', group: 'conversation', type: 'text' },
     { key: sectionFieldKey(monthId, 'decisions', 'parking-lot'), label: 'Parking lot', group: 'conversation', type: 'text' },
     { key: sectionFieldKey(monthId, 'decisions', 'questions'), label: 'Open questions', group: 'questions', type: 'questions' },
+    { key: sectionFieldKey(monthId, 'future', 'talk-together'), label: 'Future — talk together', group: 'questions', type: 'questions' },
     { key: sectionFieldKey(monthId, 'spending', 'watch-contexts'), label: 'Spending — worth a closer look context', group: 'conversation', type: 'json' },
     { key: sectionFieldKey(monthId, 'spending', 'notable-notes'), label: 'Spending — notable one-time notes', group: 'lists', type: 'json' },
     { key: sectionFieldKey(monthId, 'spending', 'takeaway-worth'), label: 'Spending takeaway — what felt worth it', group: 'conversation', type: 'text' },

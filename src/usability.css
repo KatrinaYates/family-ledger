@@ -744,38 +744,6 @@
   }
 }
 
-.lock-month-control {
-  margin-top: 1rem;
-  padding: 0.75rem 1rem;
-  border: 1px dashed var(--ink-muted, #8a7f72);
-  border-radius: 6px;
-  background: rgba(255, 252, 245, 0.6);
-}
-
-.lock-month-control.is-locked {
-  border-style: solid;
-  background: rgba(240, 236, 228, 0.8);
-}
-
-.lock-month-hint {
-  margin: 0 0 0.5rem;
-  font-size: 0.9rem;
-  color: var(--ink-muted, #6b6358);
-}
-
-.lock-month-btn {
-  font: inherit;
-  padding: 0.4rem 0.85rem;
-  border: 1px solid var(--ink, #2c2419);
-  border-radius: 4px;
-  background: var(--paper, #fffdf7);
-  cursor: pointer;
-}
-
-.lock-month-btn:hover {
-  background: var(--paper-warm, #f7f2e8);
-}
-
 .month-lock-status {
   display: inline-flex;
   align-items: center;
@@ -811,15 +779,21 @@
 }
 
 .month-lock-status.is-meeting_ready.is-badge {
-  border-color: #7aa889;
-  background: #edf7ef;
-  color: #1f4a2d;
+  border-color: rgba(30, 151, 147, 0.45);
+  background: rgba(126, 196, 184, 0.2);
+  color: #1e6b68;
 }
 
 .month-lock-status.is-locked.is-badge {
-  border-color: #2c2419;
-  background: #2c2419;
-  color: #fff9ed;
+  border-color: var(--deep, #2D3548);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--deep, #2D3548);
+}
+
+.month-lock-status .notebook-symbol,
+.month-lock-status-icon.notebook-symbol {
+  color: inherit;
+  opacity: 0.88;
 }
 
 .month-lock-status.is-loading {
@@ -868,11 +842,6 @@
 .month-lock-status.is-locked .month-lock-status-month,
 .month-lock-status.is-locked .month-lock-status-jump {
   opacity: 0.85;
-}
-
-#month-lock-control:focus-visible {
-  outline: 2px solid #56707a;
-  outline-offset: 4px;
 }
 
 .carry-forward-actions {

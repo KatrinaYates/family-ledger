@@ -1,4 +1,5 @@
 import React from 'react';
+import { PanelSurface, SectionBlock } from '../notebook';
 import { useMeetingNotes } from '../../hooks/useMeetingField';
 import { sectionFieldKey } from '../../utils/meetingKeys';
 
@@ -27,9 +28,8 @@ function TakeawayPrompt({ monthId, field, label, placeholder }) {
 
 export function SpendingTakeaway({ monthId }) {
   return (
-    <section className="spending-block" aria-label="Our spending takeaway">
-      <h2 className="month-snapshot-section-heading">Our Spending Takeaway</h2>
-      <div className="paper-surface spending-panel-surface">
+    <SectionBlock label="Our Spending Takeaway" className="spending-takeaway">
+      <PanelSurface>
         <p className="panel-note spending-takeaway-hint">
           Capture your household&apos;s interpretation — not financial recommendations.
         </p>
@@ -53,7 +53,7 @@ export function SpendingTakeaway({ monthId }) {
             placeholder="Patterns or categories to keep an eye on..."
           />
         </div>
-      </div>
-    </section>
+      </PanelSurface>
+    </SectionBlock>
   );
 }

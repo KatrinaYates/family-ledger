@@ -1,11 +1,12 @@
 import React from 'react';
+import { StickyCard } from '../content/NotebookPrimitives';
+import { PanelSurface, SectionBlock } from '../notebook';
 
 function ChangeGroup({ title, items, tone }) {
   if (!items?.length) return null;
 
   return (
-    <article className={`month-snapshot-priority-card tone-${tone}`}>
-      <h3 className="month-snapshot-priority-label">{title}</h3>
+    <StickyCard label={title} tone={tone} variant="priority" className="spending-change-group">
       <ul className="spending-change-list">
         {items.map((item) => (
           <li key={item.category} className="spending-change-row">
@@ -21,7 +22,7 @@ function ChangeGroup({ title, items, tone }) {
           </li>
         ))}
       </ul>
-    </article>
+    </StickyCard>
   );
 }
 
@@ -29,11 +30,10 @@ export function SpendingChangeSummary({ whatChanged }) {
   if (!whatChanged) return null;
 
   return (
-    <section className="spending-block" aria-label={whatChanged.title}>
-      <h2 className="month-snapshot-section-heading">{whatChanged.title}</h2>
-      <div className="paper-surface spending-panel-surface">
+    <SectionBlock label={whatChanged.title} className="spending-changes">
+      <PanelSurface>
         {whatChanged.hasChanges ? (
-          <div className="spending-change-columns">
+          <div className="spending-change-stack">
             <ChangeGroup
               title="Biggest increases"
               items={whatChanged.increased}
@@ -48,7 +48,7 @@ export function SpendingChangeSummary({ whatChanged }) {
         ) : whatChanged.emptyMessage ? (
           <p className="panel-note">{whatChanged.emptyMessage}</p>
         ) : null}
-      </div>
-    </section>
+      </PanelSurface>
+    </SectionBlock>
   );
 }

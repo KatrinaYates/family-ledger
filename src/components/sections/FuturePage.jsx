@@ -10,7 +10,6 @@ export function FuturePage({ data, month, section }) {
   const hasGlance = Boolean(future.futureProgress?.total);
   const hasGoals = Boolean(future.goals?.length);
   const hasTalk = Boolean(future.discussionPrompts?.length);
-  const showFooter = hasGlance || hasGoals || hasTalk;
 
   return (
     <SectionPageShell
@@ -36,18 +35,20 @@ export function FuturePage({ data, month, section }) {
           />
         )}
 
-        {showFooter && (
-          <div className="future-footer">
-            <FutureComingUp
-              comingUpLabel={future.comingUpLabel}
-              comingUp={future.comingUp}
-            />
+        <div className="future-footer">
+          <FutureComingUp
+            comingUpLabel={future.comingUpLabel}
+            comingUp={future.comingUp}
+            monthId={month.id}
+          />
+          {hasTalk && (
             <FutureTalkTogether
               talkTogetherLabel={future.talkTogetherLabel}
               discussionPrompts={future.discussionPrompts}
+              monthId={month.id}
             />
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </SectionPageShell>
   );

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { PanelSurface, SectionBlock } from '../notebook';
 import { useMeetingJson } from '../../hooks/useMeetingField';
 import { sectionFieldKey } from '../../utils/meetingKeys';
 
@@ -98,12 +99,11 @@ export function NotableSpending({ notableSpending, monthId }) {
   };
 
   return (
-    <section className="spending-block" aria-label="Big purchases and one-time spending">
-      <h2 className="month-snapshot-section-heading">Big Purchases & One-Time Spending</h2>
-      <p className="panel-note spending-block-intro">
-        Large expenses that materially shaped the month, excluding normal recurring obligations.
-      </p>
-      <div className="paper-surface spending-panel-surface">
+    <SectionBlock label="Big Purchases & One-Time Spending" className="spending-notable">
+      <PanelSurface>
+        <p className="panel-note spending-block-intro">
+          Large expenses that materially shaped the month, excluding normal recurring obligations.
+        </p>
         {notableSpending.hasItems ? (
           <ul className="spending-notable-list">
             {notableSpending.items.map((item) => (
@@ -119,7 +119,7 @@ export function NotableSpending({ notableSpending, monthId }) {
         ) : (
           <p className="panel-note">{notableSpending.emptyMessage}</p>
         )}
-      </div>
-    </section>
+      </PanelSurface>
+    </SectionBlock>
   );
 }

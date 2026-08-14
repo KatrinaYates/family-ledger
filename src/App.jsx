@@ -21,6 +21,7 @@ import { ActionsPage } from './components/sections/ActionsPage';
 import { CelebratePage } from './components/sections/CelebratePage';
 import { CloseMonthPage } from './components/sections/CloseMonthPage';
 import { FinancialCheckInPage } from './components/checkin/FinancialCheckInPage';
+import { NotebookKitPage } from './components/notebook';
 import {
   AnnualCover,
   ContentShell,
@@ -82,6 +83,11 @@ function buildBreadcrumbs(page) {
     return crumbs;
   }
 
+  if (page.type === 'notebook-kit') {
+    crumbs.push({ label: 'Notebook Kit', pageId: null });
+    return crumbs;
+  }
+
   const monthData = getMonthCatalogEntry(page.monthId);
   const monthLabel = monthData?.label || 'Month';
 
@@ -102,6 +108,7 @@ function buildBreadcrumbs(page) {
 
 function parentPageId(page) {
   if (page.type === 'check-in') return 'cover';
+  if (page.type === 'notebook-kit') return 'cover';
   if (page.type === 'content') return page.monthId;
   if (page.type === 'month' || page.type === 'inside') return 'cover';
   return null;
@@ -365,6 +372,8 @@ export default function App() {
         <FinancialCheckInPage />
       </ContentShell>
     );
+  } else if (resolvedPage.type === 'notebook-kit') {
+    content = <NotebookKitPage />;
   } else if (resolvedPage.type === 'inside') {
     content = <InsideCover month={displayMonth} insideCover={insideCover} />;
   } else if (resolvedPage.type === 'month') {
@@ -420,6 +429,14 @@ export default function App() {
       <div className="site-toolbar" aria-label="Notebook navigation">
         <BreadcrumbNav crumbs={breadcrumbs} onNavigate={navigateTo} />
         <div className="site-toolbar-actions">
+          <button
+            type="button"
+            className={`check-in-nav-link${resolvedPage.type === 'notebook-kit' ? ' is-active' : ''}`}
+            onClick={() => navigateTo('notebook-kit')}
+            aria-current={resolvedPage.type === 'notebook-kit' ? 'page' : undefined}
+          >
+            📒 Notebook Kit
+          </button>
           <button
             type="button"
             className={`check-in-nav-link${resolvedPage.type === 'check-in' ? ' is-active' : ''}`}

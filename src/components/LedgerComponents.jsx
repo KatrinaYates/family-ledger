@@ -6,7 +6,6 @@ import turkey from "../assets/illustrations/turkey.svg";
 import christmasTree from "../assets/illustrations/christmas-tree.svg";
 import vineDoodle from "../assets/illustrations/vine-doodle.svg";
 import sunIllustration from "../assets/illustrations/sun.svg";
-import washiTape from "../assets/illustrations/washi-tape.svg";
 import { PageLoader } from '../context/BootGate.jsx';
 
 const illustrations = {
@@ -18,6 +17,8 @@ const illustrations = {
     "vine-doodle": vineDoodle,
     sun: sunIllustration,
 };
+
+export const ILLUSTRATION_NAMES = Object.keys(illustrations);
 
 import { MONTH_SECTION_IDS, MONTH_SECTIONS } from '../data/monthSections';
 
@@ -33,8 +34,49 @@ export function Illustration({name, className = ""}) {
     return <img src={src} alt="" aria-hidden="true" className={className} />;
 }
 
-export function WashiTape({className = ""}) {
-    return <img src={washiTape} alt="" aria-hidden="true" className={`washi-tape ${className}`} />;
+export const WASHI_TAPE_COLORS = {
+  pink: '#F6ABC0',
+  teal: '#7EC8C4',
+  lavender: '#C4B0EE',
+  gold: '#F0D978',
+  mint: '#A8DDB5',
+  coral: '#FFB8A8',
+  sky: '#9DD4E8',
+};
+
+/** Contrasting washi tape per sticky note tone — mix-and-match, not matchy-matchy. */
+export const STICKY_TONE_WASHI = {
+  yellow: 'pink',
+  pink: 'teal',
+  blue: 'coral',
+  green: 'lavender',
+  lav: 'gold',
+  coral: 'sky',
+};
+
+export function WashiTape({ className = '', color = 'pink' }) {
+  const fill = WASHI_TAPE_COLORS[color] ?? WASHI_TAPE_COLORS.pink;
+
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 88 25"
+      fill="none"
+      aria-hidden="true"
+      className={`washi-tape ${className}`.trim()}
+    >
+      <rect width="88" height="25" rx="2" fill={fill} opacity="0.85" />
+      <g stroke="#fff" strokeWidth="1.5" opacity="0.5">
+        <line x1="0" y1="8" x2="88" y2="8" />
+        <line x1="0" y1="17" x2="88" y2="17" />
+      </g>
+      <g fill="#fff" opacity="0.35">
+        <circle cx="15" cy="12" r="2" />
+        <circle cx="44" cy="12" r="2" />
+        <circle cx="73" cy="12" r="2" />
+      </g>
+    </svg>
+  );
 }
 
 export function Polaroid({month, className = ""}) {
@@ -42,8 +84,8 @@ export function Polaroid({month, className = ""}) {
 
     return (
         <figure className={`polaroid ${className}`} aria-hidden="true">
-            <WashiTape className="polaroid-tape-left" />
-            <WashiTape className="polaroid-tape-right" />
+            <WashiTape color="pink" className="polaroid-tape-left" />
+            <WashiTape color="teal" className="polaroid-tape-right" />
             <div className="polaroid-photo" style={{background: photoBackground}}>
                 <Illustration name={month.illustration} className="polaroid-photo-art" />
             </div>
@@ -139,13 +181,22 @@ export function NotebookShell({children, months, availableMonthIds, activeMonth,
     );
 }
 
-export function StickyNote({children, tone = "yellow", className = ""}) {
-    return (
-        <aside className={`sticky-note ${tone} ${className}`}>
-            <WashiTape />
-            {children}
-        </aside>
-    );
+export function StickyNote({
+  children,
+  tone = 'yellow',
+  className = '',
+  inline = false,
+  washi = true,
+  washiColor,
+}) {
+  const tapeColor = washiColor ?? STICKY_TONE_WASHI[tone] ?? 'pink';
+
+  return (
+    <aside className={`sticky-note ${tone}${inline ? ' is-inline' : ''} ${className}`.trim()}>
+      {washi && <WashiTape color={tapeColor} />}
+      {children}
+    </aside>
+  );
 }
 
 export function MonthDateBadge({month}) {
@@ -320,39 +371,5 @@ export function ContentShell({ children, className = '' }) {
                 <div className="content-body">{children}</div>
             </div>
         </div>
-    );
-}
-
-export function KpiCard({icon, label, value, status, tone = "good", note}) {
-    return (
-        <article className="card kpi">
-            <div className="kpi-top">
-                <span>
-                    {icon} {label}
-                </span>
-                <span>↗</span>
-            </div>
-            <strong className="kpi-value">{value}</strong>
-            <span className={`chip ${tone}`}>{status}</span>
-            <p>{note}</p>
-        </article>
-    );
-}
-
-export function NoteCard({title, children}) {
-    return (
-        <article className="card note-card">
-            <h3>{title}</h3>
-            {children}
-        </article>
-    );
-}
-
-export function WritingArea({label, value, onChange, placeholder}) {
-    return (
-        <label className="writing-area">
-            <span>{label}</span>
-            <textarea value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} />
-        </label>
     );
 }

@@ -3,8 +3,8 @@ import {
   DetailRows,
   PanelCard,
   PromptField,
-  StickyCard,
 } from '../content/NotebookPrimitives';
+import { DecorativeStickyNote } from '../notebook';
 import { useMeetingNotes } from '../../hooks/useMeetingField';
 import { sectionFieldKey } from '../../utils/meetingKeys';
 import { SectionPageShell } from './SectionPageShell';
@@ -29,9 +29,9 @@ export function CelebratePage({ data, month, section }) {
           <DetailRows rows={winRows} />
         </PanelCard>
         <aside className="snapshot-side">
-          <StickyCard label="Financial motto" tone="win">
-            <p>{celebrate.page?.motto}</p>
-          </StickyCard>
+          <DecorativeStickyNote tone="lav" title="Financial motto" fill>
+            {celebrate.page?.motto}
+          </DecorativeStickyNote>
           <PromptField
             label="Family reward"
             value={familyRewardField.value}

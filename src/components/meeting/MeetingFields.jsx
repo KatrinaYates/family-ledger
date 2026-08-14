@@ -1,7 +1,14 @@
 import React from 'react';
+import { TopicBand, ActionTable, ListAddButton } from '../content/NotebookPrimitives';
+import {
+  EditableChecklist as EditableChecklistView,
+  EditableBulletList as EditableBulletListView,
+  EditableDecisionList as EditableDecisionListView,
+} from '../notebook/EditableLists';
 import { useMeetingJson, useMeetingNotes } from '../../hooks/useMeetingField';
 import { useMonthContext } from '../../context/MonthContext';
 import { sectionNotesKey } from '../../utils/meetingKeys';
+import { actionStatusFromLabel } from '../../utils/actionUtils';
 
 function newId(prefix = 'item') {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -15,21 +22,13 @@ function seedChecklistItems(seeds) {
   }));
 }
 
-function seedQuestionItems(seeds) {
-  return seeds.map((question, index) => ({
-    id: `seed-${index}`,
-    question,
-    answer: '',
-  }));
-}
-
 function seedActionRows(rows) {
   return rows.map((row, index) => ({
     id: `seed-${index}`,
-    action: row.action || '',
+    action: row.action || row.title || '',
     owner: row.owner || '',
-    dueDate: row.dueDate || '',
-    status: row.status || 'Not started',
+    dueDate: row.dueDate && row.dueDate !== 'TBD' ? row.dueDate : '',
+    status: row.status ? actionStatusFromLabel(row.status) : 'not_started',
   }));
 }
 
@@ -79,7 +78,7 @@ export function SectionNotes({ sectionId, label = 'Meeting notes' }) {
   );
 }
 
-export function EditableChecklist({
+export function PersistedEditableChecklist({
   storageKey,
   seedItems = [],
   allowAdd = true,
@@ -105,123 +104,29 @@ export function EditableChecklist({
   };
 
   return (
-    <div className="editable-checklist">
-      <ul className="decision-checklist">
-        {items.map((item) => (
-          <li key={item.id}>
-            <label className="editable-checklist-row">
-              <input
-                type="checkbox"
-                checked={Boolean(item.checked)}
-                onChange={() => toggle(item.id)}
-                disabled={isLocked}
-                aria-label={item.text || 'Checklist item'}
-              />
-              {allowEdit ? (
-                <input
-                  type="text"
-                  className="editable-inline-input"
-                  value={item.text}
-                  onChange={(e) => updateText(item.id, e.target.value)}
-                  placeholder="Add item..."
-                  readOnly={isLocked}
-                />
-              ) : (
-                <span>{item.text}</span>
-              )}
-            </label>
-            {allowRemove && !isLocked && (
-              <button
-                type="button"
-                className="meeting-remove-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  removeItem(item.id);
-                }}
-                aria-label="Remove item"
-              >
-                Remove
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
-      {allowAdd && !isLocked && (
-        <button type="button" className="meeting-add-btn" onClick={addItem}>
-          + Add item
-        </button>
-      )}
-    </div>
+    <>
+      <EditableChecklistView
+        items={items}
+        readOnly={isLocked}
+        allowAdd={allowAdd}
+        allowEdit={allowEdit}
+        allowRemove={allowRemove}
+        onToggle={toggle}
+        onUpdateText={updateText}
+        onAdd={addItem}
+        onRemove={removeItem}
+      />
+      <FieldSaveError message={saveError} />
+    </>
   );
 }
 
-export function EditableQuestions({ storageKey, seedQuestions = [] }) {
-  const { value: items, setValue: setItems, isLocked, saveError } = useMeetingJson(storageKey, () => seedQuestionItems(seedQuestions));
-
-  const updateAnswer = (id, answer) => {
-    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, answer } : item)));
-  };
-
-  const updateQuestion = (id, question) => {
-    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, question } : item)));
-  };
-
-  const addQuestion = () => {
-    setItems((prev) => [...prev, { id: newId('q'), question: '', answer: '' }]);
-  };
-
-  const removeQuestion = (id) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
-  };
-
-  return (
-    <div className="editable-questions">
-      {items.map((item, index) => (
-        <div className="editable-question" key={item.id}>
-          <label className="editable-question-label">
-            <span>Question {index + 1}</span>
-            <textarea
-              className="editable-inline-input editable-question-prompt"
-              value={item.question}
-              onChange={(e) => updateQuestion(item.id, e.target.value)}
-              placeholder="What do we need to discuss?"
-              rows={2}
-              readOnly={isLocked}
-            />
-          </label>
-          <textarea
-            className="inline-notes-area"
-            value={item.answer}
-            onChange={(e) => updateAnswer(item.id, e.target.value)}
-            placeholder="Your answer or notes..."
-            rows={2}
-            readOnly={isLocked}
-          />
-          {!isLocked && (
-            <button
-              type="button"
-              className="meeting-remove-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                removeQuestion(item.id);
-              }}
-              aria-label="Remove question"
-            >
-              Remove question
-            </button>
-          )}
-        </div>
-      ))}
-      {!isLocked && (
-        <button type="button" className="meeting-add-btn" onClick={addQuestion}>
-          + Add question
-        </button>
-      )}
-    </div>
-  );
+/** @deprecated Use PersistedEditableChecklist — kept for existing page imports until migration. */
+export function EditableChecklist(props) {
+  return <PersistedEditableChecklist {...props} />;
 }
 
-export function EditableDecisionList({ storageKey, outcomeStorageKey, seedDecisions = [] }) {
+export function PersistedEditableDecisionList({ storageKey, outcomeStorageKey, seedDecisions = [] }) {
   const { value: items, setValue: setItems, isLocked, saveError: listSaveError } = useMeetingJson(storageKey, () => seedChecklistItems(seedDecisions));
   const outcomeKey = outcomeStorageKey ?? `${storageKey}-outcome`;
   const { value: decision, setValue: setDecision, isLocked: isOutcomeLocked, saveError: outcomeSaveError } = useMeetingNotes(outcomeKey);
@@ -245,60 +150,25 @@ export function EditableDecisionList({ storageKey, outcomeStorageKey, seedDecisi
   };
 
   return (
-    <div className="editable-decisions">
-      <ul className="decision-checklist">
-        {items.map((item) => (
-          <li key={item.id}>
-            <label className="editable-checklist-row editable-decision-row">
-              <input
-                type="checkbox"
-                checked={Boolean(item.checked)}
-                onChange={() => toggle(item.id)}
-                disabled={readOnly}
-                aria-label={item.text || 'Decision option'}
-              />
-              <textarea
-                className="editable-inline-input editable-decision-input"
-                value={item.text}
-                onChange={(e) => updateText(item.id, e.target.value)}
-                placeholder="Decision option..."
-                rows={2}
-                readOnly={readOnly}
-              />
-            </label>
-            {!readOnly && (
-              <button
-                type="button"
-                className="meeting-remove-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  removeOption(item.id);
-                }}
-                aria-label="Remove decision option"
-              >
-                Remove
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
-      {!readOnly && (
-        <button type="button" className="meeting-add-btn" onClick={addOption}>
-          + Add option
-        </button>
-      )}
-      <label className="prompt-field decision-outcome">
-        <span className="prompt-field-label">What we decided</span>
-        <textarea
-          value={decision}
-          onChange={(e) => setDecision(e.target.value)}
-          placeholder="Record the decision you made today..."
-          rows={3}
-          readOnly={readOnly}
-        />
-      </label>
-    </div>
+    <>
+      <EditableDecisionListView
+        options={items}
+        outcome={decision}
+        readOnly={readOnly}
+        onToggle={toggle}
+        onUpdateText={updateText}
+        onAdd={addOption}
+        onRemove={removeOption}
+        onOutcomeChange={setDecision}
+      />
+      <FieldSaveError message={saveError} />
+    </>
   );
+}
+
+/** @deprecated Use PersistedEditableDecisionList */
+export function EditableDecisionList(props) {
+  return <PersistedEditableDecisionList {...props} />;
 }
 
 export function EditableActionPlan({ storageKey, seedRows = [] }) {
@@ -311,7 +181,7 @@ export function EditableActionPlan({ storageKey, seedRows = [] }) {
   const addRow = () => {
     setRows((prev) => [
       ...prev,
-      { id: newId('action'), action: '', owner: '', dueDate: '', status: 'Not started' },
+      { id: newId('action'), action: '', owner: '', dueDate: '', status: 'not_started' },
     ]);
   };
 
@@ -321,77 +191,21 @@ export function EditableActionPlan({ storageKey, seedRows = [] }) {
 
   return (
     <div className="editable-action-plan">
-      <div className="action-table">
-        <div className="action-row head">
-          <span>Action</span>
-          <span>Owner</span>
-          <span>Due</span>
-          <span>Status</span>
-          <span className="action-row-actions"> </span>
-        </div>
-        {rows.map((row) => (
-          <div className="action-row editable" key={row.id}>
-            <input
-              type="text"
-              className="editable-cell-input"
-              value={row.action}
-              onChange={(e) => updateRow(row.id, 'action', e.target.value)}
-              placeholder="What needs to happen?"
-              readOnly={isLocked}
-            />
-            <input
-              type="text"
-              className="editable-cell-input"
-              value={row.owner}
-              onChange={(e) => updateRow(row.id, 'owner', e.target.value)}
-              placeholder="Owner"
-              readOnly={isLocked}
-            />
-            <input
-              type="text"
-              className="editable-cell-input"
-              value={row.dueDate}
-              onChange={(e) => updateRow(row.id, 'dueDate', e.target.value)}
-              placeholder="Due date"
-              readOnly={isLocked}
-            />
-            <select
-              className="editable-cell-input"
-              value={row.status}
-              onChange={(e) => updateRow(row.id, 'status', e.target.value)}
-              disabled={isLocked}
-            >
-              <option>Not started</option>
-              <option>In progress</option>
-              <option>Done</option>
-              <option>Deferred</option>
-            </select>
-            {!isLocked && (
-              <button
-                type="button"
-                className="meeting-remove-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  removeRow(row.id);
-                }}
-                aria-label="Remove action item"
-              >
-                Remove
-              </button>
-            )}
-          </div>
-        ))}
-      </div>
+      <ActionTable
+        rows={rows}
+        readOnly={isLocked}
+        onUpdateRow={updateRow}
+        onRemoveRow={removeRow}
+      />
       {!isLocked && (
-        <button type="button" className="meeting-add-btn" onClick={addRow}>
-          + Add action item
-        </button>
+        <ListAddButton onClick={addRow}>+ Add action item</ListAddButton>
       )}
+      <FieldSaveError message={saveError} />
     </div>
   );
 }
 
-export function EditableBulletList({ storageKey, seedItems = [], title }) {
+export function PersistedEditableBulletList({ storageKey, seedItems = [], title }) {
   const { value: items, setValue: setItems, isLocked, saveError } = useMeetingJson(storageKey, () => seedBulletItems(seedItems));
 
   const updateText = (id, text) => {
@@ -407,54 +221,30 @@ export function EditableBulletList({ storageKey, seedItems = [], title }) {
   };
 
   return (
-    <div className="editable-bullet-list">
-      {title && <h3>{title}</h3>}
-      <ul className="editable-bullet-items">
-        {items.map((item) => (
-          <li key={item.id}>
-            <input
-              type="text"
-              className="editable-inline-input"
-              value={item.text}
-              onChange={(e) => updateText(item.id, e.target.value)}
-              placeholder="Add item..."
-              readOnly={isLocked}
-            />
-            {!isLocked && (
-              <button
-                type="button"
-                className="meeting-remove-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  removeItem(item.id);
-                }}
-                aria-label="Remove item"
-              >
-                Remove
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
-      {!isLocked && (
-        <button type="button" className="meeting-add-btn" onClick={addItem}>
-          + Add item
-        </button>
-      )}
-    </div>
+    <>
+      <EditableBulletListView
+        items={items}
+        readOnly={isLocked}
+        title={title}
+        onUpdateText={updateText}
+        onAdd={addItem}
+        onRemove={removeItem}
+      />
+      <FieldSaveError message={saveError} />
+    </>
   );
 }
 
-export function MeetingEmergencyBand({ storageKey, label, title, description, checks }) {
+/** @deprecated Use PersistedEditableBulletList */
+export function EditableBulletList(props) {
+  return <PersistedEditableBulletList {...props} />;
+}
+
+export function MeetingTopicBand({ storageKey, label, title, description, checks, icon, tone }) {
   return (
-    <section className="paper-surface emergency-band">
-      <div>
-        <span className="sticky-card-label">{label}</span>
-        <h2>{title}</h2>
-        <p>{description}</p>
-      </div>
-      <EditableChecklist storageKey={storageKey} seedItems={checks} allowEdit={false} />
-    </section>
+    <TopicBand label={label} title={title} description={description} icon={icon} tone={tone}>
+      <PersistedEditableChecklist storageKey={storageKey} seedItems={checks} allowEdit={false} />
+    </TopicBand>
   );
 }
 

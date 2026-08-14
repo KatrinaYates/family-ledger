@@ -1,67 +1,46 @@
 import React from 'react';
+import {
+  BarChart,
+  NotebookBarCaption,
+  NotebookBarFill,
+  SegmentBar,
+} from '../notebook/KitComponents';
 
+/** Compact progress bar — delegates to NotebookBarCaption. */
 export function ProgressBar({
   percent,
   label,
   ariaLabel,
   tone = 'teal',
   className = '',
+  size = 'default',
 }) {
   if (percent == null) return null;
-  const safePercent = Math.min(100, Math.max(0, percent));
 
   return (
-    <div
-      className={`check-in-progress check-in-progress-${tone} ${className}`.trim()}
-      role="progressbar"
-      aria-valuenow={safePercent}
-      aria-valuemin={0}
-      aria-valuemax={100}
-      aria-label={ariaLabel || label}
-    >
-      <div
-        className="check-in-progress-fill"
-        style={{ width: `${safePercent}%` }}
-      />
-      {label && <span className="check-in-progress-label">{label}</span>}
-    </div>
+    <NotebookBarCaption
+      percent={percent}
+      tone={`tone-${tone}`}
+      caption={label}
+      className={className}
+      ariaLabel={ariaLabel || label}
+      size={size}
+    />
   );
 }
 
 export function StackedValueBar({ composition, ariaLabel, className = '' }) {
   if (!composition?.segments?.length) return null;
 
-  const summary = composition.segments
-    .map((segment) => `${segment.label} ${segment.valueLabel} (${segment.percent}%)`)
-    .join(', ');
-
   return (
-    <div className={`check-in-stacked ${className}`.trim()}>
-      <div
-        className="check-in-stacked-track"
-        role="img"
-        aria-label={ariaLabel || summary}
-      >
-        {composition.segments.map((segment) => (
-          <div
-            key={segment.key}
-            className={`check-in-stacked-segment tone-${segment.tone}`}
-            style={{ width: `${segment.percent}%` }}
-            title={`${segment.label}: ${segment.valueLabel} (${segment.percent}%)`}
-          />
-        ))}
-      </div>
-      <ul className="check-in-stacked-legend" aria-hidden="true">
-        {composition.segments.map((segment) => (
-          <li key={segment.key} className={`legend-item tone-${segment.tone}`}>
-            <span className="legend-swatch" />
-            <span className="legend-label">{segment.label}</span>
-            <strong className="legend-value">{segment.valueLabel}</strong>
-            <span className="legend-percent">{segment.percent}%</span>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <SegmentBar
+      segments={composition.segments.map((segment) => ({
+        ...segment,
+        solid: segment.tone === 'coral' && segment.key === 'debt',
+      }))}
+      ariaLabel={ariaLabel}
+      className={className}
+    />
   );
 }
 
@@ -74,20 +53,23 @@ export function MiniBalanceBar({
   tone = 'teal',
 }) {
   if (percent == null) return null;
-  const safePercent = Math.min(100, Math.max(0, percent));
+
+  const statusClass = status === 'Funded' ? 'is-funded' : status === 'Short' ? 'is-short' : '';
 
   return (
     <div className="check-in-mini-bar">
       <div className="check-in-mini-bar-header">
         <span>{label}</span>
         <strong>{valueLabel}</strong>
-        {status && <span className={`check-in-mini-bar-status ${status}`}>{status}</span>}
+        {status && <span className={`check-in-mini-bar-status ${statusClass}`}>{status}</span>}
       </div>
-      <ProgressBar
-        percent={safePercent}
-        tone={tone}
-        ariaLabel={ariaLabel || `${label}: ${valueLabel}, ${safePercent}%`}
+      <NotebookBarFill
+        percent={percent}
+        tone={`tone-${tone}`}
+        label={`${percent}%`}
         className="check-in-mini-bar-track"
+        ariaLabel={ariaLabel || `${label}: ${valueLabel}, ${percent}%`}
+        size="compact"
       />
     </div>
   );
@@ -134,13 +116,16 @@ export function UtilizationBar({ card }) {
         <span>{card.name}</span>
         <strong>{card.balanceLabel}</strong>
       </div>
-      <ProgressBar
+      <NotebookBarCaption
         percent={card.utilizationPercent}
-        label={`${card.utilizationPercent}% of ${card.limitLabel} limit`}
-        tone={card.utilizationPercent >= 80 ? 'coral' : 'blue'}
-        ariaLabel={`${card.name} balance ${card.balanceLabel}, ${card.utilizationPercent}% of ${card.limitLabel} credit limit`}
+        tone={card.utilizationPercent >= 80 ? 'tone-coral' : 'tone-blue'}
+        caption={`${card.utilizationPercent}% of ${card.limitLabel} limit`}
         className="check-in-utilization-track"
+        ariaLabel={`${card.name} balance ${card.balanceLabel}, ${card.utilizationPercent}% of ${card.limitLabel} credit limit`}
+        size="compact"
       />
     </div>
   );
 }
+
+export { BarChart, NotebookBarCaption, NotebookBarFill, SegmentBar };
