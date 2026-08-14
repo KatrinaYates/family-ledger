@@ -1,0 +1,151 @@
+.cfo-advice-page,
+.decisions-page {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  width: 100%;
+  padding: 4px 8px 40px;
+}
+
+.cfo-advice-page .section-block,
+.decisions-page .section-block {
+  max-width: 100%;
+  width: 100%;
+}
+
+.cfo-advice-page .section-heading,
+.decisions-page .section-heading {
+  margin-bottom: 16px;
+}
+
+.cfo-primary-recommendation,
+.cfo-next-recommendations,
+.decisions-current-update,
+.decisions-cfo-outcomes,
+.decisions-context,
+.decisions-open-questions {
+  padding-inline: 2px;
+}
+
+.cfo-recommendation-stack,
+.decisions-commitment-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.cfo-recommendation-card,
+.decisions-commitment-card,
+.decisions-current-update .panel-surface {
+  width: 100%;
+  max-width: 100%;
+  padding: clamp(22px, 2.2vw, 30px) clamp(24px, 2.8vw, 38px);
+}
+
+.cfo-recommendation-card.is-featured {
+  padding-top: clamp(24px, 2.5vw, 34px);
+  padding-bottom: clamp(24px, 2.5vw, 34px);
+}
+
+.cfo-recommendation-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  margin-bottom: 18px;
+}
+
+.cfo-recommendation-title {
+  margin: 0 0 24px;
+  max-width: 1050px;
+  line-height: 1.18;
+}
+
+.cfo-recommendation-detail-grid {
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.cfo-recommendation-detail-grid .sticky-card {
+  max-width: 100%;
+  padding: 18px 20px;
+}
+
+.cfo-recommendation-decisions {
+  margin-top: 4px;
+  padding-top: 20px;
+  border-top: 1px dashed rgba(45, 53, 72, 0.12);
+}
+
+.cfo-recommendation-decisions .section-inline-heading {
+  margin-bottom: 10px;
+}
+
+.cfo-recommendation-card > .panel-note,
+.cfo-recommendation-card > .warning-banner {
+  margin-top: 20px;
+}
+
+.cfo-advice-page > .sticky-card,
+.decisions-page > .sticky-card {
+  width: 100%;
+  max-width: 100%;
+  padding: 18px 22px;
+}
+
+.decisions-section-intro {
+  margin: 0 0 16px;
+}
+
+.decisions-commitment-card .panel-module__label {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.decisions-outcome-title {
+  margin: 0 0 10px;
+  line-height: 1.3;
+}
+
+.decisions-commitment-card .panel-note {
+  margin-bottom: 18px;
+  max-width: 1000px;
+}
+
+.decisions-prompt-grid {
+  gap: 18px;
+  margin-top: 0;
+}
+
+.decisions-prompt-grid .prompt-field {
+  min-width: 0;
+}
+
+.decisions-prompt-grid textarea {
+  min-height: 110px;
+}
+
+.decisions-open-questions .panel-card {
+  width: 100%;
+  max-width: 100%;
+  padding: 22px 26px;
+}
+
+@media (max-width: 1100px) {
+  .cfo-advice-page,
+  .decisions-page {
+    gap: 24px;
+    padding-inline: 0;
+  }
+
+  .cfo-recommendation-card,
+  .decisions-commitment-card,
+  .decisions-current-update .panel-surface {
+    padding: 20px;
+  }
+
+  .cfo-recommendation-detail-grid,
+  .decisions-prompt-grid {
+    grid-template-columns: 1fr;
+  }
+}
