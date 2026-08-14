@@ -1,5 +1,8 @@
 .cfo-advice-page,
-.decisions-page {
+.decisions-page,
+.action-plan-page,
+.celebrate-review-page,
+.close-month-review-page {
   display: flex;
   flex-direction: column;
   gap: 32px;
@@ -8,13 +11,19 @@
 }
 
 .cfo-advice-page .section-block,
-.decisions-page .section-block {
+.decisions-page .section-block,
+.action-plan-page .section-block,
+.celebrate-review-page .section-block,
+.close-month-review-page .section-block {
   max-width: 100%;
   width: 100%;
 }
 
 .cfo-advice-page .section-heading,
-.decisions-page .section-heading {
+.decisions-page .section-heading,
+.action-plan-page .section-heading,
+.celebrate-review-page .section-heading,
+.close-month-review-page .section-heading {
   margin-bottom: 16px;
 }
 
@@ -23,7 +32,14 @@
 .decisions-current-update,
 .decisions-cfo-outcomes,
 .decisions-context,
-.decisions-open-questions {
+.decisions-open-questions,
+.action-plan-commitments,
+.celebrate-progress,
+.celebrate-personal,
+.close-month-review,
+.close-month-readiness,
+.close-month-carry-forward,
+.close-month-finish {
   padding-inline: 2px;
 }
 
@@ -87,7 +103,9 @@
 }
 
 .cfo-advice-page > .sticky-card,
-.decisions-page > .sticky-card {
+.decisions-page > .sticky-card,
+.action-plan-page > .sticky-card,
+.celebrate-review-page > .sticky-card {
   width: 100%;
   max-width: 100%;
   padding: 18px 22px;
@@ -131,21 +149,119 @@
   padding: 22px 26px;
 }
 
+.action-plan-page > .sticky-card {
+  margin: 0;
+}
+
+.action-plan-intro {
+  margin: 0 0 16px;
+  max-width: 980px;
+}
+
+.action-plan-table-surface {
+  width: 100%;
+  max-width: 100%;
+  padding: clamp(22px, 2.2vw, 30px) clamp(24px, 2.8vw, 38px);
+}
+
+.action-plan-table-surface .panel-heading {
+  margin-bottom: 10px;
+}
+
+.action-plan-table-surface .panel-body,
+.action-plan-table-surface .scroll-body {
+  padding-top: 4px;
+}
+
+.celebrate-progress .panel-card,
+.celebrate-personal .panel-card {
+  width: 100%;
+  max-width: 100%;
+}
+
+.celebrate-progress .panel-card {
+  padding: clamp(22px, 2.2vw, 30px) clamp(24px, 2.8vw, 38px);
+}
+
+.celebrate-prompt-grid {
+  gap: 20px;
+}
+
+.celebrate-prompt-grid .prompt-field {
+  min-width: 0;
+}
+
+.celebrate-prompt-grid textarea {
+  min-height: 130px;
+}
+
+.celebrate-review-page > .sticky-card {
+  margin-top: 2px;
+}
+
+.close-month-summary-grid,
+.close-month-carry-grid {
+  gap: 20px;
+  align-items: stretch;
+}
+
+.close-month-summary-grid > *,
+.close-month-carry-grid > * {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.close-month-review-page .panel-card,
+.close-month-review-page .meeting-rundown-panel,
+.close-month-review-page .month-lock-panel {
+  width: 100%;
+  max-width: 100%;
+}
+
+.close-month-review-page .panel-card,
+.close-month-review-page .meeting-rundown-panel {
+  padding: clamp(20px, 2vw, 28px) clamp(22px, 2.5vw, 34px);
+}
+
+.close-month-readiness .close-readiness-list li {
+  padding: 12px 0;
+}
+
+.close-month-carry-grid .notebook-list-editable-group,
+.close-month-carry-grid .carry-forward-actions {
+  margin-top: 10px;
+}
+
+.close-month-finish .month-lock-panel {
+  margin-top: 0;
+}
+
 @media (max-width: 1100px) {
   .cfo-advice-page,
-  .decisions-page {
+  .decisions-page,
+  .action-plan-page,
+  .celebrate-review-page,
+  .close-month-review-page {
     gap: 24px;
     padding-inline: 0;
   }
 
   .cfo-recommendation-card,
   .decisions-commitment-card,
-  .decisions-current-update .panel-surface {
+  .decisions-current-update .panel-surface,
+  .action-plan-table-surface,
+  .celebrate-progress .panel-card,
+  .close-month-review-page .panel-card,
+  .close-month-review-page .meeting-rundown-panel {
     padding: 20px;
   }
 
   .cfo-recommendation-detail-grid,
-  .decisions-prompt-grid {
+  .decisions-prompt-grid,
+  .celebrate-prompt-grid,
+  .close-month-summary-grid,
+  .close-month-carry-grid {
     grid-template-columns: 1fr;
   }
 }
