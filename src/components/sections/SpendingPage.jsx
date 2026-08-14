@@ -27,12 +27,11 @@ export function SpendingPage({ data, month, section }) {
           <SpendingChangeSummary whatChanged={spending.whatChanged} />
         </CardGrid>
 
-        <CardGrid layout="mainSidebar" className="spending-secondary-row">
-          <SpendingWatch spendingWatch={spending.spendingWatch} monthId={month.id} />
-          <div className="spending-side-stack">
-            <NotableSpending notableSpending={spending.notableSpending} monthId={month.id} />
-            <SpendingTakeaway monthId={month.id} />
-          </div>
+        <SpendingWatch spendingWatch={spending.spendingWatch} monthId={month.id} />
+
+        <CardGrid columns={2} className="spending-secondary-row">
+          <NotableSpending notableSpending={spending.notableSpending} monthId={month.id} />
+          <SpendingTakeaway monthId={month.id} />
         </CardGrid>
       </div>
     </SectionPageShell>

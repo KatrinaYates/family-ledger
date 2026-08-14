@@ -6,7 +6,7 @@ function monthLabel(meta) {
 }
 
 /**
- * Decisions section — CFO outcomes + parking lot, not a second questionnaire.
+ * Decisions section — recommendations become household commitments here.
  * @param {object} sourceData
  * @param {object} enrichedCfo
  * @param {object | undefined} meta
@@ -20,10 +20,11 @@ export function enrichDecisions(sourceData, enrichedCfo, meta) {
     number: priority.number ?? index + 1,
     title: priority.title ?? `Priority ${index + 1}`,
     why: priority.why ?? '',
+    options: priority.decisions ?? [],
   }));
 
   return {
-    subtitle: `What we agreed on during the ${label} meeting — consolidated from earlier sections.`,
+    subtitle: `What we actually agree to do after reviewing ${label}.`,
     cfoOutcomes,
     questions: meeting.questions ?? [],
     insight: meeting.insight?.trim() || '',

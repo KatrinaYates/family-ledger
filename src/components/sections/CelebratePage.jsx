@@ -3,11 +3,18 @@ import {
   DetailRows,
   PanelCard,
   PromptField,
+  StickyCard,
 } from '../content/NotebookPrimitives';
-import { DecorativeStickyNote } from '../notebook';
+import { CardGrid, SectionBlock } from '../notebook';
 import { useMeetingNotes } from '../../hooks/useMeetingField';
 import { sectionFieldKey } from '../../utils/meetingKeys';
 import { SectionPageShell } from './SectionPageShell';
+
+function hasMeaningfulValue(value) {
+  if (value == null) return false;
+  const text = String(value).trim();
+  return Boolean(text && text !== '—' && text !== '-');
+}
 
 export function CelebratePage({ data, month, section }) {
   const { celebrate } = data;
@@ -20,31 +27,42 @@ export function CelebratePage({ data, month, section }) {
     { label: 'Best habit', value: celebrate.bestHabit },
     { label: 'Money saved', value: celebrate.moneySaved },
     { label: 'Debt reduced', value: celebrate.debtReduced },
-  ];
+  ].filter((row) => hasMeaningfulValue(row.value));
 
   return (
     <SectionPageShell sectionId="celebrate" section={section} month={month} data={data} subtitle={celebrate.page?.subtitle}>
-      <div className="snapshot-grid-main">
-        <PanelCard title="Progress to notice">
-          <DetailRows rows={winRows} />
-        </PanelCard>
-        <aside className="snapshot-side">
-          <DecorativeStickyNote tone="lav" title="Financial motto" fill>
-            {celebrate.page?.motto}
-          </DecorativeStickyNote>
-          <PromptField
-            label="Family reward"
-            value={familyRewardField.value}
-            onChange={familyRewardField.setValue}
-            placeholder="How should we celebrate this month?"
-          />
-          <PromptField
-            label="Gratitude"
-            value={gratitudeField.value}
-            onChange={gratitudeField.setValue}
-            placeholder="What are we thankful for?"
-          />
-        </aside>
+      <div
+        className="celebrate-review-page"
+        style={{ '--content-block-max-cqw': '100cqw', width: '100%', maxWidth: '100%' }}
+      >
+        <SectionBlock label="Progress Worth Noticing" className="celebrate-progress">
+          <PanelCard title="What went well">
+            <DetailRows rows={winRows} />
+          </PanelCard>
+        </SectionBlock>
+
+        <SectionBlock label="Make It Personal" className="celebrate-personal">
+          <CardGrid columns={2} className="celebrate-prompt-grid">
+            <PromptField
+              label="How should we celebrate?"
+              value={familyRewardField.value}
+              onChange={familyRewardField.setValue}
+              placeholder="A small reward, family activity, or something fun..."
+            />
+            <PromptField
+              label="What are we grateful for?"
+              value={gratitudeField.value}
+              onChange={gratitudeField.setValue}
+              placeholder="A person, habit, opportunity, or moment from this month..."
+            />
+          </CardGrid>
+        </SectionBlock>
+
+        {celebrate.page?.motto && (
+          <StickyCard label="Carry this with us" tone="family" fill prose>
+            {celebrate.page.motto}
+          </StickyCard>
+        )}
       </div>
     </SectionPageShell>
   );
