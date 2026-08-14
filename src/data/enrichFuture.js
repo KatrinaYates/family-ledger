@@ -163,9 +163,35 @@ function buildGoals(sourceData) {
   return goals;
 }
 
+/**
+ * Household strategy belongs beside goal metrics, not inside them.
+ * Historical source data may store these priorities as plain strings.
+ * @param {object} future
+ */
+function buildDirection(future) {
+  const raw = Array.isArray(future.direction) ? future.direction : (future.goals ?? []);
+
+  return raw
+    .map((item, index) => {
+      if (typeof item === 'string') {
+        const text = item.trim();
+        return text ? { id: `direction-${index}`, text } : null;
+      }
+
+      if (!item || typeof item !== 'object') return null;
+      const text = item.directionText?.trim()
+        || item.priority?.trim()
+        || item.text?.trim()
+        || '';
+      if (!text) return null;
+      return { id: item.id ?? `direction-${index}`, text };
+    })
+    .filter(Boolean);
+}
+
 /** @param {object} future */
 function buildComingUp(future) {
-  const upcoming = future.upcoming ?? [];
+  const upcoming = future.upcoming ?? future.upcomingExpenses ?? [];
   return upcoming.filter((item) => item && typeof item === 'object' && item.title?.trim());
 }
 
@@ -206,6 +232,7 @@ export function enrichFuture(sourceData, meta) {
   const future = sourceData.future ?? {};
   const futureProgress = buildFutureProgress(sourceData);
   const goals = buildGoals(sourceData);
+  const direction = buildDirection(future);
   const comingUp = buildComingUp(future);
   const summary = buildSummary(sourceData, futureProgress);
   const discussionPrompts = buildDiscussionPrompts(sourceData, goals);
@@ -215,10 +242,12 @@ export function enrichFuture(sourceData, meta) {
     futureProgress,
     summary,
     goals,
+    direction,
     comingUp,
     discussionPrompts,
-    atAGlanceLabel: `Future at a Glance`,
+    atAGlanceLabel: 'Future at a Glance',
     goalsLabel: 'Our Goals',
+    directionLabel: 'Where We’re Headed',
     comingUpLabel: 'Coming Up',
     talkTogetherLabel: 'Talk About Together',
   };
