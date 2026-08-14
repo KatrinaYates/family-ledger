@@ -14,6 +14,7 @@ import {
   sectionFieldKey,
 } from '../../utils/meetingKeys';
 import { SectionPageShell } from './SectionPageShell';
+import './reviewPages.css';
 
 function MeetingUpdate({ update }) {
   if (!update?.metrics?.length) return null;
