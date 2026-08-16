@@ -11,6 +11,7 @@ import './styles.css';
 import './usability.css';
 import './auth.css';
 import './household.css';
+import './household-members.css';
 
 document.documentElement.style.setProperty('--paper-grain', `url("${paperGrain}")`);
 document.documentElement.style.setProperty('--fabric-weave', `url("${fabricWeave}")`);
