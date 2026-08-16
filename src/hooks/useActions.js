@@ -84,14 +84,19 @@ export function useActions() {
 
   const updateAction = useCallback(
     async (id, patch) => {
+      // Keep controlled inputs responsive immediately. Waiting for the repository
+      // round-trip here causes React to re-render the old value while the user is typing.
+      setActions((previous) => previous.map((action) => (
+        action.id === id ? { ...action, ...patch } : action
+      )));
       setSaving(true);
       setSaveError(null);
       try {
         await ledgerRepository.updateAction(id, patch);
         dispatchActionsUpdated();
-        await refresh();
       } catch (err) {
         setSaveError(getErrorMessage(err));
+        await refresh();
       } finally {
         setSaving(false);
       }
