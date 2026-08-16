@@ -14,6 +14,7 @@ import { DebtPositionCard } from './DebtPositionCard';
 import { ProtectedCashCard } from './ProtectedCashCard';
 import { RecentActivityCard } from './RecentActivityCard';
 import { RetirementNetWorthCard } from './RetirementNetWorthCard';
+import './checkin-refresh.css';
 
 const CHATGPT_URL = 'https://chatgpt.com/';
 const REFRESH_CHECK_IN_PROMPT = `Refresh my Family Ledger Financial Check-In.
