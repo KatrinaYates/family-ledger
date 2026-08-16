@@ -1,11 +1,17 @@
 import React from 'react';
 import {
+  NOTEBOOK_SYMBOLS,
   QuestionList,
   StickyCard,
   ToneChip,
   WarningBanner,
 } from '../content/NotebookPrimitives';
-import { CardGrid, PanelSurface, SectionBlock } from '../notebook';
+import {
+  CardGrid,
+  DecorativeStickyNote,
+  PanelSurface,
+  SectionBlock,
+} from '../notebook';
 import { SectionPageShell } from './SectionPageShell';
 import './reviewPages.css';
 
@@ -20,7 +26,10 @@ function RecommendationCard({ priority, featured = false }) {
   return (
     <PanelSurface className={`cfo-recommendation-card${featured ? ' is-featured' : ''}`}>
       <div className="cfo-recommendation-heading">
-        <span className="panel-module__label">{priority.priorityLabel}</span>
+        <span className="panel-module__label">
+          <span className="notebook-symbol" aria-hidden="true">{NOTEBOOK_SYMBOLS.target}</span>{' '}
+          {priority.priorityLabel}
+        </span>
         {priority.difficulty && (
           <ToneChip tone={difficultyTone(priority.difficulty)}>{priority.difficulty} effort</ToneChip>
         )}
@@ -39,7 +48,10 @@ function RecommendationCard({ priority, featured = false }) {
 
       {priority.decisions?.length > 0 && (
         <div className="cfo-recommendation-decisions">
-          <h3 className="section-inline-heading">What this asks us to decide</h3>
+          <h3 className="section-inline-heading">
+            <span className="notebook-symbol" aria-hidden="true">{NOTEBOOK_SYMBOLS.talk}</span>{' '}
+            What this asks us to decide
+          </h3>
           <QuestionList items={priority.decisions} />
         </div>
       )}
@@ -75,7 +87,14 @@ export function CfoPage({ data, month, section }) {
       >
         {first && (
           <SectionBlock label="Start Here" className="cfo-primary-recommendation">
-            <RecommendationCard priority={first} featured />
+            <CardGrid layout="mainSidebar">
+              <RecommendationCard priority={first} featured />
+              <aside className="snapshot-side">
+                <DecorativeStickyNote tone="lav" title="CFO lens" fill>
+                  Start with the recommendation that would create the most breathing room. We only need to decide what fits our family — not follow every suggestion.
+                </DecorativeStickyNote>
+              </aside>
+            </CardGrid>
           </SectionBlock>
         )}
 
