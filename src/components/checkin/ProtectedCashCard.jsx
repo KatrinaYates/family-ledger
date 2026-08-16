@@ -10,7 +10,7 @@ function chartAmount(value) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function kidsPieItems(accounts = []) {
+function buildKidsPieItems(accounts = []) {
   const tones = ['lavender', 'blue', 'teal', 'gold'];
   return accounts
     .map((account, index) => ({
@@ -35,7 +35,7 @@ export function ProtectedCashCard({ kidsSavings, emergencyFund }) {
   if (!hasKids && !hasEmergency) return null;
 
   const kidAccounts = kidsSavings?.accounts ?? [];
-  const kidPieItems = kidsPieItems(kidAccounts);
+  const kidPieItems = buildKidsPieItems(kidAccounts);
   const kidTargets = kidAccounts.filter((account) => account.targetLabel);
 
   return (
