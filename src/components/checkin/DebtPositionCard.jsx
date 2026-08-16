@@ -1,6 +1,7 @@
 import React from 'react';
 import { DashedList, PanelCard } from '../content/NotebookPrimitives';
-import { StackedValueBar, UtilizationBar } from './CheckInVisuals';
+import { PieChart } from '../notebook';
+import { UtilizationBar } from './CheckInVisuals';
 
 export function DebtPositionCard({ debt }) {
   if (!debt) return null;
@@ -11,6 +12,12 @@ export function DebtPositionCard({ debt }) {
   const cardsWithUtilization = (debt.creditCards ?? []).filter(
     (card) => card.utilizationPercent != null,
   );
+  const pieItems = (debt.composition?.segments ?? []).map((segment) => ({
+    label: segment.label,
+    value: segment.value,
+    valueLabel: segment.valueLabel,
+    tone: segment.tone,
+  }));
 
   if (!hasLoans && !hasCards && !hasTotal) return null;
 
@@ -23,10 +30,11 @@ export function DebtPositionCard({ debt }) {
     >
       <p className="check-in-card-lead">Current connected debt — factual balances only, no recommendations.</p>
 
-      {debt.composition && (
-        <StackedValueBar
-          composition={debt.composition}
-          ariaLabel={`Debt composition: credit cards ${debt.creditCardsTotalLabel || 'unknown'}, loans ${debt.loansTotalLabel || 'unknown'}`}
+      {pieItems.length > 0 && (
+        <PieChart
+          items={pieItems}
+          centerLabel="Total debt"
+          centerValue={debt.totalLabel}
           className="check-in-debt-composition"
         />
       )}
