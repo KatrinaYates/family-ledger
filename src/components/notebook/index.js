@@ -17,6 +17,11 @@ export {
 } from './KitComponents.jsx';
 
 export {
+  PieChart,
+  TrendingGraph,
+} from './ChartComponents.jsx';
+
+export {
   EditableChecklist,
   EditableBulletList,
   EditableDecisionList,
@@ -51,4 +56,4 @@ export {
   NotebookButton,
 } from '../content/NotebookPrimitives';
 
-export { NotebookKitPage } from './NotebookKitPage.jsx';
+export { NotebookKitPageWithCharts as NotebookKitPage } from './NotebookKitPageWithCharts.jsx';
