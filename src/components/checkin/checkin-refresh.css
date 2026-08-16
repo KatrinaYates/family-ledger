@@ -14,8 +14,14 @@
   margin-top: 3px !important;
 }
 
-.check-in-refresh-button {
+.check-in-refresh-action {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
   flex-shrink: 0;
+}
+
+.check-in-refresh-button {
   min-height: 42px;
   padding: 9px 16px;
   border: 1px solid rgba(22, 124, 121, 0.28);
@@ -40,10 +46,24 @@
   outline-offset: 2px;
 }
 
+.check-in-refresh-feedback {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--deep, #167c79);
+}
+
+.check-in-refresh-feedback--error {
+  color: #9b2f2f;
+}
+
 @media (max-width: 640px) {
   .check-in-meta {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .check-in-refresh-action {
+    justify-items: stretch;
   }
 
   .check-in-refresh-button {
