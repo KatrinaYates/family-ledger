@@ -284,7 +284,7 @@ export function InsideCover({ month, insideCover }) {
                             value={field.value}
                             onChange={(event) => field.setValue(event.target.value)}
                             placeholder={placeholder}
-                            disabled={field.saving}
+                            aria-busy={field.saving || undefined}
                         />
                     </label>
                     );
