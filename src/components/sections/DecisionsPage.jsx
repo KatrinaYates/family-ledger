@@ -1,11 +1,18 @@
 import React from 'react';
 import {
+  NOTEBOOK_SYMBOLS,
   PanelCard,
   PromptField,
   QuestionList,
   StickyCard,
+  TopicBand,
 } from '../content/NotebookPrimitives';
-import { CardGrid, PanelSurface, SectionBlock } from '../notebook';
+import {
+  CardGrid,
+  DecorativeStickyNote,
+  PanelSurface,
+  SectionBlock,
+} from '../notebook';
 import { EditableDecisionList } from '../meeting/MeetingFields';
 import { useMeetingNotes } from '../../hooks/useMeetingField';
 import {
@@ -45,7 +52,10 @@ function MeetingUpdate({ update }) {
 function DecisionCard({ monthId, outcome }) {
   return (
     <PanelSurface className="decisions-commitment-card">
-      <span className="panel-module__label">Priority {outcome.number}</span>
+      <span className="panel-module__label">
+        <span className="notebook-symbol" aria-hidden="true">{NOTEBOOK_SYMBOLS.target}</span>{' '}
+        Priority {outcome.number}
+      </span>
       <h3 className="decisions-outcome-title">{outcome.title}</h3>
       {outcome.why && <p className="panel-note">{outcome.why}</p>}
       <EditableDecisionList
@@ -82,14 +92,18 @@ export function DecisionsPage({ data, month, section }) {
 
         {decisions.cfoOutcomes?.length > 0 && (
           <SectionBlock label="What Are We Deciding?" className="decisions-cfo-outcomes">
-            <p className="panel-note decisions-section-intro">
-              The CFO page gave us recommendations. This is where we turn them into our own decisions.
-            </p>
-            <div className="decisions-commitment-stack">
-              {decisions.cfoOutcomes.map((outcome) => (
-                <DecisionCard key={outcome.number} monthId={month.id} outcome={outcome} />
-              ))}
-            </div>
+            <CardGrid layout="mainSidebar">
+              <div className="decisions-commitment-stack">
+                {decisions.cfoOutcomes.map((outcome) => (
+                  <DecisionCard key={outcome.number} monthId={month.id} outcome={outcome} />
+                ))}
+              </div>
+              <aside className="snapshot-side">
+                <DecorativeStickyNote tone="pink" title="Make it ours" fill>
+                  The recommendation is only the starting point. Write down the decision in the words we would actually use with each other.
+                </DecorativeStickyNote>
+              </aside>
+            </CardGrid>
           </SectionBlock>
         )}
 
@@ -115,13 +129,18 @@ export function DecisionsPage({ data, month, section }) {
 
         {decisions.questions?.length > 0 && (
           <SectionBlock label="Questions Still Open" className="decisions-open-questions">
-            <PanelCard>
+            <TopicBand
+              tone="talk"
+              label="Keep talking"
+              title="Open questions"
+              description="Not everything needs an answer tonight. Capture what still deserves a conversation."
+            >
               <QuestionList
                 editable
                 storageKey={sectionFieldKey(month.id, 'decisions', 'questions')}
                 items={decisions.questions}
               />
-            </PanelCard>
+            </TopicBand>
           </SectionBlock>
         )}
 
