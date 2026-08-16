@@ -4,9 +4,10 @@ export const ACTION_STATUSES = ['not_started', 'in_progress', 'done', 'deferred'
 
 export const DEFAULT_ACTION_OWNER_OPTIONS = [
   { value: '', label: 'Unassigned' },
-  { value: 'Person A', label: 'Person A' },
-  { value: 'Person B', label: 'Person B' },
-  { value: 'Both', label: 'Both' },
+  { value: 'Katrina', label: 'Katrina' },
+  { value: 'Tyler', label: 'Tyler' },
+  { value: 'Clay', label: 'Clay' },
+  { value: 'Cole', label: 'Cole' },
 ];
 
 export const ACTION_STATUS_LABELS = {
