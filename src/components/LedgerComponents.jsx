@@ -333,10 +333,9 @@ export function MonthChapterPage({ month, chapterMeta }) {
             <div className="month-band" />
             <div className="month-content">
                 <p>CHAPTER {month.number}</p>
-                <h1 className="notebook-page-title" tabIndex="-1">
-                    {month.label}
-                    <br />
-                    {month.year ?? 2026}
+                <h1 className="notebook-page-title chapter-month-title" tabIndex="-1">
+                    <span>{month.label}</span>
+                    <span>{month.year ?? 2026}</span>
                 </h1>
                 <div className="chapter-sub">A fresh monthly reset for our money, goals, decisions, and future.</div>
                 <div className="chapter-meta">
