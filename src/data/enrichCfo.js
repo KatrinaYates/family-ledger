@@ -9,10 +9,12 @@ export function enrichCfo(cfo = {}, meta) {
 
   const priorities = rawPriorities.map((priority, index) => {
     const number = priority.number ?? index + 1;
+    const priorityLabel = priority.priorityLabel?.trim() || `Priority ${number}`;
     return {
       ...priority,
       number,
-      priorityLabel: priority.priorityLabel?.trim() || `Priority ${number}`,
+      priorityLabel,
+      tier: priority.tier ?? priorityLabel,
       decisions: priority.decisions ?? [],
     };
   });
