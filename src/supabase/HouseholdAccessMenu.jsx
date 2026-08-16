@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useHousehold } from '../context/HouseholdContext.jsx';
 import { ledgerRepository } from '../repository';
 import { getErrorMessage } from '../utils/getErrorMessage.js';
-import { supabase } from './client.js';
 
 function ChevronIcon({ open }) {
     return (
@@ -25,7 +24,6 @@ export function HouseholdAccessMenu() {
     const [members, setMembers] = useState([]);
     const [membersLoading, setMembersLoading] = useState(false);
     const [membersError, setMembersError] = useState('');
-    const [removingMemberId, setRemovingMemberId] = useState('');
     const menuRef = useRef(null);
     const copiedTimerRef = useRef(null);
 
@@ -106,30 +104,6 @@ export function HouseholdAccessMenu() {
         copiedTimerRef.current = window.setTimeout(() => setCopied(false), 2000);
     };
 
-    const handleRemoveMember = async (member) => {
-        const memberLabel = member.displayName || member.email || 'this household member';
-        const confirmed = window.confirm(
-            `Remove ${memberLabel} from ${activeHousehold.name}? They will immediately lose access to this ledger.`,
-        );
-        if (!confirmed) return;
-
-        setRemovingMemberId(member.userId);
-        setMembersError('');
-
-        try {
-            const { error: removeError } = await supabase.rpc('remove_household_member', {
-                target_household_id: activeHousehold.id,
-                target_user_id: member.userId,
-            });
-            if (removeError) throw removeError;
-            setMembers((current) => current.filter((item) => item.userId !== member.userId));
-        } catch (removeError) {
-            setMembersError(getErrorMessage(removeError));
-        } finally {
-            setRemovingMemberId('');
-        }
-    };
-
     return (
         <>
             {open && (
@@ -167,30 +141,17 @@ export function HouseholdAccessMenu() {
                             {!membersLoading && membersError && (
                                 <p className="household-error" role="alert">{membersError}</p>
                             )}
-                            {!membersLoading && members.length > 0 && (
+                            {!membersLoading && !membersError && members.length > 0 && (
                                 <ul className="household-members-list" role="list">
                                     {members.map((member) => (
                                         <li key={member.userId} className="household-member-item">
-                                            <div className="household-member-details">
-                                                <span className="household-member-name">
-                                                    {member.displayName}
-                                                    {member.isSelf && (
-                                                        <span className="household-member-you">You</span>
-                                                    )}
-                                                </span>
-                                                <span className="household-member-email">{member.email}</span>
-                                            </div>
-                                            {!member.isSelf && (
-                                                <button
-                                                    type="button"
-                                                    className="household-member-remove"
-                                                    onClick={() => handleRemoveMember(member)}
-                                                    disabled={Boolean(removingMemberId)}
-                                                    aria-label={`Remove ${member.displayName || member.email} from household`}
-                                                >
-                                                    {removingMemberId === member.userId ? 'Removing…' : 'Remove'}
-                                                </button>
-                                            )}
+                                            <span className="household-member-name">
+                                                {member.displayName}
+                                                {member.isSelf && (
+                                                    <span className="household-member-you">You</span>
+                                                )}
+                                            </span>
+                                            <span className="household-member-email">{member.email}</span>
                                         </li>
                                     ))}
                                 </ul>
