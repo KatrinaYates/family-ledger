@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useMeetingNotes } from '../hooks/useMeetingField';
 import { ledgerFeedbackKey } from '../utils/meetingKeys';
+import './ledger-feedback-chapter.css';
 
 const FEEDBACK_FIELDS = [
   { id: 'helpful', label: 'What was helpful?', placeholder: 'Sections, data, or prompts that worked...' },
@@ -8,6 +9,8 @@ const FEEDBACK_FIELDS = [
   { id: 'missing', label: 'What was missing?', placeholder: 'Data or topics to add...' },
   { id: 'ideas', label: 'Ideas for the next ledger', placeholder: 'Layout, sections, or data you would change...' },
 ];
+
+export const LEDGER_FEEDBACK_OPEN_EVENT = 'family-ledger:open-feedback';
 
 function FeedbackField({ monthId, field }) {
   const { value, setValue, isLocked, saveError } = useMeetingNotes(
@@ -32,24 +35,37 @@ function FeedbackField({ monthId, field }) {
 
 export function LedgerFeedbackPanel({ monthId, monthLabel, open, onClose }) {
   const dialogRef = useRef(null);
+  const [eventOpen, setEventOpen] = useState(false);
+  const shouldOpen = Boolean(open || eventOpen);
+
+  useEffect(() => {
+    const handleOpen = () => setEventOpen(true);
+    window.addEventListener(LEDGER_FEEDBACK_OPEN_EVENT, handleOpen);
+    return () => window.removeEventListener(LEDGER_FEEDBACK_OPEN_EVENT, handleOpen);
+  }, []);
 
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    if (open && !dialog.open) {
+    if (shouldOpen && !dialog.open) {
       dialog.showModal();
-    } else if (!open && dialog.open) {
+    } else if (!shouldOpen && dialog.open) {
       dialog.close();
     }
-  }, [open]);
+  }, [shouldOpen]);
 
   if (!monthId) return null;
+
+  const handleClose = () => {
+    setEventOpen(false);
+    onClose?.();
+  };
 
   return (
     <dialog
       ref={dialogRef}
       className="ledger-feedback-dialog"
-      onClose={onClose}
+      onClose={handleClose}
       aria-labelledby="ledger-feedback-title"
     >
       <form method="dialog" className="ledger-feedback-form">
@@ -72,14 +88,21 @@ export function LedgerFeedbackPanel({ monthId, monthLabel, open, onClose }) {
   );
 }
 
-export function LedgerFeedbackButton({ onClick, className = '' }) {
+export function LedgerFeedbackButton({ onClick, className = '', variant = 'hidden' }) {
+  if (variant !== 'chapter') return null;
+
+  const handleClick = onClick ?? (() => {
+    window.dispatchEvent(new CustomEvent(LEDGER_FEEDBACK_OPEN_EVENT));
+  });
+
   return (
     <button
       type="button"
-      className={`ledger-feedback-btn${className ? ` ${className}` : ''}`}
-      onClick={onClick}
+      className={`ledger-feedback-btn chapter-feedback-chip${className ? ` ${className}` : ''}`}
+      onClick={handleClick}
     >
-      💬 Ledger feedback
+      <span className="chapter-feedback-symbol" aria-hidden="true">✎</span>
+      Ledger feedback
     </button>
   );
 }
