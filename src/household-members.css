@@ -1,7 +1,22 @@
 .household-member-item {
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 10px;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 4px;
+}
+
+.household-member-name {
+  min-width: 0;
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+
+.household-member-you {
+  flex: 0 0 auto;
+}
+
+.household-member-email {
+  min-width: 0;
+  width: 100%;
 }
 
 .household-member-details {
