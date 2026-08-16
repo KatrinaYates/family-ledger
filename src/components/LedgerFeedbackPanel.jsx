@@ -96,13 +96,8 @@ export function LedgerFeedbackButton({ onClick, className = '', variant = 'hidde
   });
 
   return (
-    <button
-      type="button"
-      className={`ledger-feedback-btn chapter-feedback-chip${className ? ` ${className}` : ''}`}
-      onClick={handleClick}
-    >
-      <span className="chapter-feedback-symbol" aria-hidden="true">✎</span>
-      Ledger feedback
-    </button>
+      <button type="button" className={`ledger-feedback-btn chapter-feedback-chip${className ? ` ${className}` : ""}`} onClick={handleClick}>
+          ✎ Ledger feedback
+      </button>
   );
 }
