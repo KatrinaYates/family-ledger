@@ -1,28 +1,25 @@
 import React from 'react';
 import { PanelCard } from '../content/NotebookPrimitives';
-import { MiniBalanceBar, ProgressBar } from './CheckInVisuals';
+import { PieChart } from '../notebook';
+import { ProgressBar } from './CheckInVisuals';
 
-function KidsAccountVisual({ account }) {
-  const barLabel = account.barMode === 'target'
-    ? `${account.name} toward target`
-    : `${account.name} share of kids' savings`;
+function chartAmount(value) {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  if (value == null || value === '') return null;
+  const parsed = Number(String(value).replace(/[^0-9.-]/g, ''));
+  return Number.isFinite(parsed) ? parsed : null;
+}
 
-  return (
-    <div className="check-in-kids-account">
-      <MiniBalanceBar
-        label={account.name}
-        valueLabel={account.balanceLabel}
-        percent={account.progressPercent}
-        tone={account.barTone}
-        ariaLabel={`${barLabel}: ${account.balanceLabel}${account.targetLabel ? ` of ${account.targetLabel}` : ''}`}
-      />
-      {account.targetLabel && (
-        <p className="check-in-kids-target-note">
-          Target: <strong>{account.targetLabel}</strong>
-        </p>
-      )}
-    </div>
-  );
+function kidsPieItems(accounts = []) {
+  const tones = ['lavender', 'blue', 'teal', 'gold'];
+  return accounts
+    .map((account, index) => ({
+      label: account.name,
+      value: chartAmount(account.balance),
+      valueLabel: account.balanceLabel,
+      tone: tones[index % tones.length],
+    }))
+    .filter((item) => item.value != null && item.value > 0);
 }
 
 export function ProtectedCashCard({ kidsSavings, emergencyFund }) {
@@ -36,6 +33,10 @@ export function ProtectedCashCard({ kidsSavings, emergencyFund }) {
     || emergencyFund?.gapLabel;
 
   if (!hasKids && !hasEmergency) return null;
+
+  const kidAccounts = kidsSavings?.accounts ?? [];
+  const kidPieItems = kidsPieItems(kidAccounts);
+  const kidTargets = kidAccounts.filter((account) => account.targetLabel);
 
   return (
     <PanelCard
@@ -52,11 +53,25 @@ export function ProtectedCashCard({ kidsSavings, emergencyFund }) {
             )}
           </div>
           <p className="check-in-card-lead">Protected kids&apos; money — not part of available household cash.</p>
-          <div className="check-in-kids-list">
-            {(kidsSavings.accounts ?? []).map((account) => (
-              <KidsAccountVisual key={account.name} account={account} />
-            ))}
-          </div>
+
+          {kidPieItems.length > 0 && (
+            <PieChart
+              items={kidPieItems}
+              centerLabel="Kids savings"
+              centerValue={kidsSavings.totalLabel}
+              className="check-in-kids-pie"
+            />
+          )}
+
+          {kidTargets.length > 0 && (
+            <div className="check-in-kids-list">
+              {kidTargets.map((account) => (
+                <p key={account.name} className="check-in-kids-target-note">
+                  {account.name} target: <strong>{account.targetLabel}</strong>
+                </p>
+              ))}
+            </div>
+          )}
         </section>
       )}
 
