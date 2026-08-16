@@ -1,6 +1,6 @@
 import React from 'react';
 import { AllocationTable, PanelCard } from '../content/NotebookPrimitives';
-import { StackedValueBar } from './CheckInVisuals';
+import { PieChart } from '../notebook';
 
 export function CashPositionCard({ cash }) {
   if (!cash) return null;
@@ -8,6 +8,12 @@ export function CashPositionCard({ cash }) {
   const hasAccounts = (cash.accounts ?? []).length > 0;
   const hasTotals =
     cash.availableTotalLabel || cash.protectedTotalLabel || cash.connectedTotalLabel;
+  const pieItems = (cash.composition?.segments ?? []).map((segment) => ({
+    label: segment.label,
+    value: segment.value,
+    valueLabel: segment.valueLabel,
+    tone: segment.tone,
+  }));
 
   if (!hasAccounts && !hasTotals) return null;
 
@@ -18,10 +24,11 @@ export function CashPositionCard({ cash }) {
       scrollLabel="Cash accounts by classification"
       className="check-in-card check-in-cash-card"
     >
-      {cash.composition && (
-        <StackedValueBar
-          composition={cash.composition}
-          ariaLabel={`Connected cash composition: available ${cash.availableTotalLabel || 'unknown'}, protected ${cash.protectedTotalLabel || 'unknown'}`}
+      {pieItems.length > 0 && (
+        <PieChart
+          items={pieItems}
+          centerLabel="Connected cash"
+          centerValue={cash.connectedTotalLabel}
           className="check-in-cash-composition"
         />
       )}
