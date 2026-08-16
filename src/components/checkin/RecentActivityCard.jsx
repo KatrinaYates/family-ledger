@@ -1,6 +1,15 @@
 import React from 'react';
 import { PanelCard } from '../content/NotebookPrimitives';
-import { MiniBarChart } from './CheckInVisuals';
+import { TrendingGraph } from '../notebook';
+
+function formatCurrency(value) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+}
 
 export function RecentActivityCard({ recentActivity }) {
   if (!recentActivity) return null;
@@ -8,9 +17,14 @@ export function RecentActivityCard({ recentActivity }) {
   const hasSpend = recentActivity.sevenDaySpendLabel;
   const items = recentActivity.items ?? [];
   const hasItems = items.length > 0;
-  const hasDailyBars = (recentActivity.dailyBars ?? []).length > 0;
+  const trendPoints = (recentActivity.dailyBars ?? []).map((bar) => ({
+    label: bar.label,
+    value: bar.value,
+    valueLabel: bar.valueLabel,
+  }));
+  const hasTrend = trendPoints.length > 0;
 
-  if (!hasSpend && !hasItems && !hasDailyBars) return null;
+  if (!hasSpend && !hasItems && !hasTrend) return null;
 
   return (
     <PanelCard
@@ -25,10 +39,12 @@ export function RecentActivityCard({ recentActivity }) {
         </p>
       )}
 
-      {hasDailyBars && (
-        <MiniBarChart
-          bars={recentActivity.dailyBars}
-          ariaLabel={`Seven-day spending by day, total ${recentActivity.sevenDaySpendLabel || 'unknown'}`}
+      {hasTrend && (
+        <TrendingGraph
+          points={trendPoints}
+          title="Daily spending"
+          valueFormatter={formatCurrency}
+          tone="coral"
           className="check-in-activity-chart"
         />
       )}
