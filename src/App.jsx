@@ -6,7 +6,7 @@ import { MonthProvider } from './context/MonthContext';
 import { useLedgerMonths } from './hooks/useLedgerMonths';
 import { useLedgerMonth } from './hooks/useLedgerMonth';
 import { useWorkflow } from './hooks/useWorkflow';
-import { buildNotebookPages } from './utils/notebookPages';
+import { buildLinearNotebookPages, buildNotebookPages } from './utils/notebookPages';
 import { normalizePageId } from './utils/normalizePageId';
 import { createBlankLedgerMonth } from './repository/createBlankLedgerMonth.js';
 import { dispatchLedgerMonthsUpdated } from './utils/meetingEvents';
@@ -153,6 +153,10 @@ export default function App() {
     () => buildNotebookPages(navigableMonthIds, MONTH_SECTIONS),
     [navigableMonthIds],
   );
+  const linearNotebookPages = useMemo(
+    () => buildLinearNotebookPages(navigableMonthIds, MONTH_SECTIONS),
+    [navigableMonthIds],
+  );
 
   useBootLoading('months', monthsLoading);
 
@@ -191,8 +195,8 @@ export default function App() {
     return () => { cancelled = true; };
   }, [activeMonth]);
 
-  const pageIndex = notebookPages.findIndex((candidate) => candidate.id === pageId);
-  const page = notebookPages[pageIndex] || notebookPages[0];
+  const page = notebookPages.find((candidate) => candidate.id === pageId) || notebookPages[0];
+  const linearPageIndex = linearNotebookPages.findIndex((candidate) => candidate.id === pageId);
   const resolvedPage = page ?? COVER_PAGE;
   const displayMonth = useMemo(
     () => getMonthCatalogEntry(resolvedPage.monthId || activeMonth) || months[0],
@@ -270,14 +274,14 @@ export default function App() {
   }, [notebookPages]);
 
   const goPrevious = useCallback(() => {
-    if (pageIndex <= 0) return;
-    navigateTo(notebookPages[pageIndex - 1].id);
-  }, [navigateTo, pageIndex, notebookPages]);
+    if (linearPageIndex <= 0) return;
+    navigateTo(linearNotebookPages[linearPageIndex - 1].id);
+  }, [navigateTo, linearPageIndex, linearNotebookPages]);
 
   const goNext = useCallback(() => {
-    if (pageIndex < 0 || pageIndex >= notebookPages.length - 1) return;
-    navigateTo(notebookPages[pageIndex + 1].id);
-  }, [navigateTo, pageIndex, notebookPages]);
+    if (linearPageIndex < 0 || linearPageIndex >= linearNotebookPages.length - 1) return;
+    navigateTo(linearNotebookPages[linearPageIndex + 1].id);
+  }, [navigateTo, linearPageIndex, linearNotebookPages]);
 
   const navigateToMonth = useCallback(async (monthId) => {
     setActiveMonth(monthId);
@@ -477,8 +481,8 @@ export default function App() {
         showLeftPage={resolvedPage.type !== 'cover'}
         onPagePrevious={goPrevious}
         onPageNext={goNext}
-        hasPrevious={pageIndex > 0}
-        hasNext={pageIndex >= 0 && pageIndex < notebookPages.length - 1}
+        hasPrevious={linearPageIndex > 0}
+        hasNext={linearPageIndex >= 0 && linearPageIndex < linearNotebookPages.length - 1}
       >
         <div id="notebook-content">{content}</div>
       </NotebookShell>

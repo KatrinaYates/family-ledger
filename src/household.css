@@ -226,6 +226,78 @@
   margin: 0;
 }
 
+.household-members {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(233, 223, 209, 0.95);
+}
+
+.household-members-label,
+.household-members-status {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6B7A82;
+}
+
+.household-members-status {
+  margin: 0;
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 600;
+}
+
+.household-members-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.household-member-item {
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(233, 223, 209, 0.95);
+}
+
+.household-member-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.household-member-you {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(46, 125, 111, 0.12);
+  color: #2E7D6F;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.household-member-email {
+  color: #49606A;
+  font-size: 0.86rem;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .household-invite-result {
   padding: 12px;
   border-radius: 12px;

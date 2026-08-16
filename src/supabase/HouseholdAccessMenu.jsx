@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useHousehold } from '../context/HouseholdContext.jsx';
+import { ledgerRepository } from '../repository';
+import { getErrorMessage } from '../utils/getErrorMessage.js';
 
 function ChevronIcon({ open }) {
     return (
@@ -19,6 +21,9 @@ export function HouseholdAccessMenu() {
     const household = useHousehold();
     const [open, setOpen] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [members, setMembers] = useState([]);
+    const [membersLoading, setMembersLoading] = useState(false);
+    const [membersError, setMembersError] = useState('');
     const menuRef = useRef(null);
     const copiedTimerRef = useRef(null);
 
@@ -53,6 +58,30 @@ export function HouseholdAccessMenu() {
     useEffect(() => {
         setCopied(false);
     }, [household?.createdInvite?.url]);
+
+    useEffect(() => {
+        if (!open || !household?.activeHousehold?.id) return undefined;
+
+        let cancelled = false;
+        setMembersLoading(true);
+        setMembersError('');
+
+        ledgerRepository.listHouseholdMembers(household.activeHousehold.id)
+            .then((rows) => {
+                if (!cancelled) setMembers(rows);
+            })
+            .catch((loadError) => {
+                if (!cancelled) {
+                    setMembers([]);
+                    setMembersError(getErrorMessage(loadError));
+                }
+            })
+            .finally(() => {
+                if (!cancelled) setMembersLoading(false);
+            });
+
+        return () => { cancelled = true; };
+    }, [open, household?.activeHousehold?.id]);
 
     if (!household?.activeHousehold) return null;
 
@@ -103,6 +132,31 @@ export function HouseholdAccessMenu() {
                         <p className="household-access-panel-kicker">Household</p>
                         <p className="household-access-panel-title">{activeHousehold.name}</p>
                         <p className="household-access-role">Everyone with access can view and edit this ledger.</p>
+
+                        <div className="household-members">
+                            <span className="household-members-label">Members</span>
+                            {membersLoading && (
+                                <p className="household-members-status" aria-live="polite">Loading members…</p>
+                            )}
+                            {!membersLoading && membersError && (
+                                <p className="household-error" role="alert">{membersError}</p>
+                            )}
+                            {!membersLoading && !membersError && members.length > 0 && (
+                                <ul className="household-members-list" role="list">
+                                    {members.map((member) => (
+                                        <li key={member.userId} className="household-member-item">
+                                            <span className="household-member-name">
+                                                {member.displayName}
+                                                {member.isSelf && (
+                                                    <span className="household-member-you">You</span>
+                                                )}
+                                            </span>
+                                            <span className="household-member-email">{member.email}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
 
                         <div className="household-invite-actions">
                             <button type="button" onClick={createInvitation} disabled={busy}>

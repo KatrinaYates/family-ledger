@@ -213,6 +213,22 @@ export class SupabaseLedgerRepository extends LedgerRepository {
         }));
     }
 
+    async listHouseholdMembers(householdId) {
+        const targetHouseholdId = householdId ?? await this.requireHouseholdId();
+        const user = await this.requireUser();
+        const { data, error } = await this.client.rpc('list_household_members', {
+            target_household_id: targetHouseholdId,
+        });
+        if (error) throw storageError(error, 'Could not load household members.');
+        return (data ?? []).map((row) => ({
+            userId: row.user_id,
+            email: row.email,
+            displayName: row.display_name,
+            joinedAt: row.joined_at,
+            isSelf: row.user_id === user.id,
+        }));
+    }
+
     async getHouseholdId() {
         if (this.householdId) return this.householdId;
         const households = await this.listHouseholds();

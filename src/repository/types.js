@@ -152,6 +152,23 @@
  */
 
 /**
+ * @typedef {Object} HouseholdSummary
+ * @property {string} id
+ * @property {string} name
+ * @property {string} [role]
+ * @property {string} [createdAt]
+ */
+
+/**
+ * @typedef {Object} HouseholdMemberSummary
+ * @property {string} userId
+ * @property {string} email
+ * @property {string} displayName
+ * @property {string} joinedAt
+ * @property {boolean} isSelf
+ */
+
+/**
  * @typedef {Object} GeneratedFutureAnalysis
  * @property {string} subtitle
  * @property {{ total?: string, components?: Array<{ label: string, value: string }> } | null} futureProgress

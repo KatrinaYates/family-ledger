@@ -11,6 +11,7 @@ export class LedgerRepository {
     createHouseholdInvitation(_email) { throw new Error('Not implemented'); }
     acceptHouseholdInvitation(_token) { throw new Error('Not implemented'); }
     listHouseholdInvitations() { throw new Error('Not implemented'); }
+    listHouseholdMembers(_householdId) { throw new Error('Not implemented'); }
 
     listMonths() { throw new Error('Not implemented'); }
     listNavigableMonthIds() { throw new Error('Not implemented'); }
