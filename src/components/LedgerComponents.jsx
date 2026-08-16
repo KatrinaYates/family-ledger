@@ -7,6 +7,7 @@ import christmasTree from "../assets/illustrations/christmas-tree.svg";
 import vineDoodle from "../assets/illustrations/vine-doodle.svg";
 import sunIllustration from "../assets/illustrations/sun.svg";
 import { PageLoader } from '../context/BootGate.jsx';
+import { LedgerFeedbackButton } from './LedgerFeedbackPanel.jsx';
 
 const illustrations = {
     sunflower,
@@ -311,8 +312,19 @@ export function FocusPocket({title, children}) {
     );
 }
 
+function formatGenerationDate(value, month) {
+    if (!value) return `${month.label} ${month.year ?? 2026}`;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return `${month.label} ${month.year ?? 2026}`;
+    return new Intl.DateTimeFormat('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+    }).format(date);
+}
+
 export function MonthChapterPage({ month, chapterMeta }) {
-    const meetingDate = chapterMeta?.meetingDate || `${month.label} 5, ${month.year ?? 2026}`;
+    const generatedDate = formatGenerationDate(chapterMeta?.generatedAt, month);
     const meetingLength = chapterMeta?.meetingLength || '55 minutes';
     const intention = chapterMeta?.intention || chapterMeta?.motto || 'Be curious, not critical.';
     const focus = chapterMeta?.focus || 'Debt down. Savings up. Keep momentum gentle.';
@@ -328,9 +340,9 @@ export function MonthChapterPage({ month, chapterMeta }) {
                 </h1>
                 <div className="chapter-sub">A fresh monthly reset for our money, goals, decisions, and future.</div>
                 <div className="chapter-meta">
-                    <span>📅 {meetingDate}</span>
+                    <span title="Date this month ledger was generated">📅 {generatedDate}</span>
                     <span>⏱ {meetingLength}</span>
-                    <span>{month.icon} {month.season}</span>
+                    <LedgerFeedbackButton variant="chapter" />
                 </div>
             </div>
             <Polaroid month={month} className="chapter-polaroid" />
