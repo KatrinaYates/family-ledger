@@ -148,23 +148,47 @@ function formatJournalTimestamp(value) {
   return `${datePart} · ${timePart}`;
 }
 
-function CheckInMeta({ onRefreshCheckIn, refreshState }) {
+function RefreshIcon() {
   return (
-    <div className="check-in-meta">
-      <div className="check-in-refresh-action">
-        <button
-          type="button"
-          className="check-in-refresh-button"
-          onClick={onRefreshCheckIn}
-        >
-          {refreshState === 'copied' ? 'Prompt copied ✓' : '↻ Refresh Check-In'}
-        </button>
-        {refreshState === 'failed' && (
-          <span className="check-in-refresh-feedback check-in-refresh-feedback--error" role="alert">
-            Couldn&apos;t copy automatically. Try again.
-          </span>
-        )}
-      </div>
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path
+        d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function JournalMeta({ timestamp, refreshedAt, onRefreshCheckIn, refreshState }) {
+  if (!timestamp) return null;
+
+  const refreshLabel = refreshState === 'copied'
+    ? 'Refresh prompt copied'
+    : 'Refresh Check-In';
+
+  return (
+    <div className="check-in-journal-meta">
+      <time className="check-in-journal-date" dateTime={refreshedAt}>
+        {timestamp}
+      </time>
+      <button
+        type="button"
+        className={`check-in-refresh-button${refreshState === 'copied' ? ' is-copied' : ''}`}
+        onClick={onRefreshCheckIn}
+        aria-label={refreshLabel}
+        title={refreshLabel}
+      >
+        <RefreshIcon />
+      </button>
+      {refreshState === 'failed' && (
+        <span className="check-in-refresh-feedback check-in-refresh-feedback--error" role="alert">
+          Couldn&apos;t copy automatically. Try again.
+        </span>
+      )}
     </div>
   );
 }
@@ -239,21 +263,17 @@ export function FinancialCheckInPage() {
 
   return (
     <div className="snapshot-page check-in-page">
-      {journalTimestamp && (
-        <time className="check-in-journal-date" dateTime={enriched.raw.refreshedAt}>
-          {journalTimestamp}
-        </time>
-      )}
+      <JournalMeta
+        timestamp={journalTimestamp}
+        refreshedAt={enriched?.raw?.refreshedAt}
+        onRefreshCheckIn={refreshWithChatGPT}
+        refreshState={refreshState}
+      />
 
       <SectionPageHeader
         eyebrow="Current household position · not tied to a month"
         title="Financial Check-In"
         subtitle="Where we are today before we decide what to do next."
-      />
-
-      <CheckInMeta
-        onRefreshCheckIn={refreshWithChatGPT}
-        refreshState={refreshState}
       />
 
       {error && (
