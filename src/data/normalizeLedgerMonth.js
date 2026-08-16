@@ -88,7 +88,10 @@ export function mergeMonthView(record) {
     const { sourceData, generatedAnalysis } = record;
     return {
         ...generatedAnalysis,
-        meta: sourceData.meta,
+        meta: {
+            ...(sourceData.meta ?? {}),
+            generatedAt: record.generation?.generatedAt ?? record.updatedAt ?? null,
+        },
     };
 }
 
