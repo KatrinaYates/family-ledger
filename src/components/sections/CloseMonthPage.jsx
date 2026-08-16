@@ -1,6 +1,14 @@
 import React from 'react';
-import { PanelCard } from '../content/NotebookPrimitives';
-import { CardGrid, SectionBlock } from '../notebook';
+import {
+  NOTEBOOK_SYMBOLS,
+  PanelCard,
+  TopicBand,
+} from '../content/NotebookPrimitives';
+import {
+  CardGrid,
+  DecorativeStickyNote,
+  SectionBlock,
+} from '../notebook';
 import { EditableBulletList } from '../meeting/MeetingFields';
 import { sectionFieldKey } from '../../utils/meetingKeys';
 import { MeetingRundown } from '../meeting/MeetingRundown';
@@ -91,7 +99,12 @@ export function CloseMonthPage({ data, month, section }) {
 
         {readiness.length > 0 && (
           <SectionBlock label="Ready to Close?" className="close-month-readiness">
-            <PanelCard title="Readiness checklist">
+            <TopicBand
+              icon={NOTEBOOK_SYMBOLS.lock}
+              label="Before we lock"
+              title="One last look"
+              description="This is the checkpoint that turns the meeting into a finished monthly record."
+            >
               <ul className="close-readiness-list">
                 {readiness.map((item) => (
                   <li key={item.label} className={item.done ? 'is-done' : 'is-pending'}>
@@ -103,7 +116,7 @@ export function CloseMonthPage({ data, month, section }) {
                   </li>
                 ))}
               </ul>
-            </PanelCard>
+            </TopicBand>
           </SectionBlock>
         )}
 
@@ -122,7 +135,14 @@ export function CloseMonthPage({ data, month, section }) {
         </SectionBlock>
 
         <SectionBlock label="Finish" className="close-month-finish">
-          <LockMonthControl className="handoff-lock-control" />
+          <CardGrid layout="mainSidebar">
+            <LockMonthControl className="handoff-lock-control" />
+            <aside className="snapshot-side">
+              <DecorativeStickyNote tone="green" title="Close with confidence" fill>
+                Lock the month when the notes feel true, the decisions are captured, and the next steps have names and dates.
+              </DecorativeStickyNote>
+            </aside>
+          </CardGrid>
         </SectionBlock>
       </div>
     </SectionPageShell>
