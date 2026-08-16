@@ -19,7 +19,6 @@ function buildSummary(sourceData, futureProgress) {
   if (!components.length) return '';
 
   const labels = new Set(components.map((component) => component.label.toLowerCase()));
-  /** @type {string[]} */
   const phrases = [];
 
   if (labels.has('retirement')) phrases.push('investing for retirement');
@@ -28,35 +27,27 @@ function buildSummary(sourceData, futureProgress) {
   const emergency = sourceData.snapshot?.emergencyFund ?? {};
   const target = parseAmount(emergency.target);
   if (labels.has('emergency fund')) {
-    if (target != null && target > 0) {
-      phrases.push(`moving the starter emergency fund closer to ${formatCurrencyDetailed(target, false)}`);
-    } else {
-      phrases.push('the starter emergency fund');
-    }
+    phrases.push(target != null && target > 0
+      ? `moving the starter emergency fund closer to ${formatCurrencyDetailed(target, false)}`
+      : 'the starter emergency fund');
   }
 
   if (labels.has('other savings')) phrases.push('other savings goals');
   if (labels.has('debt payments')) phrases.push('paying down debt');
-
   if (!phrases.length) return '';
-
-  if (phrases.length === 1) {
-    return `We continued ${phrases[0]} this month.`;
-  }
+  if (phrases.length === 1) return `We continued ${phrases[0]} this month.`;
 
   const last = phrases[phrases.length - 1];
   const rest = phrases.slice(0, -1);
-  if (last.startsWith('moving ')) {
-    return `We continued ${rest.join(' and ')} while ${last}.`;
-  }
-  return `We continued ${rest.join(', ')} and ${last} this month.`;
+  return last.startsWith('moving ')
+    ? `We continued ${rest.join(' and ')} while ${last}.`
+    : `We continued ${rest.join(', ')} and ${last} this month.`;
 }
 
 /** @param {object} sourceData */
 function buildGoals(sourceData) {
   const snapshot = sourceData.snapshot ?? {};
   const future = sourceData.future ?? {};
-  /** @type {Array<object>} */
   const goals = [];
 
   const emergency = snapshot.emergencyFund ?? {};
@@ -80,10 +71,7 @@ function buildGoals(sourceData) {
       progressPercent,
       monthlyProgress: formatContribution(emergency.monthContributions),
       secondaryValue: remainingNum != null ? formatCurrencyDetailed(remainingNum, true) : null,
-      secondaryLabel: 'remaining',
-      context: emergency.context?.trim()
-        || emergency.strategy?.trim()
-        || null,
+      context: emergency.context?.trim() || emergency.strategy?.trim() || null,
     });
   }
 
@@ -95,15 +83,8 @@ function buildGoals(sourceData) {
       id: 'debt-payoff',
       type: 'debt',
       title: 'Debt payoff',
-      icon: '💳',
       current: debt.total,
-      target: null,
-      progressPercent: null,
       monthlyProgress: hasValue(debtPayments) ? debtPayments : null,
-      monthlyProgressLabel: 'paid toward debt this month',
-      caveat: baselineUnavailable
-        ? 'Principal change unavailable because a comparable June 30 balance was not captured.'
-        : debt.progressCaveat?.trim() || null,
       status: baselineUnavailable ? 'baseline-unavailable' : null,
     });
   }
@@ -114,99 +95,113 @@ function buildGoals(sourceData) {
       id: 'retirement',
       type: 'retirement',
       title: 'Retirement',
-      icon: '🌱',
       monthlyProgress: formatContribution(retirement.monthContributions),
-      monthlyProgressLabel: 'contributed this month',
       secondaryValue: retirement.balance ?? null,
-      secondaryLabel: 'connected balance',
-      caveat: retirement.balanceCaveat?.trim()
-        || retirement.balanceNote?.trim()
-        || null,
     });
   }
 
   const kids = future.kidsSavings ?? {};
-  const childSplits = (kids.accounts ?? [])
-    .filter((account) => hasValue(account.monthContributions) && account.name)
-    .map((account) => {
-      const amount = String(account.monthContributions).replace(/^\+/, '');
-      return `${account.name} +${amount}`;
-    });
-
-  if (hasValue(kids.monthContributions) || hasValue(kids.total) || childSplits.length) {
+  if (hasValue(kids.monthContributions) || hasValue(kids.total) || (kids.accounts ?? []).length) {
     goals.push({
       id: 'kids-savings',
       type: 'kids-savings',
       title: 'Kids savings',
-      icon: '👨‍👩‍👦',
       monthlyProgress: formatContribution(kids.monthContributions),
-      monthlyProgressLabel: 'contributed this month',
       secondaryValue: kids.total ?? null,
-      secondaryLabel: 'protected for the kids',
-      context: kids.note?.trim()
-        || 'Protected for the kids and excluded from household spendable cash.',
-      childSplits,
     });
-  }
-
-  const sourceGoals = future.goals ?? [];
-  for (const goal of sourceGoals) {
-    if (!goal || typeof goal !== 'object' || !goal.id) continue;
-    const existing = goals.find((entry) => entry.id === goal.id);
-    if (existing) {
-      Object.assign(existing, goal);
-    } else {
-      goals.push(goal);
-    }
   }
 
   return goals;
 }
 
-/**
- * Household strategy belongs beside goal metrics, not inside them.
- * Historical source data may store these priorities as plain strings.
- * @param {object} future
- */
+function buildDetailedDebt(sourceData) {
+  const snapshotDebt = sourceData.snapshot?.debt ?? {};
+  const paymentActivity = sourceData.story?.debtPayments?.items ?? [];
+  const paidThisMonth = resolveDebtPayments(sourceData);
+  const authored = sourceData.future?.debt ?? {};
+
+  const hasDebtContent = hasValue(snapshotDebt.total)
+    || (snapshotDebt.creditCards ?? []).length
+    || (snapshotDebt.loans ?? []).length
+    || paymentActivity.length;
+
+  if (!hasDebtContent && !Object.keys(authored).length) return null;
+
+  return {
+    total: snapshotDebt.total ?? authored.total ?? null,
+    insight: snapshotDebt.insight?.trim() || authored.insight?.trim() || null,
+    creditCards: authored.creditCards ?? snapshotDebt.creditCards ?? [],
+    loans: authored.loans ?? snapshotDebt.loans ?? [],
+    paymentActivity,
+    paidThisMonth: hasValue(paidThisMonth) ? paidThisMonth : null,
+  };
+}
+
+function buildDebtPayoffPlan(sourceData) {
+  const authored = sourceData.future?.debtPayoffPlan;
+  if (authored?.queue?.length) return authored;
+
+  const cards = sourceData.snapshot?.debt?.creditCards ?? [];
+  if (!cards.length) return null;
+  return {
+    strategy: 'Use the household payoff order captured for this month; verify current APRs before changing the order.',
+    currentTarget: cards[0]?.name ?? null,
+    queue: cards.map((card) => ({ name: card.name, balance: card.amount })),
+  };
+}
+
+function buildEmergencyFund(sourceData) {
+  return sourceData.future?.emergencyFund ?? sourceData.snapshot?.emergencyFund ?? null;
+}
+
+function buildSavings(sourceData) {
+  const future = sourceData.future ?? {};
+  const kids = future.kidsSavings ?? null;
+  const other = future.savings ?? future.otherSavings ?? [];
+  if (!kids && !other.length) return null;
+  return { kids, other };
+}
+
+function buildRetirement(sourceData) {
+  const future = sourceData.future ?? {};
+  const authored = future.retirement ?? {};
+  const snapshot = sourceData.snapshot?.retirement ?? {};
+  if (!Object.keys(authored).length && !Object.keys(snapshot).length) return null;
+  return {
+    ...snapshot,
+    ...authored,
+    accounts: authored.accounts ?? snapshot.accounts ?? [],
+    accountActivity: authored.accountActivity ?? [],
+  };
+}
+
 function buildDirection(future) {
   const raw = Array.isArray(future.direction) ? future.direction : (future.goals ?? []);
-
   return raw
     .map((item, index) => {
       if (typeof item === 'string') {
         const text = item.trim();
         return text ? { id: `direction-${index}`, text } : null;
       }
-
       if (!item || typeof item !== 'object') return null;
-      const text = item.directionText?.trim()
-        || item.priority?.trim()
-        || item.text?.trim()
-        || '';
-      if (!text) return null;
-      return { id: item.id ?? `direction-${index}`, text };
+      const text = item.directionText?.trim() || item.priority?.trim() || item.text?.trim() || '';
+      return text ? { id: item.id ?? `direction-${index}`, text } : null;
     })
     .filter(Boolean);
 }
 
-/** @param {object} future */
 function buildComingUp(future) {
   const upcoming = future.upcoming ?? future.upcomingExpenses ?? [];
   return upcoming.filter((item) => item && typeof item === 'object' && item.title?.trim());
 }
 
-/** @param {object} sourceData @param {Array<object>} goals */
 function buildDiscussionPrompts(sourceData, goals) {
-  /** @type {string[]} */
   const prompts = [];
   const emergency = sourceData.snapshot?.emergencyFund ?? {};
   const targetNum = parseAmount(emergency.target);
   const strategyText = `${emergency.strategy ?? ''} ${emergency.context ?? ''}`.toLowerCase();
 
-  if (
-    targetNum === 1000
-    && (/pause|debt|priority/i.test(strategyText) || emergency.strategy?.trim() || emergency.context?.trim())
-  ) {
+  if (targetNum === 1000 && (/pause|debt|priority/i.test(strategyText) || emergency.strategy?.trim() || emergency.context?.trim())) {
     prompts.push('Do we still want to stop the emergency fund at $1,000 while debt is the priority?');
   }
 
@@ -223,30 +218,25 @@ function buildDiscussionPrompts(sourceData, goals) {
   return prompts.slice(0, 3);
 }
 
-/**
- * Future presentation enrichment — synthesizes trajectory-first view from source facts.
- * @param {object} sourceData
- * @param {object | undefined} meta
- */
 export function enrichFuture(sourceData, meta) {
   const future = sourceData.future ?? {};
   const futureProgress = buildFutureProgress(sourceData);
   const goals = buildGoals(sourceData);
-  const direction = buildDirection(future);
-  const comingUp = buildComingUp(future);
-  const summary = buildSummary(sourceData, futureProgress);
-  const discussionPrompts = buildDiscussionPrompts(sourceData, goals);
 
   return {
-    subtitle: 'Are we moving toward the life and goals we actually care about?',
+    subtitle: 'Debt, emergency savings, family savings, retirement, and what future-us needs next.',
     futureProgress,
-    summary,
+    summary: buildSummary(sourceData, futureProgress),
     goals,
-    direction,
-    comingUp,
-    discussionPrompts,
+    debt: buildDetailedDebt(sourceData),
+    debtPayoffPlan: buildDebtPayoffPlan(sourceData),
+    emergencyFund: buildEmergencyFund(sourceData),
+    savings: buildSavings(sourceData),
+    retirement: buildRetirement(sourceData),
+    direction: buildDirection(future),
+    comingUp: buildComingUp(future),
+    discussionPrompts: buildDiscussionPrompts(sourceData, goals),
     atAGlanceLabel: 'Future at a Glance',
-    goalsLabel: 'Our Goals',
     directionLabel: 'Where We’re Headed',
     comingUpLabel: 'Coming Up',
     talkTogetherLabel: 'Talk About Together',
