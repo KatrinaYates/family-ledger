@@ -1,15 +1,14 @@
 import React from 'react';
 import { SectionPageShell } from './SectionPageShell';
 import { FutureAtAGlance } from '../future/FutureAtAGlance';
-import { FutureGoals } from '../future/FutureGoals';
 import { FutureDirection } from '../future/FutureDirection';
 import { FutureComingUp } from '../future/FutureComingUp';
 import { FutureTalkTogether } from '../future/FutureTalkTogether';
+import { FutureFinancialSections } from '../future/FutureFinancialSections';
 
 export function FuturePage({ data, month, section }) {
   const { future } = data;
   const hasGlance = Boolean(future.futureProgress?.total);
-  const hasGoals = Boolean(future.goals?.length);
   const hasDirection = Boolean(future.direction?.length);
   const hasTalk = Boolean(future.discussionPrompts?.length);
 
@@ -30,12 +29,13 @@ export function FuturePage({ data, month, section }) {
           />
         )}
 
-        {hasGoals && (
-          <FutureGoals
-            goalsLabel={future.goalsLabel}
-            goals={future.goals}
-          />
-        )}
+        <FutureFinancialSections
+          debt={future.debt}
+          payoffPlan={future.debtPayoffPlan}
+          emergencyFund={future.emergencyFund}
+          savings={future.savings}
+          retirement={future.retirement}
+        />
 
         {hasDirection && (
           <FutureDirection
