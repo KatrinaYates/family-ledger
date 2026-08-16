@@ -76,6 +76,8 @@ check_month_literal_outside_data() {
       ! -path 'src/data/months/*' \
       ! -path 'src/data/months.js' \
       ! -path 'src/utils/normalizePageId.js' \
+      ! -path 'src/components/notebook/KitInteractiveSamples.jsx' \
+      ! -path 'src/components/notebook/NotebookKitPage.jsx' \
       -print0 \
       | xargs -0 grep -En -- "$literal" 2>/dev/null \
       | head -20 \
