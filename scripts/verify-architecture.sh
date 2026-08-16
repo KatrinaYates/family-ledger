@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Architecture grep checks from Phase 5 — month-agnostic pre-DB refactor.
+# Architecture checks that run on both local machines and GitHub-hosted runners.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -7,13 +7,25 @@ cd "$ROOT"
 
 fail=0
 
+search_q() {
+  local pattern="$1"
+  local pathspec="$2"
+  grep -ERq -- "$pattern" "$pathspec" 2>/dev/null
+}
+
+search_n() {
+  local pattern="$1"
+  local pathspec="$2"
+  grep -ERn -- "$pattern" "$pathspec" 2>/dev/null | head -20 || true
+}
+
 check_absent() {
   local label="$1"
   local pattern="$2"
   local pathspec="${3:-src}"
-  if rg -q "$pattern" "$pathspec" 2>/dev/null; then
+  if search_q "$pattern" "$pathspec"; then
     echo "FAIL: $label"
-    rg -n "$pattern" "$pathspec" | head -20
+    search_n "$pattern" "$pathspec"
     fail=1
   else
     echo "OK: $label"
@@ -26,64 +38,60 @@ check_absent "No loadJuly2026" 'loadJuly2026' src
 check_absent "No enrichJulyData" 'enrichJulyData' src
 check_absent "No july2026.local loader" 'july2026\.local' src
 check_absent "No exported listNavigableMonthIds(repo)" 'listNavigableMonthIds\(repo\)' src
-check_absent "No months[].status in catalog" 'status:\s*"(active|locked)"' src/data/months.js
+check_absent "No months[].status in catalog" 'status:[[:space:]]*"(active|locked)"' src/data/months.js
 
-if rg -q 'async listNavigableMonthIds' src/repository/LocalLedgerRepository.js 2>/dev/null; then
+if grep -Eq 'async[[:space:]]+listNavigableMonthIds' src/repository/LocalLedgerRepository.js; then
   echo "OK: LocalLedgerRepository.listNavigableMonthIds is async"
 else
   echo "FAIL: LocalLedgerRepository.listNavigableMonthIds should be async"
   fail=1
 fi
 
-if rg -q 'class ConflictError' src/repository/errors.js 2>/dev/null; then
+if grep -Eq 'class[[:space:]]+ConflictError' src/repository/errors.js; then
   echo "OK: Typed ConflictError exists"
 else
   echo "FAIL: Missing ConflictError in repository/errors.js"
   fail=1
 fi
 
-if rg -q 'useLedgerMonths' src/App.jsx 2>/dev/null; then
+if grep -q 'useLedgerMonths' src/App.jsx; then
   echo "OK: App uses reactive useLedgerMonths"
 else
   echo "FAIL: App.jsx should use useLedgerMonths for month discovery"
   fail=1
 fi
 
-if rg -q 'const notebookPages = useMemo' src/App.jsx 2>/dev/null; then
+if grep -Eq 'const[[:space:]]+notebookPages[[:space:]]*=[[:space:]]*useMemo' src/App.jsx; then
   echo "OK: App builds notebookPages reactively"
 else
   echo "FAIL: App.jsx should build notebookPages via useMemo + useLedgerMonths"
   fail=1
 fi
 
-# Month-specific conditionals outside data/catalog are forbidden.
-if rg -q '2026-09' src \
-  --glob '!src/data/months/**' \
-  --glob '!src/data/months.js' \
-  --glob '!src/utils/normalizePageId.js' 2>/dev/null; then
-  echo "FAIL: 2026-09 conditionals outside data files and catalog"
-  rg -n '2026-09' src \
-    --glob '!src/data/months/**' \
-    --glob '!src/data/months.js' \
-    --glob '!src/utils/normalizePageId.js' | head -20
-  fail=1
-else
-  echo "OK: No 2026-09 conditionals outside data/catalog"
-fi
+check_month_literal_outside_data() {
+  local literal="$1"
+  local matches
+  matches="$(
+    find src -type f \
+      ! -path 'src/data/months/*' \
+      ! -path 'src/data/months.js' \
+      ! -path 'src/utils/normalizePageId.js' \
+      -print0 \
+      | xargs -0 grep -En -- "$literal" 2>/dev/null \
+      | head -20 \
+      || true
+  )"
+  if [[ -n "$matches" ]]; then
+    echo "FAIL: $literal conditionals outside data files and catalog"
+    echo "$matches"
+    fail=1
+  else
+    echo "OK: No $literal conditionals outside data/catalog"
+  fi
+}
 
-if rg -q '2026-08' src \
-  --glob '!src/data/months/**' \
-  --glob '!src/data/months.js' \
-  --glob '!src/utils/normalizePageId.js' 2>/dev/null; then
-  echo "FAIL: 2026-08 conditionals outside data files and catalog"
-  rg -n '2026-08' src \
-    --glob '!src/data/months/**' \
-    --glob '!src/data/months.js' \
-    --glob '!src/utils/normalizePageId.js' | head -20
-  fail=1
-else
-  echo "OK: No 2026-08 conditionals outside data/catalog"
-fi
+check_month_literal_outside_data '2026-09'
+check_month_literal_outside_data '2026-08'
 
 required_samples=(
   src/data/months/2026-07.sample.js
@@ -102,7 +110,7 @@ done
 if [[ ! -f src/data/months/2026-10.sample.js ]]; then
   echo "OK: October intentionally has no sample file (graceful failure test)"
 else
-  echo "WARN: 2026-10.sample.js exists — Phase 5 expects catalog-only October"
+  echo "WARN: 2026-10.sample.js exists — catalog-only October expectation no longer applies"
 fi
 
 if [[ "$fail" -ne 0 ]]; then
