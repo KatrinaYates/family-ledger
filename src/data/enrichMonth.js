@@ -328,7 +328,7 @@ export function enrichMonth(sourceData, meta) {
   return {
     subtitle: `What changed in ${label}, plus where we finished the month.`,
     atAGlanceLabel: `${label} at a glance`,
-    endingPositionLabel: `End of ${label} - Cash in the bank`,
+    endingPositionLabel: `End of ${label}`,
     overallPulse,
     kpis,
     futureProgress,
