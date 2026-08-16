@@ -1,11 +1,15 @@
 import React from 'react';
 import {
-  DetailRows,
-  PanelCard,
+  NOTEBOOK_SYMBOLS,
   PromptField,
   StickyCard,
+  SummaryPanel,
 } from '../content/NotebookPrimitives';
-import { CardGrid, SectionBlock } from '../notebook';
+import {
+  CardGrid,
+  DecorativeStickyNote,
+  SectionBlock,
+} from '../notebook';
 import { useMeetingNotes } from '../../hooks/useMeetingField';
 import { sectionFieldKey } from '../../utils/meetingKeys';
 import { SectionPageShell } from './SectionPageShell';
@@ -23,11 +27,17 @@ export function CelebratePage({ data, month, section }) {
   const gratitudeField = useMeetingNotes(sectionFieldKey(month.id, 'celebrate', 'gratitude'));
 
   const winRows = [
-    { label: 'Biggest win', value: celebrate.biggestWin },
-    { label: 'Best habit', value: celebrate.bestHabit },
-    { label: 'Money saved', value: celebrate.moneySaved },
-    { label: 'Debt reduced', value: celebrate.debtReduced },
+    { label: 'Biggest win', value: celebrate.biggestWin, icon: NOTEBOOK_SYMBOLS.win },
+    { label: 'Best habit', value: celebrate.bestHabit, icon: NOTEBOOK_SYMBOLS.ready },
+    { label: 'Money saved', value: celebrate.moneySaved, icon: NOTEBOOK_SYMBOLS.cash },
+    { label: 'Debt reduced', value: celebrate.debtReduced, icon: NOTEBOOK_SYMBOLS.focus },
   ].filter((row) => hasMeaningfulValue(row.value));
+
+  const summaryRows = winRows.map((row) => ({
+    icon: row.icon,
+    title: row.label,
+    text: row.value,
+  }));
 
   return (
     <SectionPageShell sectionId="celebrate" section={section} month={month} data={data} subtitle={celebrate.page?.subtitle}>
@@ -36,9 +46,14 @@ export function CelebratePage({ data, month, section }) {
         style={{ '--content-block-max-cqw': '100cqw', width: '100%', maxWidth: '100%' }}
       >
         <SectionBlock label="Progress Worth Noticing" className="celebrate-progress">
-          <PanelCard title="What went well">
-            <DetailRows rows={winRows} />
-          </PanelCard>
+          <CardGrid layout="mainSidebar">
+            <SummaryPanel title="What went well" rows={summaryRows} />
+            <aside className="snapshot-side">
+              <DecorativeStickyNote tone="green" title="Tiny celebration counts" fill>
+                Progress is easier to repeat when we actually notice it. Pick one thing from this month that deserves a little credit.
+              </DecorativeStickyNote>
+            </aside>
+          </CardGrid>
         </SectionBlock>
 
         <SectionBlock label="Make It Personal" className="celebrate-personal">
