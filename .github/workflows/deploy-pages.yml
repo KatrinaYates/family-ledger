@@ -29,6 +29,12 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Verify architecture
+        run: npm run verify:architecture
+
+      - name: Smoke test ledger months
+        run: npm run smoke:months
+
       - name: Verify Supabase deployment config
         env:
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
