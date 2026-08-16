@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { LedgerLoader } from '../../context/BootGate.jsx';
 import { useFinancialCheckIn } from '../../hooks/useFinancialCheckIn';
 import {
@@ -35,9 +35,12 @@ function copyTextFallback(text) {
   textarea.value = text;
   textarea.setAttribute('readonly', '');
   textarea.style.position = 'fixed';
-  textarea.style.opacity = '0';
+  textarea.style.left = '-9999px';
+  textarea.style.top = '0';
   document.body.appendChild(textarea);
+  textarea.focus();
   textarea.select();
+  textarea.setSelectionRange(0, text.length);
   const copied = document.execCommand('copy');
   document.body.removeChild(textarea);
   return copied;
@@ -56,13 +59,25 @@ function CheckInMeta({ enriched, onRefreshCheckIn, refreshState }) {
           <p className="check-in-source-status">Source status: {enriched.statusLabel}</p>
         )}
       </div>
-      <button
-        type="button"
-        className="check-in-refresh-button"
-        onClick={onRefreshCheckIn}
-      >
-        {refreshState === 'copied' ? 'Prompt copied ✓' : '↻ Refresh Check-In'}
-      </button>
+      <div className="check-in-refresh-action">
+        <button
+          type="button"
+          className="check-in-refresh-button"
+          onClick={onRefreshCheckIn}
+        >
+          {refreshState === 'copied' ? 'Prompt copied ✓' : '↻ Refresh Check-In'}
+        </button>
+        {refreshState === 'copied' && (
+          <span className="check-in-refresh-feedback" role="status">
+            Paste the prompt into ChatGPT.
+          </span>
+        )}
+        {refreshState === 'failed' && (
+          <span className="check-in-refresh-feedback check-in-refresh-feedback--error" role="alert">
+            Couldn&apos;t copy automatically. Try again.
+          </span>
+        )}
+      </div>
     </div>
   );
 }
@@ -70,27 +85,60 @@ function CheckInMeta({ enriched, onRefreshCheckIn, refreshState }) {
 export function FinancialCheckInPage() {
   const { enriched, loading, error, hasCheckIn } = useFinancialCheckIn();
   const [refreshState, setRefreshState] = useState('idle');
+  const [waitingForReturn, setWaitingForReturn] = useState(false);
 
-  const refreshWithChatGPT = useCallback(async () => {
-    // Open synchronously from the click so browsers do not treat it as a popup.
-    window.open(CHATGPT_URL, '_blank', 'noopener,noreferrer');
+  useEffect(() => {
+    if (!waitingForReturn) return undefined;
 
-    let copied = false;
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== 'visible') return;
+      setWaitingForReturn(false);
+      window.setTimeout(() => setRefreshState('idle'), 4000);
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [waitingForReturn]);
+
+  const refreshWithChatGPT = useCallback(() => {
+    setRefreshState('idle');
+
+    // Clipboard access must happen while this page still owns the click gesture.
+    // Do the synchronous fallback first; if needed, start Clipboard API access
+    // before opening ChatGPT so the browser does not revoke clipboard permission
+    // when focus moves to the new tab.
+    let copiedSynchronously = false;
     try {
-      await navigator.clipboard.writeText(REFRESH_CHECK_IN_PROMPT);
-      copied = true;
+      copiedSynchronously = copyTextFallback(REFRESH_CHECK_IN_PROMPT);
     } catch {
+      copiedSynchronously = false;
+    }
+
+    let clipboardPromise = null;
+    if (!copiedSynchronously && navigator.clipboard?.writeText) {
       try {
-        copied = copyTextFallback(REFRESH_CHECK_IN_PROMPT);
+        clipboardPromise = navigator.clipboard.writeText(REFRESH_CHECK_IN_PROMPT);
       } catch {
-        copied = false;
+        clipboardPromise = null;
       }
     }
 
-    setRefreshState(copied ? 'copied' : 'idle');
-    if (copied) {
-      window.setTimeout(() => setRefreshState('idle'), 2500);
+    const chatWindow = window.open(CHATGPT_URL, '_blank', 'noopener,noreferrer');
+    setWaitingForReturn(Boolean(chatWindow));
+
+    if (copiedSynchronously) {
+      setRefreshState('copied');
+      return;
     }
+
+    if (clipboardPromise) {
+      clipboardPromise
+        .then(() => setRefreshState('copied'))
+        .catch(() => setRefreshState('failed'));
+      return;
+    }
+
+    setRefreshState('failed');
   }, []);
 
   if (loading) {
