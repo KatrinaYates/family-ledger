@@ -2,51 +2,50 @@
   position: relative;
 }
 
-.check-in-journal-date {
+.check-in-journal-meta {
   position: absolute;
-  top: 10px;
+  top: 6px;
   right: 18px;
-  color: rgba(41, 54, 74, 0.68);
-  font-family: var(--font-heading, Georgia, "Times New Roman", serif);
-  font-size: 0.9rem;
-  font-style: italic;
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-}
-
-.check-in-meta {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 16px;
-  margin: 10px 0 18px;
+  gap: 10px;
+  z-index: 2;
 }
 
-.check-in-refresh-action {
-  display: grid;
-  justify-items: end;
-  gap: 6px;
-  flex-shrink: 0;
+.check-in-journal-date {
+  color: rgba(41, 54, 74, 0.8);
+  font-family: "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
+  font-size: 1.22rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  white-space: nowrap;
+  transform: rotate(-0.7deg);
 }
 
 .check-in-refresh-button {
-  min-height: 42px;
-  padding: 9px 16px;
-  border: 1px solid rgba(22, 124, 121, 0.28);
-  border-radius: 999px;
-  background: rgba(22, 124, 121, 0.1);
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid rgba(22, 124, 121, 0.26);
+  border-radius: 50%;
+  background: rgba(22, 124, 121, 0.08);
   color: var(--deep, #167c79);
-  font: inherit;
-  font-size: 0.9rem;
-  font-weight: 800;
   cursor: pointer;
   transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
 }
 
+.check-in-refresh-button svg {
+  width: 18px;
+  height: 18px;
+}
+
 .check-in-refresh-button:hover {
-  transform: translateY(-1px);
-  background: rgba(22, 124, 121, 0.16);
-  border-color: rgba(22, 124, 121, 0.45);
+  transform: rotate(12deg) scale(1.04);
+  background: rgba(22, 124, 121, 0.14);
+  border-color: rgba(22, 124, 121, 0.42);
 }
 
 .check-in-refresh-button:focus-visible {
@@ -54,10 +53,18 @@
   outline-offset: 2px;
 }
 
+.check-in-refresh-button.is-copied {
+  background: rgba(22, 124, 121, 0.16);
+  border-color: rgba(22, 124, 121, 0.48);
+}
+
 .check-in-refresh-feedback {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  max-width: 240px;
   font-size: 0.78rem;
   font-weight: 700;
-  color: var(--deep, #167c79);
 }
 
 .check-in-refresh-feedback--error {
@@ -74,25 +81,13 @@
 }
 
 @media (max-width: 760px) {
-  .check-in-journal-date {
+  .check-in-journal-meta {
     position: static;
-    display: block;
+    justify-content: flex-end;
     margin: 0 0 10px;
-    text-align: right;
-  }
-}
-
-@media (max-width: 640px) {
-  .check-in-meta {
-    align-items: stretch;
   }
 
-  .check-in-refresh-action {
-    width: 100%;
-    justify-items: stretch;
-  }
-
-  .check-in-refresh-button {
-    width: 100%;
+  .check-in-journal-date {
+    font-size: 1.08rem;
   }
 }
