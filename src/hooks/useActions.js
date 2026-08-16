@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useMonthContext } from '../context/MonthContext';
 import { ledgerRepository } from '../repository';
 import {
@@ -20,6 +20,7 @@ export function useActions() {
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
+  const saveQueuesRef = useRef(new Map());
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -84,21 +85,30 @@ export function useActions() {
 
   const updateAction = useCallback(
     async (id, patch) => {
-      // Keep controlled inputs responsive immediately. Waiting for the repository
-      // round-trip here causes React to re-render the old value while the user is typing.
+      // Controlled inputs must update immediately; repository saves happen in the
+      // background and are serialized per row so older keystrokes cannot win a race.
       setActions((previous) => previous.map((action) => (
         action.id === id ? { ...action, ...patch } : action
       )));
       setSaving(true);
       setSaveError(null);
+
+      const previousSave = saveQueuesRef.current.get(id) ?? Promise.resolve();
+      const nextSave = previousSave
+        .catch(() => undefined)
+        .then(() => ledgerRepository.updateAction(id, patch));
+      saveQueuesRef.current.set(id, nextSave);
+
       try {
-        await ledgerRepository.updateAction(id, patch);
-        dispatchActionsUpdated();
+        await nextSave;
       } catch (err) {
         setSaveError(getErrorMessage(err));
         await refresh();
       } finally {
-        setSaving(false);
+        if (saveQueuesRef.current.get(id) === nextSave) {
+          saveQueuesRef.current.delete(id);
+          setSaving(false);
+        }
       }
     },
     [refresh],
