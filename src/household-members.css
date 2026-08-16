@@ -1,0 +1,32 @@
+.household-member-item {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.household-member-details {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.household-access-panel button.household-member-remove {
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid rgba(155, 47, 47, 0.24);
+  border-radius: 999px;
+  background: rgba(155, 47, 47, 0.07);
+  color: #9b2f2f;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.household-access-panel button.household-member-remove:hover:not(:disabled) {
+  background: rgba(155, 47, 47, 0.13);
+  border-color: rgba(155, 47, 47, 0.38);
+}
+
+.household-access-panel button.household-member-remove:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
