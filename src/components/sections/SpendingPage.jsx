@@ -7,6 +7,7 @@ import { SpendingChangeSummary } from '../spending/SpendingChangeSummary';
 import { SpendingWatch } from '../spending/SpendingWatch';
 import { NotableSpending } from '../spending/NotableSpending';
 import { SpendingTakeaway } from '../spending/SpendingTakeaway';
+import { SpendingTransactions } from '../spending/SpendingTransactions';
 
 export function SpendingPage({ data, month, section }) {
   const { spending } = data;
@@ -33,6 +34,11 @@ export function SpendingPage({ data, month, section }) {
           <NotableSpending notableSpending={spending.notableSpending} monthId={month.id} />
           <SpendingTakeaway monthId={month.id} />
         </CardGrid>
+
+        <SpendingTransactions
+          transactions={spending.transactions}
+          merchantActivity={spending.merchantActivity}
+        />
       </div>
     </SectionPageShell>
   );
