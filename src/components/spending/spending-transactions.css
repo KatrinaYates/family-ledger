@@ -1,0 +1,123 @@
+.spending-transactions-panel {
+  display: grid;
+  gap: 20px;
+}
+
+.spending-transactions-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.spending-transactions-intro > div {
+  display: grid;
+  gap: 3px;
+}
+
+.spending-transactions-intro strong {
+  font-size: 1.12rem;
+  color: var(--ink);
+}
+
+.spending-transactions-intro span,
+.spending-transactions-intro p {
+  margin: 0;
+  color: #5f6878;
+  line-height: 1.5;
+}
+
+.spending-merchant-activity {
+  display: grid;
+  gap: 10px;
+}
+
+.spending-merchant-activity h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+
+.spending-merchant-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.spending-merchant-card {
+  display: grid;
+  gap: 3px;
+  padding: 12px 14px;
+  border: 1px solid rgba(62, 73, 88, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.spending-merchant-card strong { color: var(--ink); }
+.spending-merchant-card span { color: #6f7785; font-size: 0.82rem; }
+.spending-merchant-card b { color: #344456; font-size: 0.93rem; }
+
+.spending-transaction-filters {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.5fr) minmax(150px, 0.8fr) minmax(150px, 0.8fr);
+  gap: 10px;
+}
+
+.spending-transaction-filters input,
+.spending-transaction-filters select {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 11px;
+  border-radius: 10px;
+  border: 1px solid rgba(57, 73, 86, 0.2);
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--ink);
+  font: inherit;
+}
+
+.spending-transaction-table-wrap {
+  overflow-x: auto;
+  max-height: 620px;
+  border: 1px solid rgba(57, 73, 86, 0.12);
+  border-radius: 14px;
+}
+
+.spending-transaction-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 700px;
+  font-size: 0.88rem;
+}
+
+.spending-transaction-table th,
+.spending-transaction-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(57, 73, 86, 0.09);
+}
+
+.spending-transaction-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f9f6ee;
+  color: #596475;
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.spending-transaction-table td:last-child,
+.spending-transaction-table th:last-child {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.spending-transactions-toggle { justify-self: start; }
+
+@media (max-width: 760px) {
+  .spending-transactions-intro,
+  .spending-transaction-filters {
+    grid-template-columns: 1fr;
+  }
+}
