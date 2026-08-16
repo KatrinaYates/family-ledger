@@ -80,6 +80,33 @@
   margin-top: 0.35rem;
 }
 
+/* Replace legacy emoji KPI markers with the curated Notebook UI Kit symbols. */
+.check-in-page .snapshot-kpi-top .notebook-symbol {
+  font-size: 0;
+}
+
+.check-in-page .snapshot-kpi-top .notebook-symbol::before {
+  display: inline-block;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.check-in-page .snapshot-kpi:nth-child(1) .notebook-symbol::before {
+  content: '◎';
+}
+
+.check-in-page .snapshot-kpi:nth-child(2) .notebook-symbol::before {
+  content: '✓';
+}
+
+.check-in-page .snapshot-kpi:nth-child(3) .notebook-symbol::before {
+  content: '⛉';
+}
+
+.check-in-page .snapshot-kpi:nth-child(4) .notebook-symbol::before {
+  content: '↑';
+}
+
 @media (max-width: 760px) {
   .check-in-journal-meta {
     position: static;
