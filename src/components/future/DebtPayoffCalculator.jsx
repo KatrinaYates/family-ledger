@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { TrendingGraph } from '../notebook';
+import { TimelineGraph } from '../notebook';
 
 function money(value) {
   if (!Number.isFinite(value)) return '—';
@@ -33,7 +33,7 @@ function validApr(value) {
 
 function simulateDebtPayoff(debts, monthlyBudget, startDate) {
   const active = debts
-    .filter((debt) => debt.balance > 0 && Number.isFinite(debt.apr))
+    .filter((debt) => debt.balance > 0)
     .map((debt) => ({ ...debt, remaining: debt.balance, paidOffMonth: null, interestPaid: 0 }));
 
   if (!active.length || !Number.isFinite(monthlyBudget) || monthlyBudget <= 0) {
@@ -45,7 +45,6 @@ function simulateDebtPayoff(debts, monthlyBudget, startDate) {
     return { error: `Monthly debt amount is below the ${money(requiredMinimum)} of entered minimum payments.` };
   }
 
-  const points = [{ label: 'Now', value: active.reduce((sum, debt) => sum + debt.remaining, 0) }];
   let totalInterest = 0;
   let month = 0;
 
@@ -86,17 +85,11 @@ function simulateDebtPayoff(debts, monthlyBudget, startDate) {
       remainingBudget -= payment;
       if (debt.remaining <= 0.005 && debt.paidOffMonth == null) debt.paidOffMonth = month;
     }
-
-    const totalRemaining = active.reduce((sum, debt) => sum + Math.max(0, debt.remaining), 0);
-    if (month % 6 === 0 || totalRemaining <= 0.005) {
-      points.push({ label: monthLabel(startDate, month), value: totalRemaining });
-    }
   }
 
   return {
     months: month,
     totalInterest,
-    points,
     debts: active.map((debt) => ({
       ...debt,
       payoffLabel: debt.paidOffMonth ? monthLabel(startDate, debt.paidOffMonth) : 'Beyond 50 years',
@@ -112,24 +105,51 @@ export function DebtPayoffCalculator({ planningSnapshot }) {
 
   const modeledDebts = useMemo(() => debts.map((debt, index) => {
     const sourceApr = validApr(debt.apr);
-    const suppliedApr = Object.prototype.hasOwnProperty.call(aprOverrides, debt.id)
-      ? validApr(aprOverrides[debt.id])
-      : sourceApr;
+    const hasOverride = Object.prototype.hasOwnProperty.call(aprOverrides, debt.id);
+    const overrideApr = hasOverride ? validApr(aprOverrides[debt.id]) : null;
+    const aprMissing = sourceApr == null && overrideApr == null;
+    const apr = overrideApr ?? sourceApr ?? 0;
+
     return {
       ...debt,
       balance: Number(debt.balance) || 0,
-      apr: suppliedApr,
+      apr,
+      aprMissing,
       minimum: Number(debt.minimum) || 0,
       priority: Number.isFinite(Number(debt.priority)) ? Number(debt.priority) : index + 1,
     };
   }), [debts, aprOverrides]);
 
-  const missingAprs = modeledDebts.filter((debt) => debt.balance > 0 && !Number.isFinite(debt.apr));
-  const knownRateDebts = modeledDebts.filter((debt) => debt.balance > 0 && Number.isFinite(debt.apr));
+  const missingAprs = modeledDebts.filter((debt) => debt.balance > 0 && debt.aprMissing);
+  const activeDebts = modeledDebts.filter((debt) => debt.balance > 0);
+  const startingDebt = activeDebts.reduce((sum, debt) => sum + debt.balance, 0);
   const projection = useMemo(
-    () => simulateDebtPayoff(knownRateDebts, Number(monthlyBudget), planningSnapshot?.asOf),
-    [knownRateDebts, monthlyBudget, planningSnapshot?.asOf],
+    () => simulateDebtPayoff(activeDebts, Number(monthlyBudget), planningSnapshot?.asOf),
+    [activeDebts, monthlyBudget, planningSnapshot?.asOf],
   );
+
+  const timelineMilestones = useMemo(() => {
+    if (!projection || projection.error) return [];
+    const sorted = projection.debts
+      .filter((debt) => Number.isFinite(debt.paidOffMonth))
+      .slice()
+      .sort((a, b) => a.paidOffMonth - b.paidOffMonth || a.priority - b.priority);
+
+    return [
+      {
+        label: 'Now',
+        title: 'Starting debt',
+        value: money(startingDebt),
+        detail: `${money(Number(monthlyBudget))}/month plan`,
+      },
+      ...sorted.map((debt, index) => ({
+        label: debt.payoffLabel,
+        title: debt.name,
+        value: index === sorted.length - 1 ? 'Household debt free' : 'Paid off',
+        detail: `${payoffDuration(debt.paidOffMonth)} from now · ~${money(debt.interestPaid)} interest`,
+      })),
+    ];
+  }, [projection, startingDebt, monthlyBudget]);
 
   if (!debts.length) return null;
 
@@ -166,7 +186,7 @@ export function DebtPayoffCalculator({ planningSnapshot }) {
       </label>
 
       <div className="future-payoff-rate-grid">
-        {modeledDebts.filter((debt) => debt.balance > 0).map((debt) => (
+        {activeDebts.map((debt) => (
           <div className="future-payoff-rate-row" key={debt.id ?? debt.name}>
             <div>
               <strong>{debt.name}</strong>
@@ -180,7 +200,7 @@ export function DebtPayoffCalculator({ planningSnapshot }) {
                   min="0"
                   max="100"
                   step="0.01"
-                  placeholder="Enter rate"
+                  placeholder="0"
                   value={Object.prototype.hasOwnProperty.call(aprOverrides, debt.id)
                     ? aprOverrides[debt.id]
                     : (validApr(debt.apr) ?? '')}
@@ -189,15 +209,15 @@ export function DebtPayoffCalculator({ planningSnapshot }) {
                 <span>%</span>
               </div>
             </label>
-            {debt.minimum > 0 && <small>Modeled minimum / regular payment: {money(debt.minimum)}</small>}
+            {debt.aprMissing && <small>APR missing · projection assumes 0%</small>}
+            {!debt.aprMissing && debt.minimum > 0 && <small>Modeled minimum / regular payment: {money(debt.minimum)}</small>}
           </div>
         ))}
       </div>
 
       {missingAprs.length > 0 && (
         <p className="future-payoff-warning">
-          Enter the APR for {missingAprs.map((debt) => debt.name).join(', ')} to include {missingAprs.length === 1 ? 'it' : 'them'} in the full payoff estimate.
-          Until then, the timeline below covers only debts with verified rates.
+          APR data is missing for {missingAprs.map((debt) => debt.name).join(', ')}. The projection includes them at 0% APR so the full balances still appear. Enter a rate above whenever you have it for a more realistic interest estimate.
         </p>
       )}
 
@@ -206,21 +226,16 @@ export function DebtPayoffCalculator({ planningSnapshot }) {
       {projection && !projection.error && (
         <>
           <div className="future-payoff-projection-kpis">
-            <div><span>{missingAprs.length ? 'Known-rate debt free in' : 'Debt free in'}</span><strong>{payoffDuration(projection.months)}</strong></div>
+            <div><span>Debt free in</span><strong>{payoffDuration(projection.months)}</strong></div>
             <div><span>Estimated payoff date</span><strong>{monthLabel(planningSnapshot?.asOf, projection.months)}</strong></div>
             <div><span>Estimated interest</span><strong>{money(projection.totalInterest)}</strong></div>
           </div>
 
-          {projection.points.length > 1 && (
-            <TrendingGraph
-              title={missingAprs.length ? 'Known-rate debt projection' : 'Projected total debt balance'}
-              points={projection.points.map((point) => ({
-                ...point,
-                valueLabel: money(point.value),
-              }))}
-              valueFormatter={money}
-              tone="coral"
-              className="future-debt-trend"
+          {timelineMilestones.length > 1 && (
+            <TimelineGraph
+              title="Projected debt payoff timeline"
+              milestones={timelineMilestones}
+              className="future-debt-timeline"
             />
           )}
 
@@ -232,7 +247,7 @@ export function DebtPayoffCalculator({ planningSnapshot }) {
                 <div key={debt.id ?? debt.name}>
                   <span>{debt.name}</span>
                   <strong>{debt.payoffLabel}</strong>
-                  <small>{payoffDuration(debt.paidOffMonth)} · ~{money(debt.interestPaid)} interest</small>
+                  <small>{payoffDuration(debt.paidOffMonth)} · ~{money(debt.interestPaid)} interest{debt.aprMissing ? ' · 0% APR assumed' : ''}</small>
                 </div>
               ))}
           </div>
@@ -240,7 +255,7 @@ export function DebtPayoffCalculator({ planningSnapshot }) {
       )}
 
       <p className="future-payoff-disclaimer">
-        Planning estimate only. Actual payoff dates change with new purchases, variable rates, statement timing, fees, and payment timing.
+        Planning estimate only. Actual payoff dates change with new purchases, variable rates, statement timing, fees, and payment timing. Missing APRs are modeled at 0% until replaced.
       </p>
     </div>
   );
