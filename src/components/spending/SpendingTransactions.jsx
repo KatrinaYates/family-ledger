@@ -48,15 +48,28 @@ export function SpendingTransactions({ transactions = [], merchantActivity = [] 
         const aAmount = Number(a.amount) || 0;
         const bAmount = Number(b.amount) || 0;
         if (aAmount !== bAmount) return (aAmount - bAmount) * direction;
-      } else {
+      } else if (sort.field === 'date') {
         const aDate = new Date(a.date).getTime();
         const bDate = new Date(b.date).getTime();
         const safeA = Number.isFinite(aDate) ? aDate : 0;
         const safeB = Number.isFinite(bDate) ? bDate : 0;
         if (safeA !== safeB) return (safeA - safeB) * direction;
+      } else {
+        const fieldMap = {
+          merchant: 'name',
+          category: 'category',
+          account: 'account',
+        };
+        const key = fieldMap[sort.field];
+        const aValue = String(a[key] ?? '').trim();
+        const bValue = String(b[key] ?? '').trim();
+        const comparison = aValue.localeCompare(bValue, undefined, { sensitivity: 'base' });
+        if (comparison !== 0) return comparison * direction;
       }
 
-      return String(a.name ?? '').localeCompare(String(b.name ?? ''));
+      const nameComparison = String(a.name ?? '').localeCompare(String(b.name ?? ''), undefined, { sensitivity: 'base' });
+      if (nameComparison !== 0) return nameComparison;
+      return String(a.date ?? '').localeCompare(String(b.date ?? ''));
     });
 
     return next;
@@ -73,6 +86,10 @@ export function SpendingTransactions({ transactions = [], merchantActivity = [] 
     if (sort.field !== field) return '↕';
     return sort.direction === 'asc' ? '↑' : '↓';
   };
+
+  const ariaSort = (field) => (
+    sort.field === field ? (sort.direction === 'asc' ? 'ascending' : 'descending') : 'none'
+  );
 
   if (!transactions.length && !merchantActivity.length) return null;
 
@@ -129,15 +146,27 @@ export function SpendingTransactions({ transactions = [], merchantActivity = [] 
           <table className="spending-transaction-table">
             <thead>
               <tr>
-                <th aria-sort={sort.field === 'date' ? (sort.direction === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                <th aria-sort={ariaSort('date')}>
                   <button type="button" className="spending-transaction-sort" onClick={() => toggleSort('date')}>
                     Date <span aria-hidden="true">{sortIndicator('date')}</span>
                   </button>
                 </th>
-                <th>Merchant</th>
-                <th>Category</th>
-                <th>Account</th>
-                <th aria-sort={sort.field === 'amount' ? (sort.direction === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                <th aria-sort={ariaSort('merchant')}>
+                  <button type="button" className="spending-transaction-sort" onClick={() => toggleSort('merchant')}>
+                    Merchant <span aria-hidden="true">{sortIndicator('merchant')}</span>
+                  </button>
+                </th>
+                <th aria-sort={ariaSort('category')}>
+                  <button type="button" className="spending-transaction-sort" onClick={() => toggleSort('category')}>
+                    Category <span aria-hidden="true">{sortIndicator('category')}</span>
+                  </button>
+                </th>
+                <th aria-sort={ariaSort('account')}>
+                  <button type="button" className="spending-transaction-sort" onClick={() => toggleSort('account')}>
+                    Account <span aria-hidden="true">{sortIndicator('account')}</span>
+                  </button>
+                </th>
+                <th aria-sort={ariaSort('amount')}>
                   <button type="button" className="spending-transaction-sort spending-transaction-sort--amount" onClick={() => toggleSort('amount')}>
                     Amount <span aria-hidden="true">{sortIndicator('amount')}</span>
                   </button>
