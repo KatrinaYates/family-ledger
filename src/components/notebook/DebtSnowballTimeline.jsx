@@ -5,8 +5,19 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
+function calendarLabel(startDate, months) {
+  if (!startDate) return months === 0 ? 'Now' : `+${months} mo`;
+  const base = new Date(`${startDate}T12:00:00`);
+  if (Number.isNaN(base.getTime())) return months === 0 ? 'Now' : `+${months} mo`;
+  base.setMonth(base.getMonth() + months);
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    year: 'numeric',
+  }).format(base);
+}
+
 /**
- * Gantt-style payoff chart that shows each debt's minimum-payment phase and
+ * Gantt-style payoff chart that shows each debt's regular-payment phase and
  * the later snowball/avalanche target phase.
  *
  * @param {{
@@ -21,8 +32,7 @@ function clamp(value, min, max) {
  *     payoffLabel?: string,
  *   }>,
  *   totalMonths: number,
- *   startLabel?: string,
- *   endLabel?: string,
+ *   startDate?: string,
  *   title?: string,
  *   className?: string,
  * }} props
@@ -30,8 +40,7 @@ function clamp(value, min, max) {
 export function DebtSnowballTimeline({
   rows = [],
   totalMonths,
-  startLabel = 'Now',
-  endLabel = 'Debt free',
+  startDate,
   title,
   className = '',
 }) {
@@ -45,7 +54,7 @@ export function DebtSnowballTimeline({
   if (ticks[ticks.length - 1] !== horizon) ticks.push(horizon);
 
   const summary = validRows
-    .map((row) => `${row.name}: snowball starts month ${Math.max(1, row.targetStartMonth || 1)}, paid off ${row.payoffLabel || `month ${row.payoffMonth}`}${row.aprAssumed ? ', APR assumed 0%' : ''}`)
+    .map((row) => `${row.name}: snowball starts month ${Math.max(0, row.targetStartMonth ?? 0)}, paid off ${row.payoffLabel || `month ${row.payoffMonth}`}${row.aprAssumed ? ', APR assumed 0%' : ''}`)
     .join(', ');
 
   return (
@@ -59,12 +68,16 @@ export function DebtSnowballTimeline({
       </div>
 
       <div className="debt-snowball-scroll" role="img" aria-label={summary}>
-        <div className="debt-snowball-chart" style={{ '--snowball-columns': ticks.length }}>
+        <div className="debt-snowball-chart">
           <div className="debt-snowball-axis-label">Debt</div>
           <div className="debt-snowball-axis">
             {ticks.map((month, index) => {
               const left = `${(month / horizon) * 100}%`;
-              const label = index === 0 ? startLabel : index === ticks.length - 1 ? endLabel : `+${month} mo`;
+              const label = index === 0
+                ? 'Now'
+                : index === ticks.length - 1
+                  ? `Debt free · ${calendarLabel(startDate, month)}`
+                  : calendarLabel(startDate, month);
               return (
                 <span key={month} className="debt-snowball-tick" style={{ left }}>
                   <i aria-hidden="true" />
@@ -76,7 +89,7 @@ export function DebtSnowballTimeline({
 
           {validRows.map((row, index) => {
             const payoffMonth = clamp(row.payoffMonth, 0, horizon);
-            const targetStart = clamp(row.targetStartMonth || 1, 0, payoffMonth);
+            const targetStart = clamp(row.targetStartMonth ?? 0, 0, payoffMonth);
             const minimumWidth = (targetStart / horizon) * 100;
             const snowballWidth = ((payoffMonth - targetStart) / horizon) * 100;
             const payoffLeft = (payoffMonth / horizon) * 100;
