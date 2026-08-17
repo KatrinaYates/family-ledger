@@ -111,6 +111,7 @@ export function DebtPayoffCalculator({ planningSnapshot }) {
   const [monthlyBudget, setMonthlyBudget] = useState(baselineBudget);
   const [aprOverrides, setAprOverrides] = useState({});
   const [excludedDebtIds, setExcludedDebtIds] = useState(() => new Set());
+  const [settingsOpen, setSettingsOpen] = useState(true);
 
   const modeledDebts = useMemo(() => debts.map((debt, index) => {
     const sourceApr = validApr(debt.apr);
@@ -181,84 +182,103 @@ export function DebtPayoffCalculator({ planningSnapshot }) {
         {planningSnapshot?.asOf && <span>Planning balances as of {planningSnapshot.asOf}</span>}
       </div>
 
-      <label className="future-payoff-budget-input">
-        <span>How much do we want to put toward included debt each month?</span>
-        <div>
-          <span aria-hidden="true">$</span>
-          <input
-            type="number"
-            min="0"
-            step="50"
-            value={monthlyBudget}
-            onChange={(event) => setMonthlyBudget(event.target.value)}
-          />
-        </div>
-        {baselineBudget > 0 && (
-          <small>
-            Default: {money(baselineBudget)}. {planningSnapshot?.baselineLabel || 'Based on the month’s recorded payoff pace.'}
-          </small>
-        )}
-      </label>
+      <div className="future-payoff-settings-shell">
+        <button
+          type="button"
+          className="future-payoff-settings-toggle"
+          onClick={() => setSettingsOpen((open) => !open)}
+          aria-expanded={settingsOpen}
+        >
+          <span>
+            <strong>Debt scenario settings</strong>
+            <small>{activeDebts.length} included · {money(Number(monthlyBudget))}/month</small>
+          </span>
+          <b aria-hidden="true">{settingsOpen ? 'Hide' : 'Edit'} {settingsOpen ? '−' : '+'}</b>
+        </button>
 
-      <div className="future-payoff-rate-grid">
-        {debtsWithBalance.map((debt) => {
-          const included = !excludedDebtIds.has(debt.id);
-          return (
-            <div
-              className={`future-payoff-rate-row ${included ? '' : 'is-excluded'}`.trim()}
-              key={debt.id ?? debt.name}
-            >
-              <label className="future-payoff-include-toggle">
-                <input
-                  type="checkbox"
-                  checked={included}
-                  onChange={() => toggleDebt(debt.id)}
-                />
-                <span>Include in payoff plan</span>
-              </label>
-
+        {settingsOpen && (
+          <div className="future-payoff-settings-body">
+            <label className="future-payoff-budget-input">
+              <span>How much do we want to put toward included debt each month?</span>
               <div>
-                <strong>{debt.name}</strong>
-                <span>{money(debt.balance)} balance</span>
+                <span aria-hidden="true">$</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="50"
+                  value={monthlyBudget}
+                  onChange={(event) => setMonthlyBudget(event.target.value)}
+                />
               </div>
+              {baselineBudget > 0 && (
+                <small>
+                  Default: {money(baselineBudget)}. {planningSnapshot?.baselineLabel || 'Based on the month’s recorded payoff pace.'}
+                </small>
+              )}
+            </label>
 
-              <label>
-                <span>APR</span>
-                <div>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.01"
-                    placeholder="0"
-                    value={Object.prototype.hasOwnProperty.call(aprOverrides, debt.id)
-                      ? aprOverrides[debt.id]
-                      : (validApr(debt.apr) ?? '')}
-                    onChange={(event) => setAprOverrides((current) => ({ ...current, [debt.id]: event.target.value }))}
-                  />
-                  <span>%</span>
-                </div>
-              </label>
+            <div className="future-payoff-rate-grid">
+              {debtsWithBalance.map((debt) => {
+                const included = !excludedDebtIds.has(debt.id);
+                return (
+                  <div
+                    className={`future-payoff-rate-row ${included ? '' : 'is-excluded'}`.trim()}
+                    key={debt.id ?? debt.name}
+                  >
+                    <label className="future-payoff-include-toggle">
+                      <input
+                        type="checkbox"
+                        checked={included}
+                        onChange={() => toggleDebt(debt.id)}
+                      />
+                      <span>Include in payoff plan</span>
+                    </label>
 
-              {!included && <small>Excluded from this scenario</small>}
-              {included && debt.aprMissing && <small>APR missing · projection assumes 0%</small>}
-              {included && !debt.aprMissing && debt.minimum > 0 && <small>Modeled minimum / regular payment: {money(debt.minimum)}</small>}
+                    <div>
+                      <strong>{debt.name}</strong>
+                      <span>{money(debt.balance)} balance</span>
+                    </div>
+
+                    <label>
+                      <span>APR</span>
+                      <div>
+                        <input
+                          type="number"
+                          min="0"
+                          max="100"
+                          step="0.01"
+                          placeholder="0"
+                          value={Object.prototype.hasOwnProperty.call(aprOverrides, debt.id)
+                            ? aprOverrides[debt.id]
+                            : (validApr(debt.apr) ?? '')}
+                          onChange={(event) => setAprOverrides((current) => ({ ...current, [debt.id]: event.target.value }))}
+                        />
+                        <span>%</span>
+                      </div>
+                    </label>
+
+                    {!included && <small>Excluded from this scenario</small>}
+                    {included && debt.aprMissing && <small>APR missing · projection assumes 0%</small>}
+                    {included && !debt.aprMissing && debt.minimum > 0 && <small>Modeled minimum / regular payment: {money(debt.minimum)}</small>}
+                  </div>
+                );
+              })}
             </div>
-          );
-        })}
+
+            {excludedDebts.length > 0 && (
+              <p className="future-payoff-selection-note">
+                Excluded from this scenario: {excludedDebts.map((debt) => debt.name).join(', ')}. Their balances and payments are not included in the payoff date, minimum-payment requirement, timeline, or interest estimate.
+              </p>
+            )}
+
+            {missingAprs.length > 0 && (
+              <p className="future-payoff-warning">
+                APR data is missing for {missingAprs.map((debt) => debt.name).join(', ')}. The projection includes them at 0% APR, so estimated interest is understated until those rates are replaced.
+              </p>
+            )}
+          </div>
+        )}
       </div>
-
-      {excludedDebts.length > 0 && (
-        <p className="future-payoff-selection-note">
-          Excluded from this scenario: {excludedDebts.map((debt) => debt.name).join(', ')}. Their balances and payments are not included in the payoff date, minimum-payment requirement, timeline, or interest estimate.
-        </p>
-      )}
-
-      {missingAprs.length > 0 && (
-        <p className="future-payoff-warning">
-          APR data is missing for {missingAprs.map((debt) => debt.name).join(', ')}. The projection includes them at 0% APR, so estimated interest is understated until those rates are replaced.
-        </p>
-      )}
 
       {!activeDebts.length && (
         <p className="future-payoff-warning">Select at least one debt to build a payoff scenario.</p>
