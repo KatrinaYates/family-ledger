@@ -1,5 +1,5 @@
 import React from 'react';
-import { CardGrid, PanelSurface, SectionBlock } from '../notebook';
+import { AmountList, CardGrid, PanelSurface, SectionBlock } from '../notebook';
 import { ProgressBar } from '../checkin/CheckInVisuals';
 import { DebtPayoffCalculator } from './DebtPayoffCalculator';
 import './future-financial-sections.css';
@@ -26,26 +26,24 @@ function MoneyPair({ label, value, note }) {
   );
 }
 
-function DebtAccountList({ title, items = [] }) {
-  if (!items.length) return null;
+function DebtAmountList({ title, items = [], total }) {
+  const rows = items
+    .filter((item) => hasValue(item.amount ?? item.balance))
+    .map((item) => ({
+      name: item.name,
+      amount: item.amount ?? item.balance,
+    }));
+
+  if (!rows.length) return null;
+
   return (
     <div className="future-financial-subsection">
-      <h3>{title}</h3>
-      <div className="future-financial-account-list">
-        {items.map((item, index) => (
-          <div className="future-financial-account" key={item.id ?? item.name ?? index}>
-            <div>
-              <strong>{item.name}</strong>
-              {item.note && <span>{item.note}</span>}
-            </div>
-            <div className="future-financial-account-values">
-              {hasValue(item.amount ?? item.balance) && <b>{item.amount ?? item.balance}</b>}
-              {hasValue(item.apr) && <span>{item.apr} APR</span>}
-              {hasValue(item.minimum) && <span>Minimum {item.minimum}</span>}
-            </div>
-          </div>
-        ))}
-      </div>
+      <AmountList
+        heading={title}
+        items={rows}
+        total={total}
+        className="future-debt-amount-list"
+      />
     </div>
   );
 }
@@ -53,55 +51,50 @@ function DebtAccountList({ title, items = [] }) {
 function DebtSection({ debt, payoffPlan }) {
   if (!debt && !payoffPlan) return null;
   const paymentActivity = debt?.paymentActivity ?? [];
+  const cardTotal = (debt?.creditCards ?? []).reduce((sum, item) => {
+    const value = parseMoney(item.amount ?? item.balance);
+    return value == null ? sum : sum + value;
+  }, 0);
+  const loanTotal = (debt?.loans ?? []).reduce((sum, item) => {
+    const value = parseMoney(item.amount ?? item.balance);
+    return value == null ? sum : sum + value;
+  }, 0);
+
+  const formatTotal = (value) => new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+  }).format(value);
+
   return (
     <SectionBlock label="Debt" className="future-financial-section future-debt-section">
       <PanelSurface className="future-financial-panel">
         <div className="future-financial-kpis">
           <MoneyPair label="Ending connected debt" value={debt?.total} />
           <MoneyPair label="Paid toward debt this month" value={debt?.paidThisMonth} />
-          <MoneyPair label="Current payoff target" value={payoffPlan?.currentTarget} note={payoffPlan?.strategy} />
         </div>
 
         {debt?.insight && <p className="future-financial-note">{debt.insight}</p>}
-        <DebtAccountList title="Credit cards" items={debt?.creditCards ?? []} />
-        <DebtAccountList title="Loans" items={debt?.loans ?? []} />
+
+        <div className="future-debt-ledgers">
+          <DebtAmountList
+            title="Credit cards"
+            items={debt?.creditCards ?? []}
+            total={cardTotal > 0 ? formatTotal(cardTotal) : undefined}
+          />
+          <DebtAmountList
+            title="Loans"
+            items={debt?.loans ?? []}
+            total={loanTotal > 0 ? formatTotal(loanTotal) : undefined}
+          />
+        </div>
 
         {paymentActivity.length > 0 && (
-          <div className="future-financial-subsection">
-            <h3>Loan payment activity this month</h3>
-            <div className="future-financial-account-list">
-              {paymentActivity.map((item, index) => (
-                <div className="future-financial-account" key={item.name ?? index}>
-                  <strong>{item.name}</strong>
-                  <b>{item.amount}</b>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {payoffPlan?.queue?.length > 0 && (
-          <div className="future-payoff-plan">
-            <div className="future-payoff-plan-heading">
-              <div>
-                <h3>Debt payoff plan</h3>
-                {payoffPlan.strategy && <p>{payoffPlan.strategy}</p>}
-              </div>
-              {payoffPlan.note && <span>{payoffPlan.note}</span>}
-            </div>
-            <ol className="future-payoff-queue">
-              {payoffPlan.queue.map((item, index) => (
-                <li key={item.id ?? item.name ?? index} className={index === 0 ? 'is-current' : ''}>
-                  <span className="future-payoff-rank">{index === 0 ? 'NOW' : index + 1}</span>
-                  <div>
-                    <strong>{item.name}</strong>
-                    {item.reason && <small>{item.reason}</small>}
-                  </div>
-                  {hasValue(item.balance) && <b>{item.balance}</b>}
-                </li>
-              ))}
-            </ol>
-          </div>
+          <AmountList
+            heading="Loan payment activity this month"
+            items={paymentActivity.map((item) => ({ name: item.name, amount: item.amount }))}
+            className="future-debt-payment-activity"
+          />
         )}
 
         <DebtPayoffCalculator planningSnapshot={payoffPlan?.planningSnapshot} />
@@ -180,7 +173,7 @@ function SavingsSection({ savings }) {
         )}
 
         {other.length > 0 && (
-          <DebtAccountList title="Other savings" items={other} />
+          <DebtAmountList title="Other savings" items={other} />
         )}
       </PanelSurface>
     </SectionBlock>
