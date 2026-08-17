@@ -24,6 +24,12 @@ function payoffDuration(months) {
   return rest ? `${years}y ${rest}m` : `${years} year${years === 1 ? '' : 's'}`;
 }
 
+function validApr(value) {
+  if (value == null || value === '') return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 function simulateDebtPayoff(debts, monthlyBudget, startDate) {
   const active = debts
     .filter((debt) => debt.balance > 0 && Number.isFinite(debt.apr))
@@ -55,7 +61,6 @@ function simulateDebtPayoff(debts, monthlyBudget, startDate) {
 
     let remainingBudget = monthlyBudget;
 
-    // Keep every active debt current first.
     active.forEach((debt) => {
       if (debt.remaining <= 0 || remainingBudget <= 0) return;
       const payment = Math.min(debt.remaining, Math.max(0, debt.minimum || 0), remainingBudget);
@@ -64,7 +69,6 @@ function simulateDebtPayoff(debts, monthlyBudget, startDate) {
       if (debt.remaining <= 0.005 && debt.paidOffMonth == null) debt.paidOffMonth = month;
     });
 
-    // Then avalanche the rest in the household payoff order / APR order.
     const targets = active
       .filter((debt) => debt.remaining > 0.005)
       .sort((a, b) => {
@@ -106,14 +110,14 @@ export function DebtPayoffCalculator({ planningSnapshot }) {
   const [aprOverrides, setAprOverrides] = useState({});
 
   const modeledDebts = useMemo(() => debts.map((debt, index) => {
-    const suppliedApr = aprOverrides[debt.id];
-    const apr = suppliedApr === '' || suppliedApr == null
-      ? (Number.isFinite(Number(debt.apr)) ? Number(debt.apr) : null)
-      : Number(suppliedApr);
+    const sourceApr = validApr(debt.apr);
+    const suppliedApr = Object.prototype.hasOwnProperty.call(aprOverrides, debt.id)
+      ? validApr(aprOverrides[debt.id])
+      : sourceApr;
     return {
       ...debt,
       balance: Number(debt.balance) || 0,
-      apr: Number.isFinite(apr) ? apr : null,
+      apr: suppliedApr,
       minimum: Number(debt.minimum) || 0,
       priority: Number.isFinite(Number(debt.priority)) ? Number(debt.priority) : index + 1,
     };
@@ -154,7 +158,9 @@ export function DebtPayoffCalculator({ planningSnapshot }) {
           />
         </div>
         {baselineBudget > 0 && (
-          <small>Default: {money(baselineBudget)}, matching the month&apos;s recorded payoff pace.</small>
+          <small>
+            Default: {money(baselineBudget)}. {planningSnapshot?.baselineLabel || 'Based on the month’s recorded payoff pace.'}
+          </small>
         )}
       </label>
 
@@ -174,7 +180,9 @@ export function DebtPayoffCalculator({ planningSnapshot }) {
                   max="100"
                   step="0.01"
                   placeholder="Enter rate"
-                  value={aprOverrides[debt.id] ?? (Number.isFinite(Number(debt.apr)) ? Number(debt.apr) : '')}
+                  value={Object.prototype.hasOwnProperty.call(aprOverrides, debt.id)
+                    ? aprOverrides[debt.id]
+                    : (validApr(debt.apr) ?? '')}
                   onChange={(event) => setAprOverrides((current) => ({ ...current, [debt.id]: event.target.value }))}
                 />
                 <span>%</span>
@@ -197,7 +205,7 @@ export function DebtPayoffCalculator({ planningSnapshot }) {
       {projection && !projection.error && (
         <>
           <div className="future-payoff-projection-kpis">
-            <div><span>Known-rate debt free in</span><strong>{payoffDuration(projection.months)}</strong></div>
+            <div><span>{missingAprs.length ? 'Known-rate debt free in' : 'Debt free in'}</span><strong>{payoffDuration(projection.months)}</strong></div>
             <div><span>Estimated payoff date</span><strong>{monthLabel(planningSnapshot?.asOf, projection.months)}</strong></div>
             <div><span>Estimated interest</span><strong>{money(projection.totalInterest)}</strong></div>
           </div>
