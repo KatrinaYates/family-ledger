@@ -22,6 +22,7 @@ export {
 } from './ChartComponents.jsx';
 
 export { TimelineGraph } from './TimelineGraph.jsx';
+export { DebtSnowballTimeline } from './DebtSnowballTimeline.jsx';
 
 export {
   EditableChecklist,
