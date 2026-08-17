@@ -2,6 +2,7 @@ import React from 'react';
 import { NotebookKitPage as BaseNotebookKitPage } from './NotebookKitPage.jsx';
 import { KitSample, KitVariant } from './KitComponents.jsx';
 import { PieChart, TrendingGraph } from './ChartComponents.jsx';
+import { TimelineGraph } from './TimelineGraph.jsx';
 
 const PIE_SAMPLE = [
   { label: 'Housing', value: 2410, valueLabel: '$2,410', tone: 'teal' },
@@ -18,11 +19,18 @@ const TREND_SAMPLE = [
   { label: 'Jul', value: 142800, valueLabel: '$142.8k' },
 ];
 
+const TIMELINE_SAMPLE = [
+  { label: 'Now', title: 'Start', value: '$12.4k debt' },
+  { label: 'Oct 2026', title: 'Amazon', value: 'Paid off', detail: '2 months' },
+  { label: 'Feb 2027', title: 'Chase', value: 'Paid off', detail: '6 months' },
+  { label: 'Jun 2028', title: 'Debt free', value: '$0 remaining', detail: '22 months' },
+];
+
 function ChartsKitSample() {
   return (
     <KitSample
-      name="PieChart · TrendingGraph"
-      usage="PieChart: part-to-whole breakdowns with 2–6 categories. TrendingGraph: ordered month-over-month movement such as net worth, spending, debt, or savings."
+      name="PieChart · TrendingGraph · TimelineGraph"
+      usage="PieChart: part-to-whole breakdowns with 2–6 categories. TrendingGraph: ordered numeric movement. TimelineGraph: dated milestones such as payoff plans, goals, and major financial checkpoints."
       isNew
     >
       <KitVariant label="Pie chart · spending mix">
@@ -38,6 +46,12 @@ function ChartsKitSample() {
           title="Net worth trend"
           points={TREND_SAMPLE}
           valueFormatter={(value) => `$${Math.abs(value / 1000).toFixed(1)}k`}
+        />
+      </KitVariant>
+      <KitVariant label="Timeline graph · payoff plan">
+        <TimelineGraph
+          title="Projected payoff timeline"
+          milestones={TIMELINE_SAMPLE}
         />
       </KitVariant>
     </KitSample>
