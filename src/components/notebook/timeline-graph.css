@@ -1,0 +1,109 @@
+.notebook-timeline-graph {
+  margin: 0;
+  padding: 18px;
+  min-width: 0;
+}
+
+.notebook-timeline-scroll {
+  overflow-x: auto;
+  margin-top: 16px;
+  padding: 4px 2px 8px;
+}
+
+.notebook-timeline-track {
+  display: grid;
+  grid-template-columns: repeat(var(--timeline-count), minmax(138px, 1fr));
+  min-width: max(100%, calc(var(--timeline-count) * 138px));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.notebook-timeline-milestone {
+  display: grid;
+  grid-template-rows: auto 28px auto;
+  min-width: 0;
+}
+
+.notebook-timeline-date {
+  padding: 0 8px 6px;
+  color: #6b7a82;
+  font-family: var(--font-data);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.notebook-timeline-marker-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notebook-timeline-marker-row::before,
+.notebook-timeline-marker-row::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 50%;
+  height: 3px;
+  background: rgba(46, 125, 111, 0.28);
+  transform: translateY(-50%);
+}
+
+.notebook-timeline-marker-row::before { left: 0; }
+.notebook-timeline-marker-row::after { right: 0; }
+.notebook-timeline-milestone.is-start .notebook-timeline-marker-row::before { display: none; }
+.notebook-timeline-milestone.is-end .notebook-timeline-marker-row::after { display: none; }
+
+.notebook-timeline-marker {
+  position: relative;
+  z-index: 1;
+  width: 14px;
+  height: 14px;
+  border: 4px solid var(--chart-teal, #2E7D6F);
+  border-radius: 50%;
+  background: #fffdf8;
+}
+
+.notebook-timeline-milestone.is-end .notebook-timeline-marker {
+  width: 18px;
+  height: 18px;
+  background: var(--chart-teal, #2E7D6F);
+  box-shadow: inset 0 0 0 3px #fffdf8;
+}
+
+.notebook-timeline-copy {
+  display: grid;
+  gap: 3px;
+  padding: 8px 10px 0;
+  text-align: center;
+}
+
+.notebook-timeline-copy strong {
+  color: var(--ink, #2d3548);
+  font-size: 0.86rem;
+}
+
+.notebook-timeline-copy b {
+  color: #405861;
+  font-family: var(--font-data);
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.notebook-timeline-copy small {
+  color: #7a858d;
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+@media (max-width: 700px) {
+  .notebook-timeline-track {
+    grid-template-columns: repeat(var(--timeline-count), minmax(126px, 1fr));
+    min-width: calc(var(--timeline-count) * 126px);
+  }
+}
