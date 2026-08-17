@@ -41,6 +41,15 @@
 .future-payoff-calculator-heading h3, .future-payoff-calculator-heading p { margin: 0; }
 .future-payoff-calculator-heading p { margin-top: 4px; color: #5f6878; line-height: 1.5; max-width: 720px; }
 .future-payoff-calculator-heading > span { color: #6b7482; font-size: .8rem; white-space: nowrap; }
+.future-payoff-settings-shell { overflow: hidden; border: 1px solid rgba(57,73,86,.12); border-radius: 14px; background: rgba(255,255,255,.5); }
+.future-payoff-settings-toggle { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 13px 15px; border: 0; background: transparent; color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.future-payoff-settings-toggle:hover { background: rgba(46,125,111,.05); }
+.future-payoff-settings-toggle > span { display: grid; gap: 2px; }
+.future-payoff-settings-toggle strong { font-size: .94rem; }
+.future-payoff-settings-toggle small { color: #6b7482; font-size: .8rem; }
+.future-payoff-settings-toggle b { color: #2e7d6f; font-size: .8rem; white-space: nowrap; }
+.future-payoff-settings-body { display: grid; gap: 14px; padding: 0 14px 14px; border-top: 1px dashed rgba(57,73,86,.12); }
+.future-payoff-settings-body > .future-payoff-budget-input { margin-top: 14px; }
 .future-payoff-budget-input { display: grid; gap: 6px; max-width: 460px; }
 .future-payoff-budget-input > span { font-weight: 700; color: var(--ink); }
 .future-payoff-budget-input > div { display: flex; align-items: center; gap: 6px; padding: 0 12px; border: 1px solid rgba(57,73,86,.2); border-radius: 12px; background: white; }
@@ -78,4 +87,5 @@
   .future-financial-account, .future-payoff-calculator-heading { flex-direction: column; }
   .future-payoff-rate-row { grid-template-columns: 1fr; }
   .future-payoff-calculator-heading > span { white-space: normal; }
+  .future-payoff-settings-toggle { align-items: flex-start; }
 }
