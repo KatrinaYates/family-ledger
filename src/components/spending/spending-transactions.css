@@ -107,6 +107,44 @@
   text-transform: uppercase;
 }
 
+.spending-transaction-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.spending-transaction-sort span {
+  font-size: 0.9rem;
+  line-height: 1;
+  opacity: 0.72;
+}
+
+.spending-transaction-sort:hover,
+.spending-transaction-sort:focus-visible {
+  color: var(--ink);
+}
+
+.spending-transaction-sort:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+  border-radius: 3px;
+}
+
+.spending-transaction-sort--amount {
+  justify-content: flex-end;
+}
+
 .spending-transaction-table td:last-child,
 .spending-transaction-table th:last-child {
   text-align: right;
