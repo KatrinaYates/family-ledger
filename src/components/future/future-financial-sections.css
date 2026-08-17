@@ -51,13 +51,18 @@
 .future-payoff-budget-input input { width: 100%; min-width: 0; border: 0; padding: 11px 0; font: inherit; background: transparent; color: var(--ink); }
 .future-payoff-budget-input small { color: #6b7482; }
 .future-payoff-rate-grid { display: grid; gap: 8px; }
-.future-payoff-rate-row { display: grid; grid-template-columns: minmax(0,1fr) 150px minmax(160px,.7fr); gap: 14px; align-items: center; padding: 11px 12px; border-radius: 12px; border: 1px solid rgba(57,73,86,.1); background: rgba(255,255,255,.72); }
-.future-payoff-rate-row > div:first-child { display: grid; gap: 2px; }
-.future-payoff-rate-row > div:first-child span, .future-payoff-rate-row > small { color: #6b7482; font-size: .82rem; }
+.future-payoff-rate-row { display: grid; grid-template-columns: minmax(150px,.75fr) minmax(0,1fr) 150px minmax(160px,.7fr); gap: 14px; align-items: center; padding: 11px 12px; border-radius: 12px; border: 1px solid rgba(57,73,86,.1); background: rgba(255,255,255,.72); transition: opacity .18s ease, background .18s ease; }
+.future-payoff-rate-row.is-excluded { opacity: .58; background: rgba(245,245,242,.72); }
+.future-payoff-rate-row > div:nth-of-type(1) { display: grid; gap: 2px; }
+.future-payoff-rate-row > div:nth-of-type(1) span, .future-payoff-rate-row > small { color: #6b7482; font-size: .82rem; }
 .future-payoff-rate-row label { display: grid; gap: 4px; }
 .future-payoff-rate-row label > span { color: #6b7482; font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; }
 .future-payoff-rate-row label > div { display: flex; align-items: center; gap: 4px; padding: 0 8px; border: 1px solid rgba(57,73,86,.18); border-radius: 9px; background: white; }
 .future-payoff-rate-row input { width: 100%; min-width: 0; border: 0; padding: 8px 0; font: inherit; background: transparent; color: var(--ink); }
+.future-payoff-include-toggle { display: flex !important; grid-auto-flow: column; justify-content: start; align-items: center; gap: 8px !important; cursor: pointer; }
+.future-payoff-include-toggle input { width: 18px; height: 18px; min-width: 18px; accent-color: #2e7d6f; }
+.future-payoff-include-toggle > span { color: var(--ink) !important; font-size: .78rem !important; font-weight: 700; text-transform: none !important; letter-spacing: 0 !important; }
+.future-payoff-selection-note { margin: 0; padding: 9px 12px; border-radius: 12px; background: rgba(78,127,168,.08); color: #596475; line-height: 1.45; }
 .future-payoff-warning { margin: 0; padding: 10px 12px; border-radius: 12px; background: rgba(247,213,124,.25); color: #6b5530; line-height: 1.45; }
 .future-payoff-projection-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px,1fr)); gap: 10px; }
 .future-payoff-projection-kpis > div { display: grid; gap: 3px; padding: 12px 14px; border-radius: 12px; background: rgba(255,255,255,.78); border: 1px solid rgba(57,73,86,.1); }
