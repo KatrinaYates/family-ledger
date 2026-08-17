@@ -1,0 +1,212 @@
+.debt-snowball-timeline {
+  margin: 0;
+  padding: 18px;
+  min-width: 0;
+}
+
+.debt-snowball-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  margin-top: 12px;
+  color: #667181;
+  font-size: .72rem;
+}
+
+.debt-snowball-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.debt-snowball-legend i {
+  display: inline-block;
+  width: 22px;
+  height: 7px;
+  border-radius: 999px;
+}
+
+.debt-snowball-legend .is-minimum { background: rgba(46, 125, 111, .22); }
+.debt-snowball-legend .is-snowball { background: var(--chart-teal, #2E7D6F); }
+.debt-snowball-legend .is-payoff {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--chart-coral, #D56A4C);
+}
+
+.debt-snowball-scroll {
+  overflow-x: auto;
+  margin-top: 14px;
+  padding: 2px 0 10px;
+}
+
+.debt-snowball-chart {
+  display: grid;
+  grid-template-columns: minmax(190px, 250px) minmax(700px, 1fr);
+  min-width: 940px;
+  align-items: stretch;
+}
+
+.debt-snowball-axis-label,
+.debt-snowball-axis {
+  min-height: 42px;
+  border-bottom: 1px solid rgba(57, 73, 86, .12);
+}
+
+.debt-snowball-axis-label {
+  display: flex;
+  align-items: end;
+  padding: 0 14px 9px 0;
+  color: #7a858d;
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.debt-snowball-axis {
+  position: relative;
+}
+
+.debt-snowball-tick {
+  position: absolute;
+  inset-block: 0;
+  transform: translateX(-50%);
+}
+
+.debt-snowball-tick:first-child { transform: none; }
+.debt-snowball-tick:last-child { transform: translateX(-100%); }
+
+.debt-snowball-tick i {
+  position: absolute;
+  left: 50%;
+  top: 18px;
+  height: 18px;
+  border-left: 1px dashed rgba(57, 73, 86, .18);
+}
+
+.debt-snowball-tick b {
+  position: relative;
+  display: block;
+  white-space: nowrap;
+  color: #6b7a82;
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.debt-snowball-row-label,
+.debt-snowball-row-track {
+  min-height: 78px;
+  border-bottom: 1px dashed rgba(57, 73, 86, .12);
+}
+
+.debt-snowball-row-label {
+  display: grid;
+  align-content: center;
+  gap: 5px;
+  padding: 10px 18px 10px 0;
+}
+
+.debt-snowball-row-label > strong {
+  color: var(--ink, #2d3548);
+  font-size: .86rem;
+  line-height: 1.2;
+}
+
+.debt-snowball-row-label > span {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: baseline;
+}
+
+.debt-snowball-row-label b {
+  color: #405861;
+  font-family: var(--font-data);
+  font-size: .76rem;
+}
+
+.debt-snowball-row-label small {
+  color: #7a858d;
+  font-size: .68rem;
+}
+
+.debt-snowball-row-label small.is-assumed { color: #a85f43; }
+
+.debt-snowball-row-track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  overflow: visible;
+}
+
+.debt-snowball-gridline {
+  position: absolute;
+  inset-block: 0;
+  border-left: 1px dashed rgba(57, 73, 86, .11);
+}
+
+.debt-snowball-base {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(46, 125, 111, .08);
+  transform: translateY(-50%);
+}
+
+.debt-snowball-phase {
+  position: absolute;
+  top: 50%;
+  height: 18px;
+  transform: translateY(-50%);
+}
+
+.debt-snowball-phase.is-minimum {
+  border-radius: 9px 0 0 9px;
+  background: rgba(46, 125, 111, .24);
+}
+
+.debt-snowball-phase.is-snowball {
+  z-index: 2;
+  min-width: 8px;
+  border-radius: 0 9px 9px 0;
+  background: linear-gradient(90deg, var(--chart-teal, #2E7D6F), #4f9c8d);
+  box-shadow: 0 4px 12px rgba(46, 125, 111, .16);
+}
+
+.debt-snowball-payoff-dot {
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  width: 13px;
+  height: 13px;
+  border: 3px solid #fffdf8;
+  border-radius: 50%;
+  background: var(--chart-coral, #D56A4C);
+  box-shadow: 0 0 0 2px rgba(213, 106, 76, .3);
+  transform: translate(-50%, -50%);
+}
+
+.debt-snowball-payoff-label {
+  position: absolute;
+  z-index: 4;
+  top: calc(50% + 16px);
+  transform: translateX(-50%);
+  white-space: nowrap;
+  color: #6b7482;
+  font-family: var(--font-data);
+  font-size: .66rem;
+  font-weight: 700;
+}
+
+@media (max-width: 700px) {
+  .debt-snowball-chart {
+    grid-template-columns: 170px minmax(660px, 1fr);
+    min-width: 830px;
+  }
+}
