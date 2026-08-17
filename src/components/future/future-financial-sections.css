@@ -15,10 +15,12 @@
 .future-financial-account > div:first-child { display: grid; gap: 2px; }
 .future-financial-account span { color: #6b7482; font-size: .82rem; }
 .future-financial-account-values { display: grid; gap: 2px; text-align: right; }
-.future-debt-ledgers { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; align-items: start; }
-.future-debt-ledgers .future-financial-subsection { padding: 14px 16px; border: 1px solid rgba(57,73,86,.1); border-radius: 14px; background: rgba(255,255,255,.62); }
+.future-debt-kpis { grid-template-columns: repeat(2, minmax(220px, 360px)); justify-content: start; }
+.future-debt-insight { max-width: 880px; }
+.future-debt-ledgers { display: grid; grid-template-columns: repeat(2, minmax(300px, 560px)); gap: 16px; align-items: start; justify-content: start; }
+.future-debt-ledger-card { min-width: 0; padding: 16px 18px; border: 1px solid rgba(57,73,86,.1); border-radius: 16px; background: rgba(255,255,255,.64); }
 .future-debt-amount-list, .future-debt-payment-activity { min-width: 0; }
-.future-debt-payment-activity { padding: 14px 16px; border-radius: 14px; background: rgba(255,255,255,.48); border: 1px solid rgba(57,73,86,.08); }
+.future-debt-payment-activity { padding: 0; border: 0; background: transparent; }
 .future-emergency-progress { display: grid; gap: 8px; padding: 14px 16px; border-radius: 14px; background: rgba(255,255,255,.56); border: 1px solid rgba(57,73,86,.1); }
 .future-savings-card { display: grid; gap: 4px; padding: 14px 16px; border-radius: 14px; background: rgba(255,255,255,.72); border: 1px solid rgba(57,73,86,.12); }
 .future-savings-card > span { color: #657080; }
@@ -68,6 +70,10 @@
 .future-payoff-results span, .future-payoff-results small { color: #6b7482; }
 .future-payoff-results strong { color: var(--ink); }
 .future-payoff-disclaimer { margin: 0; color: #737b88; font-size: .78rem; line-height: 1.45; }
+@media (max-width: 900px) {
+  .future-debt-kpis, .future-debt-ledgers { grid-template-columns: 1fr; }
+  .future-debt-kpis { max-width: 560px; }
+}
 @media (max-width: 700px) {
   .future-financial-account, .future-payoff-calculator-heading { flex-direction: column; }
   .future-payoff-rate-row { grid-template-columns: 1fr; }
