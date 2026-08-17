@@ -26,7 +26,7 @@ function MoneyPair({ label, value, note }) {
   );
 }
 
-function DebtAmountList({ title, items = [], total }) {
+function DebtAmountList({ title, items = [], total, className = '' }) {
   const rows = items
     .filter((item) => hasValue(item.amount ?? item.balance))
     .map((item) => ({
@@ -37,7 +37,7 @@ function DebtAmountList({ title, items = [], total }) {
   if (!rows.length) return null;
 
   return (
-    <div className="future-financial-subsection">
+    <div className={`future-financial-subsection future-debt-ledger-card ${className}`.trim()}>
       <AmountList
         heading={title}
         items={rows}
@@ -69,12 +69,12 @@ function DebtSection({ debt, payoffPlan }) {
   return (
     <SectionBlock label="Debt" className="future-financial-section future-debt-section">
       <PanelSurface className="future-financial-panel">
-        <div className="future-financial-kpis">
+        <div className="future-financial-kpis future-debt-kpis">
           <MoneyPair label="Ending connected debt" value={debt?.total} />
           <MoneyPair label="Paid toward debt this month" value={debt?.paidThisMonth} />
         </div>
 
-        {debt?.insight && <p className="future-financial-note">{debt.insight}</p>}
+        {debt?.insight && <p className="future-financial-note future-debt-insight">{debt.insight}</p>}
 
         <div className="future-debt-ledgers">
           <DebtAmountList
@@ -87,15 +87,16 @@ function DebtSection({ debt, payoffPlan }) {
             items={debt?.loans ?? []}
             total={loanTotal > 0 ? formatTotal(loanTotal) : undefined}
           />
+          {paymentActivity.length > 0 && (
+            <div className="future-debt-ledger-card future-debt-payment-card">
+              <AmountList
+                heading="Loan payment activity this month"
+                items={paymentActivity.map((item) => ({ name: item.name, amount: item.amount }))}
+                className="future-debt-payment-activity"
+              />
+            </div>
+          )}
         </div>
-
-        {paymentActivity.length > 0 && (
-          <AmountList
-            heading="Loan payment activity this month"
-            items={paymentActivity.map((item) => ({ name: item.name, amount: item.amount }))}
-            className="future-debt-payment-activity"
-          />
-        )}
 
         <DebtPayoffCalculator planningSnapshot={payoffPlan?.planningSnapshot} />
       </PanelSurface>
