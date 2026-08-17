@@ -9,6 +9,7 @@
 .future-financial-subsection { display: grid; gap: 10px; }
 .future-financial-subsection h3 { margin: 0; color: var(--ink); font-size: .98rem; }
 .future-financial-subheading-row { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; }
+.future-financial-subheading-row > span { color: #6b7482; font-size: .82rem; }
 .future-financial-account-list { display: grid; gap: 8px; }
 .future-financial-account { display: flex; justify-content: space-between; gap: 16px; padding: 11px 0; border-bottom: 1px dashed rgba(57,73,86,.16); }
 .future-financial-account > div:first-child { display: grid; gap: 2px; }
@@ -24,13 +25,54 @@
 .future-payoff-rank { font-size: .72rem; font-weight: 800; letter-spacing: .05em; color: #a85f43; }
 .future-payoff-queue li > div { display: grid; gap: 2px; }
 .future-payoff-queue small { color: #6b7482; }
+.future-emergency-progress { display: grid; gap: 8px; padding: 14px 16px; border-radius: 14px; background: rgba(255,255,255,.56); border: 1px solid rgba(57,73,86,.1); }
 .future-savings-card { display: grid; gap: 4px; padding: 14px 16px; border-radius: 14px; background: rgba(255,255,255,.72); border: 1px solid rgba(57,73,86,.12); }
 .future-savings-card > span { color: #657080; }
 .future-savings-card > strong { color: var(--ink); font-size: 1.16rem; }
 .future-savings-card small { color: #6b7482; }
+.future-retirement-balance-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px,1fr)); gap: 10px; }
+.future-retirement-balance-card { display: grid; gap: 4px; padding: 14px 16px; border-radius: 14px; background: rgba(255,255,255,.72); border: 1px solid rgba(57,73,86,.12); }
+.future-retirement-balance-card > span { color: #657080; font-size: .84rem; }
+.future-retirement-balance-card > strong { color: var(--ink); font-size: 1.15rem; }
+.future-retirement-balance-card small { color: #6b7482; }
 .future-retirement-activity { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 12px; }
 .future-retirement-account-card { padding: 14px 16px; border-radius: 14px; border: 1px solid rgba(57,73,86,.12); background: rgba(255,255,255,.72); }
 .future-retirement-account-card ul { display: grid; gap: 6px; margin: 10px 0 0; padding: 0; list-style: none; }
 .future-retirement-account-card li { display: flex; justify-content: space-between; gap: 10px; font-size: .84rem; color: #596475; }
 .future-retirement-account-card li strong { color: var(--ink); }
-@media (max-width: 700px) { .future-payoff-plan-heading, .future-financial-account { flex-direction: column; } .future-payoff-queue li { grid-template-columns: 44px minmax(0,1fr); } .future-payoff-queue li > b { grid-column: 2; } }
+.future-payoff-calculator { display: grid; gap: 16px; padding: 18px; border-radius: 18px; border: 1px solid rgba(57,73,86,.14); background: rgba(255,255,255,.58); }
+.future-payoff-calculator-heading { display: flex; justify-content: space-between; gap: 18px; align-items: start; }
+.future-payoff-calculator-heading h3, .future-payoff-calculator-heading p { margin: 0; }
+.future-payoff-calculator-heading p { margin-top: 4px; color: #5f6878; line-height: 1.5; max-width: 720px; }
+.future-payoff-calculator-heading > span { color: #6b7482; font-size: .8rem; white-space: nowrap; }
+.future-payoff-budget-input { display: grid; gap: 6px; max-width: 460px; }
+.future-payoff-budget-input > span { font-weight: 700; color: var(--ink); }
+.future-payoff-budget-input > div { display: flex; align-items: center; gap: 6px; padding: 0 12px; border: 1px solid rgba(57,73,86,.2); border-radius: 12px; background: white; }
+.future-payoff-budget-input input { width: 100%; min-width: 0; border: 0; padding: 11px 0; font: inherit; background: transparent; color: var(--ink); }
+.future-payoff-budget-input small { color: #6b7482; }
+.future-payoff-rate-grid { display: grid; gap: 8px; }
+.future-payoff-rate-row { display: grid; grid-template-columns: minmax(0,1fr) 150px minmax(160px,.7fr); gap: 14px; align-items: center; padding: 11px 12px; border-radius: 12px; border: 1px solid rgba(57,73,86,.1); background: rgba(255,255,255,.72); }
+.future-payoff-rate-row > div:first-child { display: grid; gap: 2px; }
+.future-payoff-rate-row > div:first-child span, .future-payoff-rate-row > small { color: #6b7482; font-size: .82rem; }
+.future-payoff-rate-row label { display: grid; gap: 4px; }
+.future-payoff-rate-row label > span { color: #6b7482; font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; }
+.future-payoff-rate-row label > div { display: flex; align-items: center; gap: 4px; padding: 0 8px; border: 1px solid rgba(57,73,86,.18); border-radius: 9px; background: white; }
+.future-payoff-rate-row input { width: 100%; min-width: 0; border: 0; padding: 8px 0; font: inherit; background: transparent; color: var(--ink); }
+.future-payoff-warning { margin: 0; padding: 10px 12px; border-radius: 12px; background: rgba(247,213,124,.25); color: #6b5530; line-height: 1.45; }
+.future-payoff-projection-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px,1fr)); gap: 10px; }
+.future-payoff-projection-kpis > div { display: grid; gap: 3px; padding: 12px 14px; border-radius: 12px; background: rgba(255,255,255,.78); border: 1px solid rgba(57,73,86,.1); }
+.future-payoff-projection-kpis span { color: #687282; font-size: .78rem; }
+.future-payoff-projection-kpis strong { color: var(--ink); font-size: 1.08rem; }
+.future-debt-trend { margin: 0; }
+.future-payoff-results { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: 8px; }
+.future-payoff-results > div { display: grid; gap: 3px; padding: 11px 12px; border-bottom: 1px dashed rgba(57,73,86,.14); }
+.future-payoff-results span, .future-payoff-results small { color: #6b7482; }
+.future-payoff-results strong { color: var(--ink); }
+.future-payoff-disclaimer { margin: 0; color: #737b88; font-size: .78rem; line-height: 1.45; }
+@media (max-width: 700px) {
+  .future-payoff-plan-heading, .future-financial-account, .future-payoff-calculator-heading { flex-direction: column; }
+  .future-payoff-queue li { grid-template-columns: 44px minmax(0,1fr); }
+  .future-payoff-queue li > b { grid-column: 2; }
+  .future-payoff-rate-row { grid-template-columns: 1fr; }
+  .future-payoff-calculator-heading > span { white-space: normal; }
+}
