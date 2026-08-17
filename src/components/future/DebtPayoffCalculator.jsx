@@ -181,33 +181,13 @@ export function DebtPayoffCalculator({ planningSnapshot }) {
         </div>
         {planningSnapshot?.asOf && <span>Planning balances as of {planningSnapshot.asOf}</span>}
       </div>
-
-      <label className="future-payoff-budget-input">
-        <span>How much do we want to put toward included debt each month?</span>
-        <div>
-          <span aria-hidden="true">$</span>
-          <input
-            type="number"
-            min="0"
-            step="50"
-            value={monthlyBudget}
-            onChange={(event) => setMonthlyBudget(event.target.value)}
-          />
-        </div>
-        {baselineBudget > 0 && (
-          <small>
-            Default: {money(baselineBudget)}. {planningSnapshot?.baselineLabel || 'Based on the month’s recorded payoff pace.'}
-          </small>
-        )}
-      </label>
-
       <button
         type="button"
         className="notebook-link-btn future-payoff-view-all"
         onClick={() => setDebtRowsOpen((open) => !open)}
         aria-expanded={debtRowsOpen}
       >
-        {debtRowsOpen ? 'Hide ↑' : 'View all →'}
+        {debtRowsOpen ? 'Hide ↑' : 'View all debts and their interest rates →'}
       </button>
 
       {debtRowsOpen && (
@@ -259,6 +239,26 @@ export function DebtPayoffCalculator({ planningSnapshot }) {
           })}
         </div>
       )}
+
+      <label className="future-payoff-budget-input">
+        <span>How much do we want to put toward included debt each month?</span>
+        <div>
+          <span aria-hidden="true">$</span>
+          <input
+            type="number"
+            min="0"
+            step="50"
+            value={monthlyBudget}
+            onChange={(event) => setMonthlyBudget(event.target.value)}
+          />
+        </div>
+        {baselineBudget > 0 && (
+          <small>
+            Default: {money(baselineBudget)}. {planningSnapshot?.baselineLabel || 'Based on the month’s recorded payoff pace.'}
+          </small>
+        )}
+      </label>
+
 
       {excludedDebts.length > 0 && (
         <p className="future-payoff-selection-note">
