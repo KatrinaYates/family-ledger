@@ -16,6 +16,7 @@ export function SpendingTransactions({ transactions = [], merchantActivity = [] 
   const [category, setCategory] = useState('all');
   const [account, setAccount] = useState('all');
   const [expanded, setExpanded] = useState(false);
+  const [sort, setSort] = useState({ field: 'date', direction: 'desc' });
 
   const categories = useMemo(
     () => [...new Set(transactions.map((item) => item.category).filter(Boolean))].sort(),
@@ -38,9 +39,44 @@ export function SpendingTransactions({ transactions = [], merchantActivity = [] 
     });
   }, [transactions, query, category, account]);
 
+  const sorted = useMemo(() => {
+    const next = [...filtered];
+    const direction = sort.direction === 'asc' ? 1 : -1;
+
+    next.sort((a, b) => {
+      if (sort.field === 'amount') {
+        const aAmount = Number(a.amount) || 0;
+        const bAmount = Number(b.amount) || 0;
+        if (aAmount !== bAmount) return (aAmount - bAmount) * direction;
+      } else {
+        const aDate = new Date(a.date).getTime();
+        const bDate = new Date(b.date).getTime();
+        const safeA = Number.isFinite(aDate) ? aDate : 0;
+        const safeB = Number.isFinite(bDate) ? bDate : 0;
+        if (safeA !== safeB) return (safeA - safeB) * direction;
+      }
+
+      return String(a.name ?? '').localeCompare(String(b.name ?? ''));
+    });
+
+    return next;
+  }, [filtered, sort]);
+
+  const toggleSort = (field) => {
+    setSort((current) => ({
+      field,
+      direction: current.field === field && current.direction === 'desc' ? 'asc' : 'desc',
+    }));
+  };
+
+  const sortIndicator = (field) => {
+    if (sort.field !== field) return '↕';
+    return sort.direction === 'asc' ? '↑' : '↓';
+  };
+
   if (!transactions.length && !merchantActivity.length) return null;
 
-  const visible = expanded ? filtered : filtered.slice(0, 40);
+  const visible = expanded ? sorted : sorted.slice(0, 40);
   const filteredTotal = filtered.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
 
   return (
@@ -93,11 +129,19 @@ export function SpendingTransactions({ transactions = [], merchantActivity = [] 
           <table className="spending-transaction-table">
             <thead>
               <tr>
-                <th>Date</th>
+                <th aria-sort={sort.field === 'date' ? (sort.direction === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                  <button type="button" className="spending-transaction-sort" onClick={() => toggleSort('date')}>
+                    Date <span aria-hidden="true">{sortIndicator('date')}</span>
+                  </button>
+                </th>
                 <th>Merchant</th>
                 <th>Category</th>
                 <th>Account</th>
-                <th>Amount</th>
+                <th aria-sort={sort.field === 'amount' ? (sort.direction === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                  <button type="button" className="spending-transaction-sort spending-transaction-sort--amount" onClick={() => toggleSort('amount')}>
+                    Amount <span aria-hidden="true">{sortIndicator('amount')}</span>
+                  </button>
+                </th>
               </tr>
             </thead>
             <tbody>
