@@ -21,6 +21,8 @@ export {
   TrendingGraph,
 } from './ChartComponents.jsx';
 
+export { TimelineGraph } from './TimelineGraph.jsx';
+
 export {
   EditableChecklist,
   EditableBulletList,
