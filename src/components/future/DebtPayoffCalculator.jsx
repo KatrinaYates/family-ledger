@@ -11,7 +11,8 @@ function money(value) {
 }
 
 function monthLabel(startDate, months) {
-  const date = new Date(`${startDate || '2026-08-16'}T12:00:00`);
+  const baseDate = startDate ? new Date(`${startDate}T12:00:00`) : new Date();
+  const date = Number.isNaN(baseDate.getTime()) ? new Date() : baseDate;
   date.setMonth(date.getMonth() + months);
   return new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' }).format(date);
 }
