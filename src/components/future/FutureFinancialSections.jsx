@@ -1,9 +1,18 @@
 import React from 'react';
 import { CardGrid, PanelSurface, SectionBlock } from '../notebook';
+import { ProgressBar } from '../checkin/CheckInVisuals';
+import { DebtPayoffCalculator } from './DebtPayoffCalculator';
 import './future-financial-sections.css';
 
 function hasValue(value) {
   return value != null && value !== '' && value !== '—';
+}
+
+function parseMoney(value) {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  if (value == null || value === '') return null;
+  const parsed = Number(String(value).replace(/[^0-9.-]/g, ''));
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function MoneyPair({ label, value, note }) {
@@ -94,6 +103,8 @@ function DebtSection({ debt, payoffPlan }) {
             </ol>
           </div>
         )}
+
+        <DebtPayoffCalculator planningSnapshot={payoffPlan?.planningSnapshot} />
       </PanelSurface>
     </SectionBlock>
   );
@@ -101,6 +112,13 @@ function DebtSection({ debt, payoffPlan }) {
 
 function EmergencyFundSection({ emergencyFund }) {
   if (!emergencyFund || (!hasValue(emergencyFund.balance) && !hasValue(emergencyFund.value))) return null;
+
+  const balance = parseMoney(emergencyFund.balance ?? emergencyFund.value);
+  const target = parseMoney(emergencyFund.target);
+  const percent = balance != null && target != null && target > 0
+    ? Math.min(100, Math.round((balance / target) * 100))
+    : null;
+
   return (
     <SectionBlock label="Emergency Fund" className="future-financial-section">
       <PanelSurface className="future-financial-panel">
@@ -110,6 +128,22 @@ function EmergencyFundSection({ emergencyFund }) {
           <MoneyPair label="Gap" value={emergencyFund.gap} />
           <MoneyPair label="Added this month" value={emergencyFund.monthAdded ?? emergencyFund.monthContributions} />
         </div>
+
+        {percent != null && (
+          <div className="future-emergency-progress">
+            <div className="future-financial-subheading-row">
+              <strong>{percent}% funded</strong>
+              <span>{emergencyFund.balance ?? emergencyFund.value} of {emergencyFund.target}</span>
+            </div>
+            <ProgressBar
+              percent={percent}
+              label={`${percent}% of emergency fund target`}
+              tone="teal"
+              ariaLabel={`Emergency fund ${emergencyFund.balance ?? emergencyFund.value} of ${emergencyFund.target}, ${percent}% funded`}
+            />
+          </div>
+        )}
+
         {emergencyFund.account && <p className="future-financial-note"><strong>Account:</strong> {emergencyFund.account}</p>}
         {emergencyFund.description && <p className="future-financial-note">{emergencyFund.description}</p>}
       </PanelSurface>
@@ -157,18 +191,40 @@ function RetirementSection({ retirement }) {
   if (!retirement || (!hasValue(retirement.balance) && !hasValue(retirement.monthContributions) && !(retirement.accounts ?? []).length)) return null;
   const accounts = retirement.accounts ?? [];
   const activity = retirement.accountActivity ?? [];
+  const currentAccounts = retirement.currentAccounts ?? [];
+
   return (
     <SectionBlock label="Retirement" className="future-financial-section future-retirement-section">
       <PanelSurface className="future-financial-panel">
         <div className="future-financial-kpis">
           <MoneyPair label="Connected balance" value={retirement.balance} note={retirement.balanceAsOf} />
           <MoneyPair label="Contributed this month" value={retirement.monthContributions} />
+          <MoneyPair label="Current connected total" value={retirement.currentConnectedTotal} note={retirement.currentBalanceAsOf} />
         </div>
+
         {retirement.projectionNote && <p className="future-financial-note">{retirement.projectionNote}</p>}
+
+        {currentAccounts.length > 0 && (
+          <div className="future-financial-subsection">
+            <div className="future-financial-subheading-row">
+              <h3>Current balance by retirement account</h3>
+              {retirement.currentBalanceAsOf && <span>{retirement.currentBalanceAsOf}</span>}
+            </div>
+            <div className="future-retirement-balance-grid">
+              {currentAccounts.map((account, index) => (
+                <article key={account.name ?? index} className="future-retirement-balance-card">
+                  <span>{account.name}</span>
+                  <strong>{account.balance ?? account.amount}</strong>
+                  {account.asOf && <small>{account.asOf}</small>}
+                </article>
+              ))}
+            </div>
+          </div>
+        )}
 
         {accounts.length > 0 && (
           <div className="future-financial-subsection">
-            <h3>Accounts</h3>
+            <h3>Historical month snapshot</h3>
             <div className="future-financial-account-list">
               {accounts.map((account, index) => (
                 <div className="future-financial-account" key={account.name ?? index}>
