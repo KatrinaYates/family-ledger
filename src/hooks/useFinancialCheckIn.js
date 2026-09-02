@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { enrichCheckIn } from '../data/enrichCheckIn';
 import { ledgerRepository } from '../repository';
-import { CHECK_IN_UPDATED_EVENT } from '../utils/meetingEvents';
 import { getErrorMessage } from '../utils/getErrorMessage';
 import { useAsyncGuard } from './useAsyncGuard';
 
@@ -28,12 +27,6 @@ export function useFinancialCheckIn() {
 
   useEffect(() => {
     refresh();
-  }, [refresh]);
-
-  useEffect(() => {
-    const handleUpdate = () => refresh({ silent: true });
-    window.addEventListener(CHECK_IN_UPDATED_EVENT, handleUpdate);
-    return () => window.removeEventListener(CHECK_IN_UPDATED_EVENT, handleUpdate);
   }, [refresh]);
 
   useEffect(() => {

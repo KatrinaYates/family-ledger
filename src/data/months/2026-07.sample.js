@@ -35,7 +35,6 @@ export default {
   "meta": {
     "month": "July",
     "year": 2026,
-    "meetingDate": "Lorem ipsum meeting date placeholder",
     "meetingLength": "00–00 minutes (sample)",
     "motto": "Lorem ipsum dolor sit amet — sample motto text only.",
     "intention": "Consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore.",
@@ -723,9 +722,7 @@ export default {
     "biggestWin": "Sample celebrate win — $0 placeholder text.",
     "moneySaved": "Sample money saved line — lorem ipsum demo.",
     "debtReduced": "Sample debt reduced line — $0 placeholder.",
-    "bestHabit": "Sample best habit line — consectetur adipiscing elit placeholder.",
-    "familyReward": "",
-    "gratitude": ""
+    "bestHabit": "Sample best habit line — consectetur adipiscing elit placeholder."
   },
   "handoff": {
     "summary": "Sample handoff summary — lorem ipsum dolor sit amet consectetur adipiscing elit. All figures in this file are zero. Replace with 2026-07.local.js for real data.",
@@ -741,15 +738,7 @@ export default {
       "Sample revisit item two",
       "Sample revisit item three",
       "Sample revisit item four"
-    ],
-    "feedback": {
-      "helpful": "",
-      "repetitive": "",
-      "missing": ""
-    },
-    "ideasForNextMonth": ""
+    ]
   }
 },
-  generatedAnalysis: {},
-  meetingData: {},
 };

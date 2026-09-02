@@ -22,7 +22,6 @@ export default {
     "meta": {
       "month": "August",
       "year": 2026,
-      "meetingDate": "",
       "meetingLength": "",
       "motto": "",
       "intention": "",
@@ -134,10 +133,7 @@ export default {
       }
     },
     "meeting": {
-      "prompts": [],
-      "sections": [],
-      "questions": [],
-      "insight": ""
+      "questions": []
     },
     "actions": {
       "items": [],
@@ -152,10 +148,7 @@ export default {
     "handoff": {
       "summary": "",
       "carryForward": [],
-      "revisit": [],
-      "feedback": {}
+      "revisit": []
     }
-  },
-  "generatedAnalysis": {},
-  "meetingData": {}
+  }
 };

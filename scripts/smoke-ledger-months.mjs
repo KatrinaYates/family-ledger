@@ -14,8 +14,8 @@ import { buildFutureProgress } from '../src/data/futureProgress.js';
 import { MONTH_SECTION_IDS, MONTH_SECTIONS } from '../src/data/monthSections.js';
 import { normalizePageId } from '../src/utils/normalizePageId.js';
 import { canRenderCfoVisualization } from '../src/utils/cfoVisualization.js';
-import { createBlankLedgerMonth } from '../src/repository/createBlankLedgerMonth.js';
 import { getComparisonMonthLabels } from '../src/utils/monthLabels.js';
+import { getMonthCatalogEntry } from '../src/data/months.js';
 import {
   ConflictError,
   LedgerNotFoundError,
@@ -118,36 +118,27 @@ try {
   assert(samples['2026-08'].workflow.status === 'draft', 'August should start draft');
   assert(samples['2026-09'].workflow.status === 'draft', 'September should start draft');
 
-  const blank = createBlankLedgerMonth('2026-08');
-  assert(blank.version === 1, 'blank month should start at version 1');
-  assert(blank.updatedAt === null, 'blank month updatedAt should be null');
-  assert(blank.generation?.source === 'manual', 'blank production month should use generation.source manual');
-  mergeMonthView(enrichLedgerMonth(blank));
-
   assert(!fs.existsSync(path.join(monthsDir, '2026-10.sample.js')), 'October sample file should be absent');
+
+  const futureCatalogMonth = getMonthCatalogEntry('2027-01');
+  assert(futureCatalogMonth?.label === 'January', 'dynamic month metadata should support scheduled 2027 records');
+  assert(futureCatalogMonth?.year === 2027, 'dynamic month metadata should preserve the scheduled record year');
 
   assert(typeof LedgerRepositoryError === 'function', 'LedgerRepositoryError class exists');
   assert(typeof LedgerNotFoundError === 'function', 'LedgerNotFoundError class exists');
   assert(typeof LockedMonthError === 'function', 'LockedMonthError class exists');
   assert(typeof ConflictError === 'function', 'ConflictError class exists');
 
-  // Stale generated_analysis must not override fresher source_data on read.
-  const staleRecord = loadSampleRecord(samples['2026-07'], '2026-07');
-  staleRecord.sourceData.spending = {
-    ...staleRecord.sourceData.spending,
+  // The render model is always derived from source_data at read time.
+  const updatedSourceRecord = loadSampleRecord(samples['2026-07'], '2026-07');
+  updatedSourceRecord.sourceData.spending = {
+    ...updatedSourceRecord.sourceData.spending,
     total: '$5,432.10',
   };
-  staleRecord.generatedAnalysis = {
-    ...staleRecord.generatedAnalysis,
-    spending: {
-      ...(staleRecord.generatedAnalysis.spending ?? {}),
-      total: '$0',
-    },
-  };
-  const repairedView = resolveMonthView(staleRecord);
+  const repairedView = resolveMonthView(updatedSourceRecord);
   assert(
     repairedView.spending?.total === '$5,432.10',
-    'resolveMonthView should derive spending from source_data, not stale generated_analysis',
+    'resolveMonthView should derive spending from source_data',
   );
 
   const augustLabels = getComparisonMonthLabels('2026-08', 'August');
@@ -198,8 +189,7 @@ try {
   assert(supabaseRepoSource.includes('resolveMonthView'), 'Supabase getMonth uses resolveMonthView');
   assert(supabaseRepoSource.includes('seen.has(entry.id)'), 'listHouseholds dedupes household_id');
 
-  const blankRecord = createBlankLedgerMonth('2026-07');
-  const bumped = bumpRecordVersion(blankRecord);
+  const bumped = bumpRecordVersion(loadSampleRecord(samples['2026-07'], '2026-07'));
   assert(bumped.version === 2, 'bumpRecordVersion increments version');
   assert(typeof bumped.updatedAt === 'string', 'bumpRecordVersion sets updatedAt');
 

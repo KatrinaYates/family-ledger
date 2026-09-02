@@ -1,7 +1,5 @@
 import { LedgerRepository } from './LedgerRepository.js';
-import { createBlankLedgerMonth } from './createBlankLedgerMonth.js';
-import { mergeMonthView, resolveMonthView } from '../data/normalizeLedgerMonth.js';
-import { enrichLedgerMonth } from '../data/enrichLedgerMonth.js';
+import { resolveMonthView } from '../data/normalizeLedgerMonth.js';
 import {
     ConflictError,
     LedgerNotFoundError,
@@ -9,7 +7,7 @@ import {
     StorageError,
     ValidationError,
 } from './errors.js';
-import { dispatchLedgerMonthsUpdated, dispatchLedgerMonthUpdated } from '../utils/meetingEvents.js';
+import { dispatchLedgerMonthsUpdated } from '../utils/meetingEvents.js';
 import { FINANCIAL_CHECK_IN_KEY } from '../constants/financialCheckIn.js';
 
 function toRecord(row) {
@@ -22,8 +20,6 @@ function toRecord(row) {
         generation: row.generation,
         dataQuality: row.data_quality,
         sourceData: row.source_data,
-        generatedAnalysis: row.generated_analysis,
-        meetingData: row.meeting_data,
     };
 }
 
@@ -37,8 +33,6 @@ function toMonthRow(record, householdId) {
         generation: record.generation ?? {},
         data_quality: record.dataQuality ?? { staleConnections: [], missingAccounts: [], warnings: [] },
         source_data: record.sourceData ?? {},
-        generated_analysis: record.generatedAnalysis ?? {},
-        meeting_data: record.meetingData ?? {},
         updated_at: record.updatedAt ?? new Date().toISOString(),
     };
 }
@@ -53,8 +47,6 @@ function toAction(row) {
         owner: row.owner,
         dueDate: row.due_date,
         status: row.status,
-        priority: row.priority,
-        notes: row.notes,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
         completedAt: row.completed_at,
@@ -71,8 +63,6 @@ function toActionRow(action, householdId) {
         owner: action.owner ?? '',
         due_date: action.dueDate || null,
         status: action.status ?? 'not_started',
-        priority: action.priority ?? 'normal',
-        notes: action.notes ?? '',
         completed_at: action.completedAt ?? null,
         created_at: action.createdAt ?? new Date().toISOString(),
         updated_at: action.updatedAt ?? new Date().toISOString(),
@@ -102,7 +92,7 @@ export class SupabaseLedgerRepository extends LedgerRepository {
         await this.requireUser();
         const { data: memberships, error: membershipError } = await this.client
             .from('household_members')
-            .select('household_id, role')
+            .select('household_id')
             .order('created_at');
         if (membershipError) throw storageError(membershipError, 'Could not load your households.');
         if (!memberships?.length) return [];
@@ -123,7 +113,6 @@ export class SupabaseLedgerRepository extends LedgerRepository {
                 return {
                     id: household.id,
                     name: household.name,
-                    role: membership.role,
                     createdAt: household.created_at,
                 };
             })
@@ -166,13 +155,10 @@ export class SupabaseLedgerRepository extends LedgerRepository {
         return this.getActiveHousehold();
     }
 
-    async createHouseholdInvitation(email) {
+    async createHouseholdInvitation() {
         const householdId = await this.requireHouseholdId();
-        const normalizedEmail = email?.trim().toLowerCase();
-        if (!normalizedEmail) throw new ValidationError('Email is required.');
         const { data, error } = await this.client.rpc('create_household_invitation', {
             target_household_id: householdId,
-            invite_email: normalizedEmail,
         });
         if (error) throw storageError(error, 'Could not create the household invitation.');
         const row = Array.isArray(data) ? data[0] : data;
@@ -180,7 +166,6 @@ export class SupabaseLedgerRepository extends LedgerRepository {
             id: row.invitation_id,
             token: row.invitation_token,
             expiresAt: row.expires_at,
-            email: normalizedEmail,
         };
     }
 
@@ -194,23 +179,6 @@ export class SupabaseLedgerRepository extends LedgerRepository {
         this.householdId = data;
         dispatchLedgerMonthsUpdated();
         return this.getActiveHousehold();
-    }
-
-    async listHouseholdInvitations() {
-        const householdId = await this.requireHouseholdId();
-        const { data, error } = await this.client
-            .from('household_invitations')
-            .select('id, email, expires_at, accepted_at, created_at')
-            .eq('household_id', householdId)
-            .order('created_at', { ascending: false });
-        if (error) throw storageError(error, 'Could not load household invitations.');
-        return (data ?? []).map((row) => ({
-            id: row.id,
-            email: row.email,
-            expiresAt: row.expires_at,
-            acceptedAt: row.accepted_at,
-            createdAt: row.created_at,
-        }));
     }
 
     async listHouseholdMembers(householdId) {
@@ -312,29 +280,6 @@ export class SupabaseLedgerRepository extends LedgerRepository {
         };
     }
 
-    async createMonth(month) {
-        if (!month?.monthId) throw new ValidationError('monthId is required to create a month.');
-        if (await this.hasLedgerData(month.monthId)) {
-            throw new ValidationError(`Month "${month.monthId}" already exists.`, { monthId: month.monthId });
-        }
-        const householdId = await this.requireHouseholdId();
-        const base = month.schemaVersion ? month : createBlankLedgerMonth(month.monthId);
-        const record = enrichLedgerMonth(base, { touchGeneration: true });
-        const { data, error } = await this.client
-            .from('ledger_months')
-            .insert(toMonthRow(record, householdId))
-            .select('*')
-            .single();
-        if (error) throw storageError(error, 'Could not create the month.');
-        dispatchLedgerMonthsUpdated();
-        dispatchLedgerMonthUpdated(record.monthId);
-        return toRecord(data);
-    }
-
-    async getMonthSource(monthId) {
-        return structuredClone((await this.requireRecord(monthId)).sourceData);
-    }
-
     async persistRecord(record, options) {
         const householdId = await this.requireHouseholdId();
         const expectedVersion = options?.expectedVersion ?? record.version;
@@ -356,26 +301,6 @@ export class SupabaseLedgerRepository extends LedgerRepository {
             throw new ConflictError(record.monthId, expectedVersion, current.version);
         }
         return toRecord(data[0]);
-    }
-
-    async updateMonthSource(monthId, sourceData, options) {
-        const record = await this.requireRecord(monthId);
-        const enriched = enrichLedgerMonth({
-            ...record,
-            sourceData,
-            workflow: { ...record.workflow, sourceAsOf: new Date().toISOString() },
-        }, { touchGeneration: true });
-        const view = mergeMonthView(await this.persistRecord(enriched, options));
-        dispatchLedgerMonthUpdated(monthId);
-        return view;
-    }
-
-    async regenerateAnalysis(monthId, options) {
-        const record = await this.requireRecord(monthId);
-        const enriched = enrichLedgerMonth(record, { touchGeneration: true });
-        const view = mergeMonthView(await this.persistRecord(enriched, options));
-        dispatchLedgerMonthUpdated(monthId);
-        return view;
     }
 
     async assertMeetingWritable(monthId) {

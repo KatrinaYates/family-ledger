@@ -15,7 +15,6 @@ export const ledgerRepository = isSupabaseBackend
 export { LocalLedgerRepository } from './LocalLedgerRepository.js';
 export { SupabaseLedgerRepository } from './SupabaseLedgerRepository.js';
 export { LedgerRepository } from './LedgerRepository.js';
-export { createBlankLedgerMonth } from './createBlankLedgerMonth.js';
 export {
     LedgerRepositoryError,
     LedgerNotFoundError,

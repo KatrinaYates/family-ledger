@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ledgerRepository } from '../repository';
-import { WORKFLOW_UPDATED_EVENT, LEDGER_MONTH_UPDATED_EVENT } from '../utils/meetingEvents';
+import { WORKFLOW_UPDATED_EVENT } from '../utils/meetingEvents';
 import { getErrorMessage } from '../utils/getErrorMessage';
 import { useAsyncGuard } from './useAsyncGuard';
 
@@ -61,11 +61,9 @@ export function useLedgerMonth(monthId) {
             refresh();
         };
         window.addEventListener(WORKFLOW_UPDATED_EVENT, handleUpdate);
-        window.addEventListener(LEDGER_MONTH_UPDATED_EVENT, handleUpdate);
-        return () => {
-            window.removeEventListener(WORKFLOW_UPDATED_EVENT, handleUpdate);
-            window.removeEventListener(LEDGER_MONTH_UPDATED_EVENT, handleUpdate);
-        };
+    return () => {
+      window.removeEventListener(WORKFLOW_UPDATED_EVENT, handleUpdate);
+    };
     }, [monthId, refresh]);
 
     return { data, version, loading, error, refresh };

@@ -8,9 +8,8 @@ export class LedgerRepository {
     setActiveHousehold(_householdId) { throw new Error('Not implemented'); }
     getActiveHousehold() { throw new Error('Not implemented'); }
     createHousehold(_name) { throw new Error('Not implemented'); }
-    createHouseholdInvitation(_email) { throw new Error('Not implemented'); }
+    createHouseholdInvitation() { throw new Error('Not implemented'); }
     acceptHouseholdInvitation(_token) { throw new Error('Not implemented'); }
-    listHouseholdInvitations() { throw new Error('Not implemented'); }
     listHouseholdMembers(_householdId) { throw new Error('Not implemented'); }
 
     listMonths() { throw new Error('Not implemented'); }
@@ -19,10 +18,6 @@ export class LedgerRepository {
     getWorkflow(_monthId) { throw new Error('Not implemented'); }
     getMonth(_monthId) { throw new Error('Not implemented'); }
     getLedgerRecord(_monthId) { throw new Error('Not implemented'); }
-    createMonth(_month) { throw new Error('Not implemented'); }
-    getMonthSource(_monthId) { throw new Error('Not implemented'); }
-    updateMonthSource(_monthId, _sourceData, _options) { throw new Error('Not implemented'); }
-    regenerateAnalysis(_monthId, _options) { throw new Error('Not implemented'); }
     saveMeetingEntry(_monthId, _key, _value) { throw new Error('Not implemented'); }
     getMeetingEntry(_monthId, _key) { throw new Error('Not implemented'); }
     listActions(_filters) { throw new Error('Not implemented'); }

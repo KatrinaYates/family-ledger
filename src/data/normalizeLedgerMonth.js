@@ -1,5 +1,5 @@
 import { normalizeDataQuality } from './normalizeDataQuality.js';
-import { enrichLedgerMonth } from './enrichLedgerMonth.js';
+import { buildGeneratedAnalysis, enrichLedgerMonth } from './enrichLedgerMonth.js';
 
 const SECTION_KEYS = [
     'meta',
@@ -54,8 +54,6 @@ export function normalizeToContract(raw, monthId) {
             },
             dataQuality: normalizeDataQuality(raw.dataQuality),
             sourceData: raw.sourceData,
-            generatedAnalysis: raw.generatedAnalysis ?? {},
-            meetingData: raw.meetingData ?? {},
         };
     }
 
@@ -79,14 +77,13 @@ export function normalizeToContract(raw, monthId) {
         },
         dataQuality: normalizeDataQuality(raw.dataQuality),
         sourceData: extractSourceData(raw),
-        generatedAnalysis: {},
-        meetingData: raw.meetingData ?? {},
     };
 }
 
 /** @param {import('../repository/types.js').LedgerMonth} record */
 export function mergeMonthView(record) {
-    const { sourceData, generatedAnalysis } = record;
+    const { sourceData } = record;
+    const generatedAnalysis = buildGeneratedAnalysis(sourceData);
     return {
         ...generatedAnalysis,
         meta: {
@@ -98,7 +95,7 @@ export function mergeMonthView(record) {
 
 /**
  * Derive the renderable month view from source_data.
- * Never trusts stored generated_analysis alone — always re-enriches from source.
+ * Always derives the renderable view from canonical source data.
  * @param {import('../repository/types.js').LedgerMonth} record
  */
 export function resolveMonthView(record) {

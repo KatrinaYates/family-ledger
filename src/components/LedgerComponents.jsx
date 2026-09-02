@@ -115,7 +115,7 @@ export function SpiralBinding() {
   );
 }
 
-export function MonthTabs({ months, availableMonthIds = [], activeMonth, onSelect }) {
+export function MonthTabs({ months, activeMonth, onSelect }) {
   return (
       <nav className="month-tabs" aria-label="Month chapters">
           {months.map((month) => (
@@ -164,7 +164,7 @@ export function PageTurnZones({onPrevious, onNext, hasPrevious, hasNext}) {
     );
 }
 
-export function NotebookShell({children, months, availableMonthIds, activeMonth, onMonthSelect, activeSection, onSectionSelect, showSections = false, showLeftPage = true, onPagePrevious, onPageNext, hasPrevious = false, hasNext = false}) {
+export function NotebookShell({children, months, activeMonth, onMonthSelect, activeSection, onSectionSelect, showSections = false, showLeftPage = true, onPagePrevious, onPageNext, hasPrevious = false, hasNext = false}) {
     return (
         <div className="desk-scene">
             <div className="stage">
@@ -173,7 +173,7 @@ export function NotebookShell({children, months, availableMonthIds, activeMonth,
                     <div className="page-stack-edge" aria-hidden="true" />
                     <SpiralBinding />
                     {showSections && <SectionTabs activeSection={activeSection} onSelect={onSectionSelect} />}
-                    <MonthTabs months={months} availableMonthIds={availableMonthIds} activeMonth={activeMonth} onSelect={onMonthSelect} />
+                    <MonthTabs months={months} activeMonth={activeMonth} onSelect={onMonthSelect} />
                     {children}
                     {(hasPrevious || hasNext) && <PageTurnZones onPrevious={onPagePrevious} onNext={onPageNext} hasPrevious={hasPrevious} hasNext={hasNext} />}
                 </div>
@@ -353,23 +353,6 @@ export function MonthChapterPage({ month, chapterMeta }) {
             <FocusPocket title={`${month.label} Focus`}>
                 <p>{focus}</p>
             </FocusPocket>
-        </div>
-    );
-}
-
-export function WorkingPage({section, month, children}) {
-    return (
-        <div className="working-page">
-            <div className="margin-line" />
-            <div className="working-content">
-                <header>
-                    <h1 className="notebook-page-title" tabIndex="-1">
-                        {section.title}
-                    </h1>
-                    <MonthDateBadge month={month} />
-                </header>
-                {children}
-            </div>
         </div>
     );
 }

@@ -81,8 +81,3 @@ export const MONTH_SECTIONS = {
     tone: 'slate',
   },
 };
-
-/** @param {string} sectionId */
-export function getMonthSection(sectionId) {
-  return MONTH_SECTIONS[sectionId] ?? null;
-}

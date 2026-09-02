@@ -92,5 +92,28 @@ export const months = [
 
 /** @param {string} monthId */
 export function getMonthCatalogEntry(monthId) {
-    return months.find((entry) => entry.id === monthId);
+    const exact = months.find((entry) => entry.id === monthId);
+    if (exact) return exact;
+
+    const match = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(monthId ?? '');
+    if (!match) return null;
+
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const label = new Intl.DateTimeFormat('en-US', { month: 'long' })
+        .format(new Date(Date.UTC(year, month - 1, 1)));
+    const themedMonth = months.find((entry) => entry.month === month);
+
+    return {
+        id: monthId,
+        year,
+        month,
+        short: label.slice(0, 3).toUpperCase(),
+        label,
+        number: String(month).padStart(2, '0'),
+        slug: label.toLowerCase(),
+        sticker: themedMonth?.sticker ?? '✦',
+        illustration: themedMonth?.illustration ?? 'sun',
+        colors: themedMonth?.colors ?? ['#7EC8C4', '#F0D978', '#F6ABC0'],
+    };
 }

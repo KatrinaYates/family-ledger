@@ -14,11 +14,11 @@
     "smoke:months": "node scripts/smoke-ledger-months.mjs"
   },
   "dependencies": {
-    "@supabase/supabase-js": "latest",
-    "@vitejs/plugin-react": "latest",
-    "vite": "latest",
-    "react": "latest",
-    "react-dom": "latest"
+    "@supabase/supabase-js": "2.112.2",
+    "@vitejs/plugin-react": "6.0.5",
+    "vite": "8.2.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
   },
   "devDependencies": {}
 }

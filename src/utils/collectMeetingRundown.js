@@ -1,5 +1,4 @@
 import { getMeetingDataRegistry, getLegacyRundownEntries, RUNDOWN_GROUPS } from '../data/meetingDataRegistry';
-import { resolveMonthView } from '../data/normalizeLedgerMonth.js';
 import { ledgerRepository } from '../repository';
 import { formatActionSummary } from './actionUtils';
 import { retrospectiveQuestionKey } from './meetingKeys';
@@ -106,9 +105,8 @@ export async function collectMeetingRundown(monthId) {
   }
 
   try {
-    const record = await ledgerRepository.getMonth(monthId);
-    if (record) {
-      const view = resolveMonthView(record);
+    const view = await ledgerRepository.getMonth(monthId);
+    if (view) {
       const questionEntries = (view.retrospective?.questionsToConsider ?? [])
         .filter((question) => question.allowResponse !== false)
         .map((question) => ({

@@ -2,8 +2,6 @@ export const MEETING_UPDATED_EVENT = 'fl-meeting-updated';
 export const WORKFLOW_UPDATED_EVENT = 'fl-workflow-updated';
 export const ACTIONS_UPDATED_EVENT = 'fl-actions-updated';
 export const LEDGER_MONTHS_UPDATED_EVENT = 'fl-ledger-months-updated';
-export const LEDGER_MONTH_UPDATED_EVENT = 'fl-ledger-month-updated';
-export const CHECK_IN_UPDATED_EVENT = 'fl-check-in-updated';
 
 export function dispatchMeetingUpdated() {
   window.dispatchEvent(new CustomEvent(MEETING_UPDATED_EVENT));
@@ -19,13 +17,4 @@ export function dispatchActionsUpdated() {
 
 export function dispatchLedgerMonthsUpdated() {
   window.dispatchEvent(new CustomEvent(LEDGER_MONTHS_UPDATED_EVENT));
-}
-
-/** @param {string} [monthId] */
-export function dispatchLedgerMonthUpdated(monthId) {
-  window.dispatchEvent(new CustomEvent(LEDGER_MONTH_UPDATED_EVENT, { detail: { monthId } }));
-}
-
-export function dispatchCheckInUpdated() {
-  window.dispatchEvent(new CustomEvent(CHECK_IN_UPDATED_EVENT));
 }

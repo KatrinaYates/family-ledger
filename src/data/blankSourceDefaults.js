@@ -1,18 +1,5 @@
 import { getMonthCatalogEntry } from './months.js';
 
-/** @param {number} index */
-function emptyCfoRecommendation(index) {
-    return {
-        id: `cfo-rec-${index + 1}`,
-        rank: index + 1,
-        type: 'general',
-        headline: 'Add a recommendation',
-        action: 'Describe the specific move ChatGPT prepared for this month.',
-        timeframe: '',
-        confidence: 'medium',
-    };
-}
-
 /**
  * Fill missing section shapes so blank months enrich and render without crashing.
  * @param {object} sourceData
@@ -39,7 +26,6 @@ export function applyBlankSourceDefaults(sourceData = {}, monthId) {
             monthId,
             month: label,
             year,
-            meetingDate: '',
             meetingLength: '',
             motto: '',
             intention: '',
@@ -145,9 +131,7 @@ export function applyBlankSourceDefaults(sourceData = {}, monthId) {
             recommendations:
                 Array.isArray(cfo.recommendations) && cfo.recommendations.length > 0
                     ? cfo.recommendations
-                    : (!Array.isArray(cfo.priorities) || cfo.priorities.length === 0)
-                        ? [0, 1, 2].map(emptyCfoRecommendation)
-                        : [],
+                    : [],
             priorities: Array.isArray(cfo.priorities) ? cfo.priorities : [],
         },
         future: {
@@ -172,10 +156,7 @@ export function applyBlankSourceDefaults(sourceData = {}, monthId) {
             ...future,
         },
         meeting: {
-            prompts: [],
-            sections: [],
             questions: [],
-            insight: '',
             ...meeting,
         },
         actions: {
@@ -199,7 +180,6 @@ export function applyBlankSourceDefaults(sourceData = {}, monthId) {
             summary: '',
             carryForward: [],
             revisit: [],
-            feedback: {},
             ...handoff,
         },
     };

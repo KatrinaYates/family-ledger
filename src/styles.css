@@ -6256,49 +6256,6 @@ textarea.editable-inline-input {
   color: rgba(45, 53, 72, 0.75);
 }
 
-.check-in-mini-chart-bars {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(36px, 1fr));
-  gap: 8px;
-  margin: 8px 0 12px;
-  padding: 0 4px;
-}
-
-.check-in-mini-chart-col {
-  display: grid;
-  gap: 4px;
-  justify-items: center;
-  min-width: 0;
-}
-
-.check-in-mini-chart-bar-wrap {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  width: 100%;
-  height: 80px;
-}
-
-.check-in-mini-chart-bar {
-  width: 100%;
-  max-width: 36px;
-  min-height: 8px;
-  border-radius: 8px 8px 4px 4px;
-  background: var(--bar-gradient-coral);
-}
-
-.check-in-mini-chart-label,
-.check-in-mini-chart-value {
-  font-size: 11px;
-  text-align: center;
-  line-height: 1.2;
-}
-
-.check-in-mini-chart-value {
-  font-weight: 700;
-  font-family: var(--font-data);
-}
-
 .check-in-cash-composition,
 .check-in-debt-composition,
 .check-in-networth-composition {
@@ -6376,10 +6333,6 @@ textarea.editable-inline-input {
   .check-in-stacked-legend .legend-value,
   .check-in-stacked-legend .legend-percent {
     grid-column: 2;
-  }
-
-  .check-in-mini-chart-bars {
-    grid-template-columns: repeat(auto-fit, minmax(36px, 1fr));
   }
 
   .check-in-nav-link {

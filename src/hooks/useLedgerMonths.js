@@ -35,5 +35,17 @@ export function useLedgerMonths() {
         return () => window.removeEventListener(LEDGER_MONTHS_UPDATED_EVENT, handleUpdate);
     }, [refresh]);
 
+    useEffect(() => {
+        const refreshWhenCurrent = () => {
+            if (document.visibilityState === 'visible') refresh();
+        };
+        window.addEventListener('focus', refreshWhenCurrent);
+        document.addEventListener('visibilitychange', refreshWhenCurrent);
+        return () => {
+            window.removeEventListener('focus', refreshWhenCurrent);
+            document.removeEventListener('visibilitychange', refreshWhenCurrent);
+        };
+    }, [refresh]);
+
     return { monthIds, loading, error, refresh };
 }

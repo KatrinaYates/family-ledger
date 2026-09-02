@@ -38,13 +38,10 @@ export function enrichLedgerMonth(record, { touchGeneration = false } = {}) {
     const sourceData = normalizeSourceFields(
         applyBlankSourceDefaults(structuredClone(record.sourceData), record.monthId),
     );
-    const generatedAnalysis = buildGeneratedAnalysis(sourceData);
-
     /** @type {import('../repository/types.js').LedgerMonth} */
     const next = {
         ...record,
         sourceData,
-        generatedAnalysis,
     };
 
     if (touchGeneration) {

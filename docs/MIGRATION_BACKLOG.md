@@ -9,15 +9,10 @@ Kit cleanup is complete. Do not migrate pages until the **90% test** passes on `
 | `FutureProgressKpi.jsx` | Removed — Month Snapshot uses `ComposedMoneyGrid` in its own section |
 | `FutureAtAGlance.jsx` emoji maps | Uses `NOTEBOOK_SYMBOLS` via tone on `ComposedMoneyGrid` |
 | Month Snapshot (`MonthOverviewPage`) | Redesigned — at-a-glance KPIs + StatPills; future progress separate section |
-| Dead code cleanup (2026-03) | Removed `enrichMeeting.js`, unused `PersistedEditableDecisionList` / `MeetingTopicBand`, deprecated `EditableBulletList` wrapper; migrated `FutureGoals` to `SectionBlock`, check-in to `CardGrid` |
+| Dead code cleanup (2026-03) | Removed `enrichMeeting.js`, unused `PersistedEditableDecisionList` / `MeetingTopicBand`, deprecated `EditableBulletList` wrapper; migrated check-in to `CardGrid` |
 | Layout alias CSS removed | `.spending-block`, `.spending-panel-surface`, `.spending-watch-module`, `.spending-split-row`, `.snapshot-grid-main`, `.story-split-grid`, `.check-in-grid`, `.cfo-tier-*`, `.actions-page*`, `.handoff-page-*`, `.decisions-*`, `.celebrate-page` — kit demos scoped under `.notebook-kit-layout-demo` where needed |
 | July sample trim | Dropped stale `meeting.prompts`, `meeting.sections`, `meeting.insight`, and unused `handoff.decisionsMade` / `handoff.openActionItems` |
-
-## Deferred live-page fixes
-
-| Item | Target migration |
-|---|---|
-| `FutureGoals.jsx` | Uses `BarChart variant="solo"` (updated during kit cleanup) |
+| Monthly automation cleanup (2026-09) | Removed unused `FutureGoals`, one-off July scripts, editor history, duplicate derived storage, blank future rows, and obsolete invite/action columns. Month tabs now come from actual stored records. |
 
 ## Page-named CSS to remove at migration
 

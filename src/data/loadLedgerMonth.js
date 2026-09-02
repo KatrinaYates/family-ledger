@@ -65,13 +65,3 @@ export function isUsingLocalData(monthId) {
         return false;
     }
 }
-
-/** @param {string} monthId */
-export function hasLedgerDataFile(monthId) {
-    try {
-        resolveMonthRaw(monthId);
-        return true;
-    } catch {
-        return false;
-    }
-}

@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  BarChart,
-  NotebookBarCaption,
-  NotebookBarFill,
-  SegmentBar,
-} from '../notebook/KitComponents';
+import { NotebookBarCaption, NotebookBarFill, SegmentBar } from '../notebook/KitComponents';
 
 /** Compact progress bar — delegates to NotebookBarCaption. */
 export function ProgressBar({
@@ -75,38 +70,6 @@ export function MiniBalanceBar({
   );
 }
 
-export function MiniBarChart({ bars, ariaLabel, className = '' }) {
-  if (!bars?.length) return null;
-
-  const summary = bars
-    .map((bar) => `${bar.label} ${bar.valueLabel}`)
-    .join(', ');
-
-  return (
-    <div className={`check-in-mini-chart ${className}`.trim()}>
-      <div
-        className="check-in-mini-chart-bars"
-        role="img"
-        aria-label={ariaLabel || summary}
-      >
-        {bars.map((bar) => (
-          <div key={bar.key} className="check-in-mini-chart-col">
-            <div className="check-in-mini-chart-bar-wrap">
-              <div
-                className="check-in-mini-chart-bar"
-                style={{ height: `${bar.heightPercent}%` }}
-                title={`${bar.label}: ${bar.valueLabel}`}
-              />
-            </div>
-            <span className="check-in-mini-chart-label">{bar.label}</span>
-            <span className="check-in-mini-chart-value">{bar.valueLabel}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export function UtilizationBar({ card }) {
   if (card.utilizationPercent == null) return null;
 
@@ -127,5 +90,3 @@ export function UtilizationBar({ card }) {
     </div>
   );
 }
-
-export { BarChart, NotebookBarCaption, NotebookBarFill, SegmentBar };

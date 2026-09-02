@@ -3,9 +3,8 @@ import {
     listAvailableMonthIds,
     isUsingLocalData,
 } from '../data/loadLedgerMonth.js';
-import { mergeMonthView, resolveMonthView } from '../data/normalizeLedgerMonth.js';
+import { resolveMonthView } from '../data/normalizeLedgerMonth.js';
 import { enrichLedgerMonth } from '../data/enrichLedgerMonth.js';
-import { createBlankLedgerMonth } from './createBlankLedgerMonth.js';
 import { LedgerRepository } from './LedgerRepository.js';
 import {
     ConflictError,
@@ -14,7 +13,6 @@ import {
     StorageError,
     ValidationError,
 } from './errors.js';
-import { dispatchLedgerMonthsUpdated, dispatchLedgerMonthUpdated } from '../utils/meetingEvents.js';
 import { FINANCIAL_CHECK_IN_KEY } from '../constants/financialCheckIn.js';
 
 const ACTIONS_KEY = 'fl-actions';
@@ -120,7 +118,6 @@ export class LocalLedgerRepository extends LedgerRepository {
                 generation: { ...fromFile.generation, ...(overlay.generation ?? {}) },
                 dataQuality: overlay.dataQuality ?? fromFile.dataQuality,
                 sourceData: overlay.sourceData ?? fromFile.sourceData,
-                meetingData: overlay.meetingData ?? fromFile.meetingData,
             };
             record = enrichLedgerMonth(merged);
         }
@@ -176,8 +173,6 @@ export class LocalLedgerRepository extends LedgerRepository {
             generation: next.generation,
             dataQuality: next.dataQuality,
             sourceData: next.sourceData,
-            generatedAnalysis: next.generatedAnalysis,
-            meetingData: next.meetingData,
         });
         return next;
     }
@@ -209,67 +204,6 @@ export class LocalLedgerRepository extends LedgerRepository {
     async getMonth(monthId) {
         const record = this.requireRecord(monthId);
         return resolveMonthView(record);
-    }
-
-    async createMonth(month) {
-        const monthId = month.monthId;
-        if (!monthId) {
-            throw new ValidationError('monthId is required to create a month.');
-        }
-        if (this.getRecord(monthId)) {
-            throw new ValidationError(`Month "${monthId}" already exists.`, { monthId });
-        }
-        const base = month.schemaVersion ? month : createBlankLedgerMonth(monthId);
-        const record = enrichLedgerMonth(base, { touchGeneration: true });
-        const persisted = this.persistRecord(record);
-        dispatchLedgerMonthsUpdated();
-        dispatchLedgerMonthUpdated(monthId);
-        return persisted;
-    }
-
-    async getMonthSource(monthId) {
-        const record = this.requireRecord(monthId);
-        return structuredClone(record.sourceData);
-    }
-
-    async updateMonthSource(monthId, sourceData, options) {
-        const record = this.requireRecord(monthId);
-        assertExpectedVersion(record, options);
-        const withSource = {
-            ...record,
-            sourceData,
-            workflow: {
-                ...record.workflow,
-                sourceAsOf: new Date().toISOString(),
-            },
-        };
-        const enriched = enrichLedgerMonth(withSource, { touchGeneration: true });
-        const updated = {
-            ...withSource,
-            sourceData: enriched.sourceData,
-            generatedAnalysis: enriched.generatedAnalysis,
-            generation: enriched.generation,
-        };
-        const persisted = this.persistRecord(updated, options);
-        dispatchLedgerMonthUpdated(monthId);
-        return mergeMonthView(persisted);
-    }
-
-    async regenerateAnalysis(monthId, options) {
-        const record = this.requireRecord(monthId);
-        assertExpectedVersion(record, options);
-
-        const enriched = enrichLedgerMonth(record, { touchGeneration: true });
-        const updated = {
-            ...record,
-            sourceData: enriched.sourceData,
-            generatedAnalysis: enriched.generatedAnalysis,
-            generation: enriched.generation,
-        };
-
-        const persisted = this.persistRecord(updated, options);
-        dispatchLedgerMonthUpdated(monthId);
-        return mergeMonthView(persisted);
     }
 
     async getLedgerRecord(monthId) {

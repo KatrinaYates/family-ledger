@@ -53,8 +53,6 @@ export function createActionEntity({
     owner,
     dueDate,
     status,
-    priority: 'normal',
-    notes: '',
     createdAt: now,
     updatedAt: now,
     completedAt: status === 'done' ? now : null,

@@ -8,8 +8,6 @@ import { useLedgerMonth } from './hooks/useLedgerMonth';
 import { useWorkflow } from './hooks/useWorkflow';
 import { buildLinearNotebookPages, buildNotebookPages } from './utils/notebookPages';
 import { normalizePageId } from './utils/normalizePageId';
-import { createBlankLedgerMonth } from './repository/createBlankLedgerMonth.js';
-import { dispatchLedgerMonthsUpdated } from './utils/meetingEvents';
 import { useBootLoading, LedgerLoader } from './context/BootGate.jsx';
 import { useInsideCoverFields } from './hooks/useInsideCoverFields';
 import { MonthOverviewPage } from './components/sections/MonthOverviewPage';
@@ -142,10 +140,10 @@ function MonthNotebookShell({ children }) {
 
 export default function App() {
   const { monthIds, loading: monthsLoading, error: monthsError } = useLedgerMonths();
-  const catalogMonthIds = useMemo(() => months.map((month) => month.id), []);
-  const navigableMonthIds = useMemo(
-    () => [...new Set([...monthIds, ...catalogMonthIds])].sort(),
-    [monthIds, catalogMonthIds],
+  const navigableMonthIds = monthIds;
+  const tabMonths = useMemo(
+    () => navigableMonthIds.map(getMonthCatalogEntry).filter(Boolean),
+    [navigableMonthIds],
   );
   const notebookPages = useMemo(
     () => buildNotebookPages(navigableMonthIds, MONTH_SECTIONS),
@@ -158,7 +156,7 @@ export default function App() {
 
   useBootLoading('months', monthsLoading);
 
-  const defaultMonthId = monthIds[0] ?? months[0]?.id ?? '2026-07';
+  const defaultMonthId = monthIds[monthIds.length - 1] ?? months[0]?.id ?? '2026-07';
 
   const [bootComplete, setBootComplete] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
@@ -281,30 +279,22 @@ export default function App() {
     navigateTo(linearNotebookPages[linearPageIndex + 1].id);
   }, [navigateTo, linearPageIndex, linearNotebookPages]);
 
-  const navigateToMonth = useCallback(async (monthId) => {
+  const navigateToMonth = useCallback((monthId) => {
     setActiveMonth(monthId);
-    if (!(await ledgerRepository.hasLedgerData(monthId))) {
-      try {
-        await ledgerRepository.createMonth(createBlankLedgerMonth(monthId));
-        dispatchLedgerMonthsUpdated();
-      } catch {
-        // Month may already exist; navigation can still proceed.
-      }
-    }
     navigateTo(monthId);
   }, [navigateTo]);
 
   const goPreviousMonth = useCallback(() => {
-    const monthIndex = months.findIndex((candidate) => candidate.id === activeMonth);
+    const monthIndex = tabMonths.findIndex((candidate) => candidate.id === activeMonth);
     if (monthIndex <= 0) return;
-    navigateToMonth(months[monthIndex - 1].id);
-  }, [activeMonth, navigateToMonth]);
+    navigateToMonth(tabMonths[monthIndex - 1].id);
+  }, [activeMonth, navigateToMonth, tabMonths]);
 
   const goNextMonth = useCallback(() => {
-    const monthIndex = months.findIndex((candidate) => candidate.id === activeMonth);
-    if (monthIndex < 0 || monthIndex >= months.length - 1) return;
-    navigateToMonth(months[monthIndex + 1].id);
-  }, [activeMonth, navigateToMonth]);
+    const monthIndex = tabMonths.findIndex((candidate) => candidate.id === activeMonth);
+    if (monthIndex < 0 || monthIndex >= tabMonths.length - 1) return;
+    navigateToMonth(tabMonths[monthIndex + 1].id);
+  }, [activeMonth, navigateToMonth, tabMonths]);
 
   const goUpBreadcrumb = useCallback(() => {
     const parentId = parentPageId(resolvedPage);
@@ -473,8 +463,7 @@ export default function App() {
         </div>
       </div>
       <NotebookShell
-        months={months}
-        availableMonthIds={monthIds}
+        months={tabMonths}
         activeMonth={activeMonth}
         onMonthSelect={navigateToMonth}
         activeSection={activeSection}

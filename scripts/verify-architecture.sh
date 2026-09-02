@@ -43,6 +43,10 @@ check_absent "No PersistedEditableDecisionList" 'PersistedEditableDecisionList' 
 check_absent "No loadJuly2026" 'loadJuly2026' src
 check_absent "No enrichJulyData" 'enrichJulyData' src
 check_absent "No july2026.local loader" 'july2026\.local' src
+check_absent "No stored generated analysis column" 'generated_analysis' src
+check_absent "No obsolete meeting_data column" 'meeting_data' src
+check_absent "No blank month creation path" 'createBlankLedgerMonth|createMonth\(' src
+check_absent "No invite email compatibility argument" 'invite_email|LINK_ONLY_INVITE_EMAIL' src
 check_absent "No exported listNavigableMonthIds(repo)" 'listNavigableMonthIds\(repo\)' src
 check_absent "No months[].status in catalog" 'status:[[:space:]]*"(active|locked)"' src/data/months.js
 

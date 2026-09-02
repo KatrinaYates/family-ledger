@@ -7,8 +7,6 @@ import { supabase } from './client.js';
 import { getHouseholdInviteUrl } from './getAuthRedirectUrl.js';
 import { getErrorMessage } from '../utils/getErrorMessage.js';
 
-const LINK_ONLY_INVITE_EMAIL = 'invite-link@family-ledger.invalid';
-
 function invitationTokenFromValue(value) {
   const trimmed = value?.trim();
   if (!trimmed) return '';
@@ -127,9 +125,7 @@ export function HouseholdGate({ children }) {
     setError('');
     setCreatedInvite(null);
     try {
-      // The repository still accepts an email argument for compatibility, but the
-      // database now issues one-time bearer links that are not tied to an email.
-      const invitation = await ledgerRepository.createHouseholdInvitation(LINK_ONLY_INVITE_EMAIL);
+      const invitation = await ledgerRepository.createHouseholdInvitation();
       setCreatedInvite({ ...invitation, url: invitationUrl(invitation.token) });
     } catch (inviteError) {
       setError(getErrorMessage(inviteError));
