@@ -433,13 +433,12 @@ export default function App() {
         <div className="site-toolbar-actions">
           <button
             type="button"
-            className={`site-toolbar-text-btn${resolvedPage.type === 'check-in' ? ' is-active' : ''}`}
+            className={`check-in-nav-link${resolvedPage.type === 'check-in' ? ' is-active' : ''}`}
             onClick={() => navigateTo('check-in')}
             aria-current={resolvedPage.type === 'check-in' ? 'page' : undefined}
           >
-            Check-In
+            💵 Financial Check-In
           </button>
-          <span className="site-toolbar-divider" aria-hidden="true">|</span>
           {showMonthUtilities && (
             <>
               <MonthLockStatus
@@ -447,21 +446,19 @@ export default function App() {
                 month={displayMonth}
                 onJumpToLock={jumpToMonthLock}
               />
-              <span className="site-toolbar-divider" aria-hidden="true">|</span>
+              <DataQualityNotes monthId={resolvedPage.monthId} />
             </>
           )}
-          {showMonthUtilities && <DataQualityNotes monthId={resolvedPage.monthId} />}
           <button
             type="button"
-            className={`site-toolbar-text-btn site-toolbar-text-btn--icon${resolvedPage.type === 'notebook-kit' ? ' is-active' : ''}`}
+            className={`site-toolbar-icon-btn${resolvedPage.type === 'notebook-kit' ? ' is-active' : ''}`}
             onClick={() => navigateTo('notebook-kit')}
             aria-current={resolvedPage.type === 'notebook-kit' ? 'page' : undefined}
             aria-label="Notebook Kit"
             title="Notebook Kit"
           >
-            🎨
+            <span aria-hidden="true">🎨</span>
           </button>
-          <span className="site-toolbar-divider" aria-hidden="true">|</span>
           <div className="site-toolbar-meta">
             {usingLocalData && (
               <span className="data-source-badge" title={`Loaded from local data for ${activeMonth} (gitignored)`}>

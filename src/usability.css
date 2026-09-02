@@ -497,7 +497,70 @@
 .site-toolbar-actions {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 14px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.site-toolbar-divider {
+  flex-shrink: 0;
+  opacity: 0.4;
+  font-weight: 400;
+  line-height: 1;
+  user-select: none;
+}
+
+.site-toolbar-text-btn,
+.site-toolbar .month-lock-status.is-badge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: inherit;
+  opacity: 0.85;
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.site-toolbar-text-btn:hover,
+.site-toolbar-text-btn:focus-visible,
+.site-toolbar .month-lock-status.is-badge:hover,
+.site-toolbar .month-lock-status.is-badge:focus-visible {
+  opacity: 1;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  filter: none;
+  box-shadow: none;
+  background: none;
+  border: none;
+}
+
+.site-toolbar-text-btn:focus-visible,
+.site-toolbar .month-lock-status.is-badge:focus-visible {
+  outline: 2px solid #ffe7a4;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.site-toolbar-text-btn.is-active {
+  opacity: 1;
+}
+
+.site-toolbar-text-btn--icon {
+  font-size: 1.1em;
+  line-height: 1;
+}
+
+.site-toolbar-text-btn--icon:hover,
+.site-toolbar-text-btn--icon:focus-visible {
+  text-decoration: none;
 }
 
 .check-in-nav-link {
@@ -540,39 +603,6 @@
   border-left: 1px solid rgba(245, 230, 211, 0.28);
 }
 
-.site-toolbar-utilities + .site-toolbar-meta {
-  padding-left: 14px;
-  border-left: 1px solid rgba(245, 230, 211, 0.28);
-}
-
-/* Toolbar utilities read as text links, not pill buttons */
-.site-toolbar .month-lock-status.is-badge {
-  padding: 0;
-  border: none;
-  border-radius: 0;
-  background: none;
-  box-shadow: none;
-  color: inherit;
-  opacity: 0.85;
-  font-size: inherit;
-  font-weight: inherit;
-  gap: 0.35rem;
-}
-
-.site-toolbar .month-lock-status.is-badge:hover {
-  opacity: 1;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  filter: none;
-  box-shadow: none;
-}
-
-.site-toolbar .month-lock-status.is-badge:focus-visible {
-  outline: 2px solid #ffe7a4;
-  outline-offset: 3px;
-  border-radius: 4px;
-}
-
 .site-toolbar .month-lock-status.is-draft.is-badge,
 .site-toolbar .month-lock-status.is-meeting_ready.is-badge,
 .site-toolbar .month-lock-status.is-locked.is-badge {
@@ -592,12 +622,6 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  margin-left: auto;
-}
-
-.site-toolbar-meta > * + * {
-  padding-left: 14px;
-  border-left: 1px solid rgba(245, 230, 211, 0.28);
 }
 
 .site-toolbar-meta .household-access-menu {
