@@ -12,7 +12,7 @@ Kit cleanup is complete. Do not migrate pages until the **90% test** passes on `
 | Dead code cleanup (2026-03) | Removed `enrichMeeting.js`, unused `PersistedEditableDecisionList` / `MeetingTopicBand`, deprecated `EditableBulletList` wrapper; migrated check-in to `CardGrid` |
 | Layout alias CSS removed | `.spending-block`, `.spending-panel-surface`, `.spending-watch-module`, `.spending-split-row`, `.snapshot-grid-main`, `.story-split-grid`, `.check-in-grid`, `.cfo-tier-*`, `.actions-page*`, `.handoff-page-*`, `.decisions-*`, `.celebrate-page` — kit demos scoped under `.notebook-kit-layout-demo` where needed |
 | July sample trim | Dropped stale `meeting.prompts`, `meeting.sections`, `meeting.insight`, and unused `handoff.decisionsMade` / `handoff.openActionItems` |
-| Monthly automation cleanup (2026-09) | Removed unused `FutureGoals`, one-off July scripts, editor history, duplicate derived storage, blank future rows, and obsolete invite/action columns. Month tabs now come from actual stored records. |
+| Monthly automation cleanup (2026-09) | Removed unused `FutureGoals`, one-off July scripts, editor history, duplicate derived storage, blank future rows, and obsolete invite/action columns. Month tabs now come from actual stored records. Retained the legacy household role and two-argument invite RPC as deployment compatibility shims; neither drives authorization. |
 
 ## Page-named CSS to remove at migration
 
