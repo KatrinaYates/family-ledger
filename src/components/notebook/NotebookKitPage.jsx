@@ -53,6 +53,7 @@ import {
   DecorativeStickyNote,
   CollapsiblePanel,
   CardGrid,
+  CardColumns,
 } from './KitComponents';
 import {
   KitChecklistSample,
@@ -213,11 +214,11 @@ export function NotebookKitPage() {
       <KitSection
         id="layout"
         title="Layout grids"
-        description="CSS composition classes — not page-specific. Use CardGrid or notebook-card-grid--N for equal columns."
+        description="CSS composition classes — not page-specific. Use CardGrid for aligned rows or CardColumns for independent-height dashboard stacks."
       >
         <KitSample
           name="Layout grids"
-          usage="snapshot-grid-main (main + sidebar) · CardGrid columns={2|3|4} · spending-split-row (2 SectionBlocks) · story-split-grid (2 PanelCards) · content-block-full-width."
+          usage="snapshot-grid-main (main + sidebar) · CardGrid columns={2|3|4} for aligned rows · CardColumns for uneven dashboard cards · spending-split-row (2 SectionBlocks) · content-block-full-width."
         >
           <KitVariant label="CardGrid layout=mainSidebar">
             <CardGrid layout="mainSidebar">
@@ -240,6 +241,20 @@ export function NotebookKitPage() {
               <LayoutDemoCard label="Card 1" />
               <LayoutDemoCard label="Card 2" />
             </CardGrid>
+          </KitVariant>
+          <KitVariant label="CardColumns · uneven cards">
+            <CardColumns>
+              <div>
+                <LayoutDemoCard label="Short card" />
+                <LayoutDemoCard label="Next card flows directly below" />
+              </div>
+              <div>
+                <PanelSurface label="Tall card">
+                  <p className="panel-note">Independent flex columns avoid empty row gaps when neighboring cards have different heights.</p>
+                  <p className="panel-note">Use this for dashboard-style collections, not ordered comparisons.</p>
+                </PanelSurface>
+              </div>
+            </CardColumns>
           </KitVariant>
           <KitVariant label="CardGrid · 3 across">
             <CardGrid columns={3}>

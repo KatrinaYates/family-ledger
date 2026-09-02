@@ -107,13 +107,25 @@
   content: '↑';
 }
 
-.check-in-card-grid {
+.check-in-card-columns {
   gap: 16px;
 }
 
+.check-in-card-columns > * {
+  gap: 16px;
+}
+
+.check-in-advisor-row {
+  margin-top: 16px;
+}
+
 @media (max-width: 1100px) {
-  .check-in-page .check-in-card-grid.notebook-card-grid--2 {
-    grid-template-columns: 1fr;
+  .check-in-card-columns {
+    flex-direction: column;
+  }
+
+  .check-in-card-columns > * {
+    width: 100%;
   }
 }
 

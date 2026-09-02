@@ -3141,6 +3141,22 @@ main > .desk-scene {
   min-width: 0;
 }
 
+/** Independent-height card columns — prevents tall cards from stretching neighboring rows. */
+.notebook-card-columns {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  width: 100%;
+}
+
+.notebook-card-columns > * {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
 .spending-block-intro {
   margin: 0 0 12px;
 }

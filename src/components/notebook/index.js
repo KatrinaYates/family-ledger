@@ -11,6 +11,7 @@ export {
   DecorativeStickyNote,
   CollapsiblePanel,
   CardGrid,
+  CardColumns,
   KitSection,
   KitSample,
   KitVariant,

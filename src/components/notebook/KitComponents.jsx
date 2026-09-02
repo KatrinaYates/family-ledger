@@ -20,6 +20,15 @@ export function CardGrid({ columns = 2, layout = 'equal', children, className = 
   );
 }
 
+/** Independent flex columns for cards with uneven heights. Each direct child is one vertical column. */
+export function CardColumns({ children, className = '' }) {
+  return (
+    <div className={`notebook-card-columns ${className}`.trim()}>
+      {children}
+    </div>
+  );
+}
+
 /** @param {{ label?: string, children?: React.ReactNode, className?: string }} props */
 export function SectionBlock({ label, children, className = '' }) {
   return (

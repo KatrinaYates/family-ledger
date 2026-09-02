@@ -26,11 +26,6 @@
 .future-savings-card > span { color: #657080; }
 .future-savings-card > strong { color: var(--ink); font-size: 1.16rem; }
 .future-savings-card small { color: #6b7482; }
-.future-retirement-balance-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px,1fr)); gap: 10px; }
-.future-retirement-balance-card { display: grid; gap: 4px; padding: 14px 16px; border-radius: 14px; background: rgba(255,255,255,.72); border: 1px solid rgba(57,73,86,.12); }
-.future-retirement-balance-card > span { color: #657080; font-size: .84rem; }
-.future-retirement-balance-card > strong { color: var(--ink); font-size: 1.15rem; }
-.future-retirement-balance-card small { color: #6b7482; }
 .future-retirement-activity { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 12px; }
 .future-retirement-account-card { padding: 14px 16px; border-radius: 14px; border: 1px solid rgba(57,73,86,.12); background: rgba(255,255,255,.72); }
 .future-retirement-account-card ul { display: grid; gap: 6px; margin: 10px 0 0; padding: 0; list-style: none; }

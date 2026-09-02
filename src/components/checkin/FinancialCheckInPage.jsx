@@ -6,7 +6,7 @@ import {
   SectionPageHeader,
   WarningBanner,
 } from '../content/NotebookPrimitives';
-import { CardGrid } from '../notebook';
+import { CardColumns } from '../notebook';
 import { AskChatGPTCard } from './AskChatGPTCard';
 import { BillsFundingCard } from './BillsFundingCard';
 import { CashPositionCard } from './CashPositionCard';
@@ -299,21 +299,27 @@ export function FinancialCheckInPage() {
             <MetricKpiRow items={enriched.kpis} />
           )}
 
-          <CardGrid columns={2} className="check-in-card-grid">
-            <CashPositionCard cash={enriched.cash} />
-            <BillsFundingCard bills={enriched.bills} />
-            <ProtectedCashCard
-              kidsSavings={enriched.kidsSavings}
-              emergencyFund={enriched.emergencyFund}
-            />
-            <DebtPositionCard debt={enriched.debt} />
-            <RetirementNetWorthCard
-              retirement={enriched.retirement}
-              netWorth={enriched.netWorth}
-            />
-            <RecentActivityCard recentActivity={enriched.recentActivity} />
+          <CardColumns className="check-in-card-columns">
+            <div>
+              <CashPositionCard cash={enriched.cash} />
+              <BillsFundingCard bills={enriched.bills} />
+              <ProtectedCashCard
+                kidsSavings={enriched.kidsSavings}
+                emergencyFund={enriched.emergencyFund}
+              />
+            </div>
+            <div>
+              <DebtPositionCard debt={enriched.debt} />
+              <RetirementNetWorthCard
+                retirement={enriched.retirement}
+                netWorth={enriched.netWorth}
+              />
+              <RecentActivityCard recentActivity={enriched.recentActivity} />
+            </div>
+          </CardColumns>
+          <div className="check-in-advisor-row">
             <AskChatGPTCard enriched={enriched} />
-          </CardGrid>
+          </div>
         </>
       )}
 

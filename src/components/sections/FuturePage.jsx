@@ -35,6 +35,7 @@ export function FuturePage({ data, month, section }) {
           emergencyFund={future.emergencyFund}
           savings={future.savings}
           retirement={future.retirement}
+          monthLabel={month.label}
         />
 
         {hasDirection && (

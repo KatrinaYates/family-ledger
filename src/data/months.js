@@ -100,7 +100,7 @@ export function getMonthCatalogEntry(monthId) {
 
     const year = Number(match[1]);
     const month = Number(match[2]);
-    const label = new Intl.DateTimeFormat('en-US', { month: 'long' })
+    const label = new Intl.DateTimeFormat('en-US', { month: 'long', timeZone: 'UTC' })
         .format(new Date(Date.UTC(year, month - 1, 1)));
     const themedMonth = months.find((entry) => entry.month === month);
 
