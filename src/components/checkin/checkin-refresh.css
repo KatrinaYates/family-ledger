@@ -107,25 +107,32 @@
   content: '↑';
 }
 
-.check-in-card-columns {
-  gap: 16px;
+/* Pack cards by height — avoids grid row gaps when one column is much taller. */
+.check-in-card-grid.notebook-card-grid {
+  display: block;
+  column-count: 2;
+  column-gap: 16px;
+  column-fill: balance;
 }
 
-.check-in-card-columns > * {
-  gap: 16px;
+.check-in-card-grid.notebook-card-grid > * {
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  page-break-inside: avoid;
+  display: inline-block;
+  width: 100%;
+  margin: 0 0 16px;
 }
 
-.check-in-advisor-row {
-  margin-top: 16px;
+.check-in-card-grid .panel-stack {
+  flex: 0 0 auto;
+  height: auto;
+  max-height: none;
 }
 
 @media (max-width: 1100px) {
-  .check-in-card-columns {
-    flex-direction: column;
-  }
-
-  .check-in-card-columns > * {
-    width: 100%;
+  .check-in-page .check-in-card-grid.notebook-card-grid {
+    column-count: 1;
   }
 }
 
