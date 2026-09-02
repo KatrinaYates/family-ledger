@@ -27,3 +27,8 @@ export function cfoDecisionOutcomeKey(monthId, priorityIndex) {
 export function ledgerFeedbackKey(monthId, field) {
   return `fl-${monthId}-ledger-feedback-${field}`;
 }
+
+/** @param {string} monthId @param {string} questionId */
+export function retrospectiveQuestionKey(monthId, questionId) {
+  return sectionFieldKey(monthId, 'retrospective', `question-${questionId}`);
+}

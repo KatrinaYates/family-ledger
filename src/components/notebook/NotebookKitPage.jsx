@@ -51,6 +51,7 @@ import {
   BarChart,
   SegmentBar,
   DecorativeStickyNote,
+  CollapsiblePanel,
   CardGrid,
 } from './KitComponents';
 import {
@@ -326,6 +327,11 @@ export function NotebookKitPage() {
               <WarningBanner compact label={null}>Assumes minimum payments only.</WarningBanner>
             </SummaryPanel>
           </KitVariant>
+        </KitSample>
+        <KitSample name="CollapsiblePanel" usage="Native disclosure panel — Retrospective questions, optional sections. Starts collapsed by default.">
+          <CollapsiblePanel title="Questions to Consider" count={3}>
+            <p className="panel-note">Hidden content stays mounted — entered responses are preserved when collapsed.</p>
+          </CollapsiblePanel>
         </KitSample>
       </KitSection>
 
@@ -609,14 +615,24 @@ export function NotebookKitPage() {
             </PanelSurface>
           </SectionBlock>
         </KitSample>
-        <KitSample name="CFO priority tier" usage="PanelSurface + CardGrid mainSidebar + SummaryPanel + PanelCard + PersistedEditableDecisionList.">
+        <KitSample name="CFO recommendation card" usage="PanelSurface + DetailRows + optional BarChart/PieChart from ChatGPT-supplied visualization config.">
           <PanelSurface>
-            <CardGrid layout="mainSidebar">
-              <SummaryPanel title="Recommendation detail" rows={SYMBOL_ROW_SAMPLE} />
-              <PanelCard title="Decisions to make">
-                <p className="panel-note">EditableDecisionList with persistence in meeting layer.</p>
-              </PanelCard>
-            </CardGrid>
+            <span className="panel-module__label">Top recommendation</span>
+            <h3 className="cfo-recommendation-title">Pause dining out for two weeks</h3>
+            <DetailRows rows={[
+              { label: 'Do this', value: 'Use groceries already at home.' },
+              { label: 'This frees or redirects', value: '$420' },
+              { label: 'Put it here', value: 'Sample Discover · $2,180 → $1,760' },
+            ]}
+            />
+            <BarChart
+              variant="group"
+              showPercent={false}
+              items={[
+                { name: 'Current balance', amount: '$2,180', percent: 100, barWidth: 100 },
+                { name: 'After payment', amount: '$1,760', percent: 81, barWidth: 81 },
+              ]}
+            />
           </PanelSurface>
         </KitSample>
         <KitSample name="Check-in position card" usage="PanelCard + DetailRows layout=inline + BarChart variant=solo size=compact embedded.">

@@ -1,6 +1,8 @@
-import { getMeetingDataRegistry, RUNDOWN_GROUPS } from '../data/meetingDataRegistry';
+import { getMeetingDataRegistry, getLegacyRundownEntries, RUNDOWN_GROUPS } from '../data/meetingDataRegistry';
+import { resolveMonthView } from '../data/normalizeLedgerMonth.js';
 import { ledgerRepository } from '../repository';
 import { formatActionSummary } from './actionUtils';
+import { retrospectiveQuestionKey } from './meetingKeys';
 
 function dedupeItems(items) {
   const seen = new Set();
@@ -55,7 +57,7 @@ function parseEntry(entry, raw) {
     case 'text':
       return parseText(raw, entry.label);
     case 'checklist': {
-      const checkedOnly = entry.group === 'status' || entry.group === 'decisions';
+      const checkedOnly = entry.group === 'status' || entry.group === 'retrospective';
       if (Array.isArray(raw)) return parseChecklist(raw, entry.label, checkedOnly);
       return [];
     }
@@ -76,18 +78,53 @@ async function repositoryActionItems(monthId) {
   }));
 }
 
-/** @param {string} monthId */
-export async function collectMeetingRundown(monthId) {
-  const registry = getMeetingDataRegistry(monthId);
+async function collectRegistryEntries(monthId, entries) {
   const grouped = {};
 
-  for (const entry of registry) {
+  for (const entry of entries) {
     const raw = await ledgerRepository.getMeetingEntry(monthId, entry.key);
     const items = parseEntry(entry, raw);
     if (!items.length) continue;
 
     if (!grouped[entry.group]) grouped[entry.group] = [];
     grouped[entry.group].push(...items);
+  }
+
+  return grouped;
+}
+
+/** @param {string} monthId */
+export async function collectMeetingRundown(monthId) {
+  const registry = getMeetingDataRegistry(monthId);
+  const legacyRegistry = getLegacyRundownEntries(monthId);
+  const grouped = await collectRegistryEntries(monthId, registry);
+  const legacyGrouped = await collectRegistryEntries(monthId, legacyRegistry);
+
+  for (const [groupId, items] of Object.entries(legacyGrouped)) {
+    if (!grouped[groupId]) grouped[groupId] = [];
+    grouped[groupId].push(...items);
+  }
+
+  try {
+    const record = await ledgerRepository.getMonth(monthId);
+    if (record) {
+      const view = resolveMonthView(record);
+      const questionEntries = (view.retrospective?.questionsToConsider ?? [])
+        .filter((question) => question.allowResponse !== false)
+        .map((question) => ({
+          key: retrospectiveQuestionKey(monthId, question.id),
+          label: question.question,
+          group: 'retrospective',
+          type: 'text',
+        }));
+      const questionGrouped = await collectRegistryEntries(monthId, questionEntries);
+      for (const [groupId, items] of Object.entries(questionGrouped)) {
+        if (!grouped[groupId]) grouped[groupId] = [];
+        grouped[groupId].push(...items);
+      }
+    }
+  } catch {
+    // Rundown can still compile from stored meeting entries when month load fails.
   }
 
   const actionItems = await repositoryActionItems(monthId);

@@ -1,16 +1,15 @@
 import { getMonthCatalogEntry } from './months.js';
 
 /** @param {number} index */
-function emptyCfoPriority(index) {
+function emptyCfoRecommendation(index) {
     return {
-        number: index + 1,
-        title: 'Add a priority',
-        why: 'Describe why this matters for the household.',
-        benefit: 'What improves if you act on this?',
-        difficulty: 'Easy · Medium · Hard',
-        note: '',
-        suggestedFunds: [],
-        decisions: [],
+        id: `cfo-rec-${index + 1}`,
+        rank: index + 1,
+        type: 'general',
+        headline: 'Add a recommendation',
+        action: 'Describe the specific move ChatGPT prepared for this month.',
+        timeframe: '',
+        confidence: 'medium',
     };
 }
 
@@ -31,6 +30,7 @@ export function applyBlankSourceDefaults(sourceData = {}, monthId) {
     const future = sourceData.future ?? {};
     const meeting = sourceData.meeting ?? {};
     const actions = sourceData.actions ?? {};
+    const retrospective = sourceData.retrospective ?? {};
     const celebrate = sourceData.celebrate ?? {};
     const handoff = sourceData.handoff ?? {};
 
@@ -142,10 +142,13 @@ export function applyBlankSourceDefaults(sourceData = {}, monthId) {
         },
         cfo: {
             ...cfo,
-            priorities:
-                Array.isArray(cfo.priorities) && cfo.priorities.length > 0
-                    ? cfo.priorities
-                    : [0, 1, 2].map(emptyCfoPriority),
+            recommendations:
+                Array.isArray(cfo.recommendations) && cfo.recommendations.length > 0
+                    ? cfo.recommendations
+                    : (!Array.isArray(cfo.priorities) || cfo.priorities.length === 0)
+                        ? [0, 1, 2].map(emptyCfoRecommendation)
+                        : [],
+            priorities: Array.isArray(cfo.priorities) ? cfo.priorities : [],
         },
         future: {
             goals: [],
@@ -179,6 +182,11 @@ export function applyBlankSourceDefaults(sourceData = {}, monthId) {
             items: [],
             monthlyFocus: '',
             ...actions,
+        },
+        retrospective: {
+            subtitle: '',
+            questionsToConsider: [],
+            ...retrospective,
         },
         celebrate: {
             biggestWin: '—',

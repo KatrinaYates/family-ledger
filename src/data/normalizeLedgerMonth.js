@@ -9,6 +9,7 @@ const SECTION_KEYS = [
     'cfo',
     'future',
     'meeting',
+    'retrospective',
     'actions',
     'celebrate',
     'handoff',

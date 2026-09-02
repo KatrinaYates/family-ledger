@@ -9,7 +9,7 @@ import {
 
 /** Rundown section groups shown in the UI. */
 export const RUNDOWN_GROUPS = {
-  decisions: { id: 'decisions', title: 'Decisions we made' },
+  retrospective: { id: 'retrospective', title: 'Retrospective' },
   actions: { id: 'actions', title: 'Action items' },
   questions: { id: 'questions', title: 'Questions & answers' },
   conversation: { id: 'conversation', title: 'Conversation highlights' },
@@ -20,17 +20,50 @@ export const RUNDOWN_GROUPS = {
 
 /** @param {string} monthId */
 function staticEntries(monthId) {
+  const retrospectivePrompts = [
+    { field: 'worked-well', label: 'What worked well' },
+    { field: 'did-not-work', label: 'What did not work' },
+    { field: 'try-differently', label: 'What to try differently' },
+    { field: 'keep-doing', label: 'What to keep doing' },
+  ].map(({ field, label }) => ({
+    key: sectionFieldKey(monthId, 'retrospective', field),
+    label,
+    group: 'retrospective',
+    type: 'text',
+  }));
+
+  return [
+    ...retrospectivePrompts,
+    { key: sectionFieldKey(monthId, 'future', 'talk-together'), label: 'Future — talk together', group: 'questions', type: 'questions' },
+    { key: sectionFieldKey(monthId, 'spending', 'watch-contexts'), label: 'Spending — worth a closer look context', group: 'conversation', type: 'json' },
+    { key: sectionFieldKey(monthId, 'spending', 'notable-notes'), label: 'Spending — notable one-time notes', group: 'lists', type: 'json' },
+    { key: sectionFieldKey(monthId, 'spending', 'takeaway-worth'), label: 'Spending takeaway — what felt worth it', group: 'conversation', type: 'text' },
+    { key: sectionFieldKey(monthId, 'spending', 'takeaway-differently'), label: 'Spending takeaway — do differently', group: 'conversation', type: 'text' },
+    { key: sectionFieldKey(monthId, 'spending', 'takeaway-watch'), label: 'Spending takeaway — watch next month', group: 'conversation', type: 'text' },
+    { key: sectionFieldKey(monthId, 'month', 'human-context'), label: "What the numbers don't know", group: 'lists', type: 'bullets' },
+    { key: sectionFieldKey(monthId, 'close', 'carry-forward'), label: 'Carry forward', group: 'lists', type: 'bullets' },
+    { key: sectionFieldKey(monthId, 'celebrate', 'reward'), label: 'Family reward', group: 'lists', type: 'text' },
+    { key: sectionFieldKey(monthId, 'celebrate', 'gratitude'), label: 'Gratitude', group: 'lists', type: 'text' },
+    { key: ledgerFeedbackKey(monthId, 'helpful'), label: 'Ledger feedback — helpful', group: 'feedback', type: 'text' },
+    { key: ledgerFeedbackKey(monthId, 'repetitive'), label: 'Ledger feedback — repetitive', group: 'feedback', type: 'text' },
+    { key: ledgerFeedbackKey(monthId, 'missing'), label: 'Ledger feedback — missing', group: 'feedback', type: 'text' },
+    { key: ledgerFeedbackKey(monthId, 'ideas'), label: 'Ledger feedback — ideas', group: 'feedback', type: 'text' },
+  ];
+}
+
+/** Legacy keys shown in rundown only when stored data exists. */
+export function getLegacyRundownEntries(monthId) {
   const cfoEntries = [1, 2, 3].flatMap((n) => [
     {
       key: cfoDecisionOutcomeKey(monthId, n),
       label: `CFO Priority ${n} — What we decided`,
-      group: 'decisions',
+      group: 'retrospective',
       type: 'text',
     },
     {
       key: cfoDecisionKey(monthId, n),
       label: `CFO Priority ${n} — Options considered`,
-      group: 'decisions',
+      group: 'retrospective',
       type: 'checklist',
     },
   ]);
@@ -41,22 +74,8 @@ function staticEntries(monthId) {
     { key: sectionFieldKey(monthId, 'decisions', 'stressful'), label: 'What felt stressful', group: 'conversation', type: 'text' },
     { key: sectionFieldKey(monthId, 'decisions', 'parking-lot'), label: 'Parking lot', group: 'conversation', type: 'text' },
     { key: sectionFieldKey(monthId, 'decisions', 'questions'), label: 'Open questions', group: 'questions', type: 'questions' },
-    { key: sectionFieldKey(monthId, 'future', 'talk-together'), label: 'Future — talk together', group: 'questions', type: 'questions' },
-    { key: sectionFieldKey(monthId, 'spending', 'watch-contexts'), label: 'Spending — worth a closer look context', group: 'conversation', type: 'json' },
-    { key: sectionFieldKey(monthId, 'spending', 'notable-notes'), label: 'Spending — notable one-time notes', group: 'lists', type: 'json' },
-    { key: sectionFieldKey(monthId, 'spending', 'takeaway-worth'), label: 'Spending takeaway — what felt worth it', group: 'conversation', type: 'text' },
-    { key: sectionFieldKey(monthId, 'spending', 'takeaway-differently'), label: 'Spending takeaway — do differently', group: 'conversation', type: 'text' },
-    { key: sectionFieldKey(monthId, 'spending', 'takeaway-watch'), label: 'Spending takeaway — watch next month', group: 'conversation', type: 'text' },
-    { key: sectionFieldKey(monthId, 'month', 'human-context'), label: "What the numbers don't know", group: 'lists', type: 'bullets' },
-    { key: sectionFieldKey(monthId, 'close', 'carry-forward'), label: 'Carry forward', group: 'lists', type: 'bullets' },
-    { key: sectionFieldKey(monthId, 'close', 'decisions-summary'), label: 'Decisions summary', group: 'decisions', type: 'text' },
+    { key: sectionFieldKey(monthId, 'close', 'decisions-summary'), label: 'Decisions summary', group: 'retrospective', type: 'text' },
     { key: sectionFieldKey(monthId, 'close', 'open-actions'), label: 'Open action items', group: 'actions', type: 'text' },
-    { key: sectionFieldKey(monthId, 'celebrate', 'reward'), label: 'Family reward', group: 'lists', type: 'text' },
-    { key: sectionFieldKey(monthId, 'celebrate', 'gratitude'), label: 'Gratitude', group: 'lists', type: 'text' },
-    { key: ledgerFeedbackKey(monthId, 'helpful'), label: 'Ledger feedback — helpful', group: 'feedback', type: 'text' },
-    { key: ledgerFeedbackKey(monthId, 'repetitive'), label: 'Ledger feedback — repetitive', group: 'feedback', type: 'text' },
-    { key: ledgerFeedbackKey(monthId, 'missing'), label: 'Ledger feedback — missing', group: 'feedback', type: 'text' },
-    { key: ledgerFeedbackKey(monthId, 'ideas'), label: 'Ledger feedback — ideas', group: 'feedback', type: 'text' },
   ];
 }
 

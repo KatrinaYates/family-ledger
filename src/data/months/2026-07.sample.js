@@ -519,53 +519,93 @@ export default {
     ]
   },
   "cfo": {
-    "priorities": [
+    "recommendations": [
       {
-        "number": 1,
-        "title": "Sample CFO Priority Title One",
-        "why": "Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod.",
-        "benefit": "Sample benefit text placeholder — zero dollars in demo data.",
-        "difficulty": "Sample",
-        "decisions": [
-          "Sample decision option A",
-          "Sample decision option B",
-          "Sample decision option C",
-          "Sample decision option D",
-          "Sample decision option E"
+        "id": "cfo-rec-1",
+        "rank": 1,
+        "type": "no_spend",
+        "headline": "Pause dining out for two weeks",
+        "action": "Use groceries already at home and redirect the avoided dining-out spending.",
+        "timeframe": "14 days",
+        "amountFreed": 420,
+        "target": {
+          "type": "debt",
+          "name": "Sample Discover Card",
+          "currentBalance": 2180,
+          "projectedBalance": 1760
+        },
+        "impact": {
+          "extraPayment": 420,
+          "payoffTimeReducedMonths": null,
+          "interestAvoided": null
+        },
+        "evidence": [
+          {
+            "label": "Recent two-week dining average",
+            "value": 420
+          }
         ],
-        "note": "Placeholder CFO note — lorem ipsum sample text only."
+        "calculationLine": "$420 avoided dining spending → $420 extra Sample Discover payment",
+        "assumptions": [
+          "Estimate is based on the transaction period supplied to ChatGPT."
+        ],
+        "confidence": "high",
+        "visualization": {
+          "type": "balance_comparison",
+          "currentValue": 2180,
+          "projectedValue": 1760,
+          "currentLabel": "Current balance",
+          "projectedLabel": "After proposed payment"
+        }
       },
       {
-        "number": 2,
-        "title": "Sample CFO Priority Title Two",
-        "why": "Ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi.",
-        "benefit": "Duis aute irure dolor in reprehenderit in voluptate velit esse.",
-        "difficulty": "Sample",
-        "decisions": [
-          "Sample decision option one",
-          "Sample decision option two",
-          "Sample decision option three",
-          "Sample decision option four",
-          "Sample decision option five"
-        ]
+        "id": "cfo-rec-2",
+        "rank": 2,
+        "type": "spending_cap",
+        "headline": "Keep grocery spending near last month's normal level",
+        "action": "Avoid this month's convenience increase and redirect the difference to debt.",
+        "timeframe": "Rest of month",
+        "amountFreed": 300,
+        "target": {
+          "type": "debt",
+          "name": "Sample Visa Card",
+          "currentBalance": 5400,
+          "projectedBalance": 5100
+        },
+        "impact": {
+          "extraPayment": 300
+        },
+        "calculationLine": "$310 increase avoided → realistic $300 extra payment",
+        "confidence": "medium",
+        "visualization": {
+          "type": "balance_comparison",
+          "currentValue": 5400,
+          "projectedValue": 5100,
+          "currentLabel": "Current Visa balance",
+          "projectedLabel": "After extra payment"
+        }
       },
       {
-        "number": 3,
-        "title": "Sample CFO Priority Title Three",
-        "why": "Excepteur sint occaecat cupidatat non proident sunt in culpa qui officia.",
-        "benefit": "Deserunt mollit anim id est laborum sample placeholder text.",
-        "difficulty": "Sample",
-        "suggestedFunds": [
-          "Sample fund A",
-          "Sample fund B",
-          "Sample fund C",
-          "Sample fund D"
-        ],
-        "decisions": [
-          "Sample decision alpha",
-          "Sample decision beta",
-          "Sample decision gamma"
-        ]
+        "id": "cfo-rec-3",
+        "rank": 3,
+        "type": "subscription_cut",
+        "headline": "Pause three sample subscriptions",
+        "action": "Cancel or pause the listed subscriptions and auto-apply the freed amount to the current snowball debt.",
+        "timeframe": "Ongoing",
+        "amountFreed": 74,
+        "target": {
+          "type": "debt",
+          "name": "Current snowball debt"
+        },
+        "visualization": {
+          "type": "allocation",
+          "items": [
+            { "label": "Streaming A", "value": 22 },
+            { "label": "App B", "value": 18 },
+            { "label": "Service C", "value": 34 }
+          ]
+        },
+        "confidence": "high"
       }
     ]
   },
@@ -586,7 +626,50 @@ export default {
     "goals": [],
     "upcoming": []
   },
+  "retrospective": {
+    "subtitle": "A quick look back before we decide what comes next.",
+    "questionsToConsider": [
+      {
+        "id": "least-value",
+        "question": "What purchase or category gave us the least value?",
+        "context": "Sample context — convenience spending increased this month in demo data.",
+        "allowResponse": true
+      },
+      {
+        "id": "stressful-expense",
+        "question": "Was there a stressful expense we could prepare for next time?",
+        "allowResponse": true
+      },
+      {
+        "id": "alignment",
+        "question": "What made it easier to stay aligned?",
+        "allowResponse": true
+      }
+    ]
+  },
   "meeting": {
+    "currentUpdate": {
+      "note": "Sample month-end update — balances below are demo placeholders only.",
+      "metrics": [
+        {
+          "label": "Cash available",
+          "monthEnd": "$4,200",
+          "current": "$4,050",
+          "change": "-$150"
+        },
+        {
+          "label": "Total debt",
+          "monthEnd": "$12,400",
+          "current": "$12,180",
+          "change": "-$220"
+        }
+      ],
+      "debtBreakdown": {
+        "creditCards": "$7,600",
+        "loans": "$4,580"
+      },
+      "coverageNote": "Sample coverage note — demo data only."
+    },
     "prompts": [
       {
         "label": "What surprised us?",

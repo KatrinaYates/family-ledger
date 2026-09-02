@@ -2,7 +2,7 @@ import { enrichMonth } from './enrichMonth.js';
 import { enrichSpending } from './enrichSpending.js';
 import { enrichCfo } from './enrichCfo.js';
 import { enrichFuture } from './enrichFuture.js';
-import { enrichDecisions } from './enrichDecisions.js';
+import { enrichRetrospective } from './enrichRetrospective.js';
 import { enrichActions } from './enrichActions.js';
 import { enrichCelebrate } from './enrichCelebrate.js';
 import { enrichClose } from './enrichClose.js';
@@ -15,14 +15,13 @@ import { applyBlankSourceDefaults } from './blankSourceDefaults.js';
  */
 export function buildGeneratedAnalysis(sourceData) {
     const meta = sourceData.meta ?? {};
-    const cfo = enrichCfo(sourceData.cfo, meta);
 
     return {
         month: enrichMonth(sourceData, meta),
         spending: enrichSpending(sourceData.spending, meta),
-        cfo,
+        cfo: enrichCfo(sourceData, meta),
         future: enrichFuture(sourceData, meta),
-        decisions: enrichDecisions(sourceData, cfo, meta),
+        retrospective: enrichRetrospective(sourceData, meta),
         actions: enrichActions(sourceData.actions),
         celebrate: enrichCelebrate(sourceData.celebrate, meta),
         close: enrichClose(sourceData, meta),

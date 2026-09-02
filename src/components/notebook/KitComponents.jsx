@@ -426,6 +426,33 @@ export function DecorativeStickyNote({
   );
 }
 
+/**
+ * Accessible collapsible panel using native disclosure semantics.
+ * @param {{ title: string, summary?: string, count?: number, defaultOpen?: boolean, children?: React.ReactNode, className?: string }} props
+ */
+export function CollapsiblePanel({
+  title,
+  summary,
+  count,
+  defaultOpen = false,
+  children,
+  className = '',
+}) {
+  const summaryParts = [summary, count != null ? `(${count})` : null].filter(Boolean);
+
+  return (
+    <details className={`collapsible-panel paper-surface ${className}`.trim()} open={defaultOpen || undefined}>
+      <summary className="collapsible-panel-summary">
+        <span className="collapsible-panel-title">{title}</span>
+        {summaryParts.length > 0 && (
+          <span className="collapsible-panel-meta">{summaryParts.join(' ')}</span>
+        )}
+      </summary>
+      <div className="collapsible-panel-body">{children}</div>
+    </details>
+  );
+}
+
 /** Sub-preview within a KitSample — label optional variant name. */
 export function KitVariant({ label, children }) {
   return (

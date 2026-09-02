@@ -12,6 +12,8 @@ import { normalizeToContract, mergeMonthView, resolveMonthView } from '../src/da
 import { enrichLedgerMonth } from '../src/data/enrichLedgerMonth.js';
 import { buildFutureProgress } from '../src/data/futureProgress.js';
 import { MONTH_SECTION_IDS, MONTH_SECTIONS } from '../src/data/monthSections.js';
+import { normalizePageId } from '../src/utils/normalizePageId.js';
+import { canRenderCfoVisualization } from '../src/utils/cfoVisualization.js';
 import { createBlankLedgerMonth } from '../src/repository/createBlankLedgerMonth.js';
 import { getComparisonMonthLabels } from '../src/utils/monthLabels.js';
 import {
@@ -65,12 +67,28 @@ try {
 
   assert(
     JSON.stringify(MONTH_SECTION_IDS) === JSON.stringify([
-      'month', 'spending', 'future', 'cfo', 'decisions', 'actions', 'celebrate', 'close',
+      'month', 'spending', 'future', 'cfo', 'retrospective', 'celebrate', 'close',
     ]),
-    'monthSections order should place Future before CFO Advice',
+    'monthSections order should place Future before CFO Advice and Retrospective after CFO',
   );
   assert(MONTH_SECTIONS.future?.number === '03', 'Future should be section 03');
   assert(MONTH_SECTIONS.cfo?.number === '04', 'CFO Advice should be section 04');
+  assert(MONTH_SECTIONS.retrospective?.number === '05', 'Retrospective should be section 05');
+  assert(MONTH_SECTIONS.celebrate?.number === '06', 'Celebrate should be section 06');
+  assert(MONTH_SECTIONS.close?.number === '07', 'Close should be section 07');
+  assert(!MONTH_SECTION_IDS.includes('decisions'), 'decisions should not be a monthly section');
+  assert(!MONTH_SECTION_IDS.includes('actions'), 'actions should not be a monthly section');
+  assert(normalizePageId('2026-07-decisions') === '2026-07-retrospective', 'legacy decisions URL should redirect to retrospective');
+  assert(normalizePageId('2026-07-actions') === '2026-07-retrospective', 'legacy actions URL should redirect to retrospective');
+  assert(normalizePageId('july-decisions') === '2026-07-retrospective', 'legacy july-decisions URL should redirect to retrospective');
+  assert(
+    !canRenderCfoVisualization({ type: 'balance_comparison', currentValue: 100 }),
+    'balance_comparison chart should not render without projectedValue',
+  );
+  assert(
+    canRenderCfoVisualization({ type: 'balance_comparison', currentValue: 100, projectedValue: 80 }),
+    'balance_comparison chart should render when both values are supplied',
+  );
   assert(MONTH_SECTIONS.cfo?.title === 'CFO Advice', 'CFO section title should be CFO Advice');
   assert(!Object.values(MONTH_SECTIONS).some((s) => /CFO Recommendations/i.test(s.title ?? '')), 'No CFO Recommendations title should remain');
 
@@ -86,7 +104,8 @@ try {
     assert(view.meta?.month, `${monthId} should expose meta.month in merged view`);
     assert(view.month, `${monthId} should expose month section`);
     assert(view.spending, `${monthId} should expose spending section`);
-    assert(view.actions, `${monthId} should expose actions section`);
+    assert(view.actions, `${monthId} should expose actions seed data`);
+    assert(view.retrospective, `${monthId} should expose retrospective section`);
     assert(record.schemaVersion === 1, `${monthId} should use schemaVersion 1`);
     assert(record.generation, `${monthId} should include generation block`);
     assert(record.dataQuality, `${monthId} should include dataQuality block`);
@@ -245,14 +264,28 @@ try {
     assert(view.spending?.watchList == null, `${monthId} spending should not expose removed watchList key`);
     assert(!view.spending?.overview?.continuedText, `${monthId} spending should not include multi-page continuedText`);
     assert(!view.spending?.changesPage?.footerText, `${monthId} spending should not include multi-page footerText`);
-    assert(Array.isArray(view.cfo?.priorities), `${monthId} cfo.priorities should be an array`);
-    assert(view.cfo?.priorities?.[0]?.decisions != null, `${monthId} cfo priorities should include decisions`);
-    assert(view.cfo?.priorities?.[0]?.tier, `${monthId} cfo priorities should include tier`);
-    assert(view.decisions?.subtitle, `${monthId} decisions section should be enriched`);
+    assert(Array.isArray(view.cfo?.recommendations), `${monthId} cfo.recommendations should be an array`);
+    assert(view.cfo.recommendations.length > 0, `${monthId} cfo.recommendations should not be empty`);
+    assert(view.cfo.recommendations[0]?.headline, `${monthId} cfo recommendations should include headline`);
+    assert(view.cfo.recommendations[0]?.id, `${monthId} cfo recommendations should include stable id`);
+    if (monthId === '2026-07') {
+      const structured = view.cfo.recommendations.find((rec) => rec.visualization?.type === 'balance_comparison');
+      assert(structured, 'July should include a structured CFO recommendation with balance_comparison visualization');
+      assert(
+        canRenderCfoVisualization(structured.visualization),
+        'July structured CFO recommendation should include complete chart data',
+      );
+    }
+    if (monthId === '2026-08' || monthId === '2026-09') {
+      assert(view.cfo.recommendations[0]?.isLegacy, `${monthId} should adapt legacy CFO priorities into recommendations`);
+    }
+    assert(view.retrospective?.subtitle, `${monthId} retrospective section should be enriched`);
+    assert(Array.isArray(view.retrospective?.questionsToConsider), `${monthId} retrospective.questionsToConsider should be an array`);
+    assert(view.decisions == null, `${monthId} should not expose decisions section`);
+    assert(Array.isArray(view.actions?.items), `${monthId} actions.items should remain available for seeds`);
     assert(view.close?.subtitle, `${monthId} close section should be enriched`);
     assert(view.celebrate?.page?.subtitle, `${monthId} celebrate.page.subtitle should be enriched`);
-    assert(view.actions?.page?.subtitle, `${monthId} actions.page.subtitle should be enriched`);
-    assert(!view.actions?.page?.footerText, `${monthId} actions should not include multi-page footerText`);
+    assert(!view.actions?.page?.subtitle, `${monthId} actions should not include standalone page subtitle`);
     assert(!view.celebrate?.page?.footerText, `${monthId} celebrate should not include multi-page footerText`);
     assert(view.future?.subtitle, `${monthId} future section should expose subtitle`);
     assert(Array.isArray(view.future?.goals), `${monthId} future.goals should be an array`);

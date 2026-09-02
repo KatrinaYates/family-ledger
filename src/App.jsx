@@ -16,8 +16,7 @@ import { MonthOverviewPage } from './components/sections/MonthOverviewPage';
 import { SpendingPage } from './components/sections/SpendingPage';
 import { CfoPage } from './components/sections/CfoPage';
 import { FuturePage } from './components/sections/FuturePage';
-import { DecisionsPage } from './components/sections/DecisionsPage';
-import { ActionsPage } from './components/sections/ActionsPage';
+import { RetrospectivePage } from './components/sections/RetrospectivePage';
 import { CelebratePage } from './components/sections/CelebratePage';
 import { CloseMonthPage } from './components/sections/CloseMonthPage';
 import { FinancialCheckInPage } from './components/checkin/FinancialCheckInPage';
@@ -40,8 +39,7 @@ const sectionComponents = {
   spending: SpendingPage,
   cfo: CfoPage,
   future: FuturePage,
-  decisions: DecisionsPage,
-  actions: ActionsPage,
+  retrospective: RetrospectivePage,
   celebrate: CelebratePage,
   close: CloseMonthPage,
 };

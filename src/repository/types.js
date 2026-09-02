@@ -178,4 +178,50 @@
  * @property {string[]} discussionPrompts
  */
 
+/**
+ * @typedef {Object} CfoRecommendationTarget
+ * @property {string} [type]
+ * @property {string} [name]
+ * @property {number} [currentBalance]
+ * @property {number} [projectedBalance]
+ */
+
+/**
+ * @typedef {Object} CfoRecommendationVisualization
+ * @property {'balance_comparison' | 'payment_comparison' | 'allocation' | 'timeline' | string} [type]
+ * @property {number} [currentValue]
+ * @property {number} [projectedValue]
+ * @property {string} [currentLabel]
+ * @property {string} [projectedLabel]
+ * @property {Array<{ label: string, value: number }>} [items]
+ */
+
+/**
+ * @typedef {Object} CfoRecommendation
+ * @property {string} id
+ * @property {number} rank
+ * @property {string} type
+ * @property {string} headline
+ * @property {string} action
+ * @property {string} [timeframe]
+ * @property {number} [amountFreed]
+ * @property {CfoRecommendationTarget} [target]
+ * @property {Object} [impact]
+ * @property {Array<{ label: string, value: number | string }>} [evidence]
+ * @property {string} [calculationLine]
+ * @property {string[]} [assumptions]
+ * @property {string} [confidence]
+ * @property {CfoRecommendationVisualization} [visualization]
+ * @property {boolean} [isLegacy]
+ */
+
+/**
+ * @typedef {Object} RetrospectiveQuestion
+ * @property {string} id
+ * @property {string} question
+ * @property {string} [context]
+ * @property {boolean} [allowResponse]
+ * @property {boolean} [isGenericFallback]
+ */
+
 export {};

@@ -1,6 +1,5 @@
 .cfo-advice-page,
-.decisions-page,
-.action-plan-page,
+.retrospective-page,
 .celebrate-review-page,
 .close-month-review-page {
   display: flex;
@@ -11,8 +10,7 @@
 }
 
 .cfo-advice-page .section-block,
-.decisions-page .section-block,
-.action-plan-page .section-block,
+.retrospective-page .section-block,
 .celebrate-review-page .section-block,
 .close-month-review-page .section-block {
   max-width: 100%;
@@ -20,8 +18,7 @@
 }
 
 .cfo-advice-page .section-heading,
-.decisions-page .section-heading,
-.action-plan-page .section-heading,
+.retrospective-page .section-heading,
 .celebrate-review-page .section-heading,
 .close-month-review-page .section-heading {
   margin-bottom: 16px;
@@ -29,11 +26,10 @@
 
 .cfo-primary-recommendation,
 .cfo-next-recommendations,
-.decisions-current-update,
-.decisions-cfo-outcomes,
-.decisions-context,
-.decisions-open-questions,
-.action-plan-commitments,
+.cfo-current-update,
+.retrospective-prompts,
+.retrospective-actions,
+.retrospective-questions,
 .celebrate-progress,
 .celebrate-personal,
 .close-month-review,
@@ -43,16 +39,14 @@
   padding-inline: 2px;
 }
 
-.cfo-recommendation-stack,
-.decisions-commitment-stack {
+.cfo-recommendation-stack {
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
 .cfo-recommendation-card,
-.decisions-commitment-card,
-.decisions-current-update .panel-surface {
+.cfo-current-update .panel-surface {
   width: 100%;
   max-width: 100%;
   padding: clamp(22px, 2.2vw, 30px) clamp(24px, 2.8vw, 38px);
@@ -103,59 +97,97 @@
 }
 
 .cfo-advice-page > .sticky-card,
-.decisions-page > .sticky-card,
-.action-plan-page > .sticky-card,
+.retrospective-page > .sticky-card,
 .celebrate-review-page > .sticky-card {
   width: 100%;
   max-width: 100%;
   padding: 18px 22px;
 }
 
-.decisions-section-intro {
-  margin: 0 0 16px;
-}
-
-.decisions-commitment-card .panel-module__label {
-  display: block;
-  margin-bottom: 8px;
-}
-
-.decisions-outcome-title {
-  margin: 0 0 10px;
-  line-height: 1.3;
-}
-
-.decisions-commitment-card .panel-note {
-  margin-bottom: 18px;
-  max-width: 1000px;
-}
-
-.decisions-prompt-grid {
+.retrospective-prompt-grid,
+.retrospective-question-grid {
   gap: 18px;
-  margin-top: 0;
 }
 
-.decisions-prompt-grid .prompt-field {
+.retrospective-prompt-grid .prompt-field,
+.retrospective-question-grid .prompt-field {
   min-width: 0;
 }
 
-.decisions-prompt-grid textarea {
+.retrospective-prompt-grid textarea,
+.retrospective-question-grid textarea {
   min-height: 110px;
 }
 
-.decisions-open-questions .panel-card {
-  width: 100%;
-  max-width: 100%;
-  padding: 22px 26px;
+.retrospective-question-context {
+  margin: 0 0 8px;
 }
 
-.action-plan-page > .sticky-card {
-  margin: 0;
+.retrospective-generic-note {
+  margin: 0 0 14px;
 }
 
-.action-plan-intro {
+.retrospective-actions > .sticky-card {
   margin: 0 0 16px;
-  max-width: 980px;
+}
+
+.cfo-recommendation-visualization {
+  margin-top: 18px;
+}
+
+.cfo-recommendation-visualization-caption {
+  margin-top: 10px;
+}
+
+.cfo-recommendation-evidence,
+.cfo-recommendation-assumptions {
+  margin-top: 16px;
+}
+
+.collapsible-panel {
+  border: 1px solid rgba(45, 53, 72, 0.1);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.collapsible-panel-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  cursor: pointer;
+  list-style: none;
+  font-weight: 600;
+}
+
+.collapsible-panel-summary::-webkit-details-marker {
+  display: none;
+}
+
+.collapsible-panel-summary::before {
+  content: '▸';
+  margin-right: 10px;
+  transition: transform 0.15s ease;
+}
+
+.collapsible-panel[open] .collapsible-panel-summary::before {
+  transform: rotate(90deg);
+}
+
+.collapsible-panel-meta {
+  font-weight: 500;
+  color: rgba(45, 53, 72, 0.65);
+  font-size: 0.92rem;
+}
+
+.collapsible-panel-body {
+  padding: 0 20px 20px;
+}
+
+.collapsible-panel-summary:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
 }
 
 .action-plan-table-surface {
@@ -239,8 +271,7 @@
 
 @media (max-width: 1100px) {
   .cfo-advice-page,
-  .decisions-page,
-  .action-plan-page,
+  .retrospective-page,
   .celebrate-review-page,
   .close-month-review-page {
     gap: 24px;
@@ -248,8 +279,7 @@
   }
 
   .cfo-recommendation-card,
-  .decisions-commitment-card,
-  .decisions-current-update .panel-surface,
+  .cfo-current-update .panel-surface,
   .action-plan-table-surface,
   .celebrate-progress .panel-card,
   .close-month-review-page .panel-card,
@@ -258,7 +288,8 @@
   }
 
   .cfo-recommendation-detail-grid,
-  .decisions-prompt-grid,
+  .retrospective-prompt-grid,
+  .retrospective-question-grid,
   .celebrate-prompt-grid,
   .close-month-summary-grid,
   .close-month-carry-grid {

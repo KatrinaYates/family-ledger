@@ -9,6 +9,7 @@ export {
   NotebookBarCaption,
   SegmentBar,
   DecorativeStickyNote,
+  CollapsiblePanel,
   CardGrid,
   KitSection,
   KitSample,

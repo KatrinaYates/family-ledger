@@ -1,5 +1,5 @@
 import React from 'react';
-import { TopicBand, ActionTable, ListAddButton } from '../content/NotebookPrimitives';
+import { TopicBand } from '../content/NotebookPrimitives';
 import {
   EditableChecklist as EditableChecklistView,
   EditableBulletList as EditableBulletListView,
@@ -8,7 +8,6 @@ import {
 import { useMeetingJson, useMeetingNotes } from '../../hooks/useMeetingField';
 import { useMonthContext } from '../../context/MonthContext';
 import { sectionNotesKey } from '../../utils/meetingKeys';
-import { actionStatusFromLabel } from '../../utils/actionUtils';
 
 function newId(prefix = 'item') {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -19,16 +18,6 @@ function seedChecklistItems(seeds) {
     id: `seed-${index}`,
     text,
     checked: false,
-  }));
-}
-
-function seedActionRows(rows) {
-  return rows.map((row, index) => ({
-    id: `seed-${index}`,
-    action: row.action || row.title || '',
-    owner: row.owner || '',
-    dueDate: row.dueDate && row.dueDate !== 'TBD' ? row.dueDate : '',
-    status: row.status ? actionStatusFromLabel(row.status) : 'not_started',
   }));
 }
 
@@ -169,40 +158,6 @@ export function PersistedEditableDecisionList({ storageKey, outcomeStorageKey, s
 /** @deprecated Use PersistedEditableDecisionList */
 export function EditableDecisionList(props) {
   return <PersistedEditableDecisionList {...props} />;
-}
-
-export function EditableActionPlan({ storageKey, seedRows = [] }) {
-  const { value: rows, setValue: setRows, isLocked, saveError } = useMeetingJson(storageKey, () => seedActionRows(seedRows));
-
-  const updateRow = (id, field, value) => {
-    setRows((prev) => prev.map((row) => (row.id === id ? { ...row, [field]: value } : row)));
-  };
-
-  const addRow = () => {
-    setRows((prev) => [
-      ...prev,
-      { id: newId('action'), action: '', owner: '', dueDate: '', status: 'not_started' },
-    ]);
-  };
-
-  const removeRow = (id) => {
-    setRows((prev) => prev.filter((row) => row.id !== id));
-  };
-
-  return (
-    <div className="editable-action-plan">
-      <ActionTable
-        rows={rows}
-        readOnly={isLocked}
-        onUpdateRow={updateRow}
-        onRemoveRow={removeRow}
-      />
-      {!isLocked && (
-        <ListAddButton onClick={addRow}>+ Add action item</ListAddButton>
-      )}
-      <FieldSaveError message={saveError} />
-    </div>
-  );
 }
 
 export function PersistedEditableBulletList({ storageKey, seedItems = [], title }) {
