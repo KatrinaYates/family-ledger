@@ -6,6 +6,19 @@ import { dispatchMeetingUpdated } from '../utils/meetingEvents';
 import { getErrorMessage } from '../utils/getErrorMessage';
 import { useAsyncGuard } from './useAsyncGuard';
 
+/** @type {Map<string, Promise<void>>} */
+const meetingSaveQueues = new Map();
+
+/** @param {string} storageKey @param {() => Promise<void>} saveFn */
+function enqueueMeetingSave(storageKey, saveFn) {
+    const previous = meetingSaveQueues.get(storageKey) ?? Promise.resolve();
+    const next = previous
+        .catch(() => undefined)
+        .then(saveFn);
+    meetingSaveQueues.set(storageKey, next);
+    return next;
+}
+
 /** @param {string} storageKey @param {string} [initial] */
 export function useMeetingNotes(storageKey, initial = '') {
     const { monthId, workflow } = useMonthContext();
@@ -16,10 +29,15 @@ export function useMeetingNotes(storageKey, initial = '') {
     const [saving, setSaving] = useState(false);
     const [saveError, setSaveError] = useState(null);
     const valueRef = useRef(value);
+    const hasLocalEditsRef = useRef(false);
 
     useEffect(() => {
         valueRef.current = value;
     }, [value]);
+
+    useEffect(() => {
+        hasLocalEditsRef.current = false;
+    }, [monthId, storageKey]);
 
     useEffect(() => {
         let cancelled = false;
@@ -28,7 +46,7 @@ export function useMeetingNotes(storageKey, initial = '') {
             setSaveError(null);
             try {
                 const stored = await run(() => ledgerRepository.getMeetingEntry(monthId, storageKey));
-                if (cancelled || stored === undefined) return;
+                if (cancelled || stored === undefined || hasLocalEditsRef.current) return;
                 setValueState(typeof stored === 'string' ? stored : initial);
             } catch (err) {
                 if (!cancelled) setSaveError(getErrorMessage(err));
@@ -45,16 +63,24 @@ export function useMeetingNotes(storageKey, initial = '') {
         async (next) => {
             if (isLocked) return;
             const resolved = typeof next === 'function' ? next(valueRef.current) : next;
+            hasLocalEditsRef.current = true;
             setValueState(resolved);
             setSaving(true);
             setSaveError(null);
-            try {
+
+            const savePromise = enqueueMeetingSave(storageKey, async () => {
                 await ledgerRepository.saveMeetingEntry(monthId, storageKey, resolved);
                 dispatchMeetingUpdated();
+            });
+
+            try {
+                await savePromise;
             } catch (err) {
                 setSaveError(getErrorMessage(err));
             } finally {
-                setSaving(false);
+                if (meetingSaveQueues.get(storageKey) === savePromise) {
+                    setSaving(false);
+                }
             }
         },
         [isLocked, monthId, storageKey],
@@ -76,10 +102,15 @@ export function useMeetingJson(storageKey, initialFactory) {
     const [saving, setSaving] = useState(false);
     const [saveError, setSaveError] = useState(null);
     const valueRef = useRef(value);
+    const hasLocalEditsRef = useRef(false);
 
     useEffect(() => {
         valueRef.current = value;
     }, [value]);
+
+    useEffect(() => {
+        hasLocalEditsRef.current = false;
+    }, [monthId, storageKey]);
 
     useEffect(() => {
         let cancelled = false;
@@ -88,7 +119,7 @@ export function useMeetingJson(storageKey, initialFactory) {
             setSaveError(null);
             try {
                 const stored = await run(() => ledgerRepository.getMeetingEntry(monthId, storageKey));
-                if (cancelled || stored === undefined) return;
+                if (cancelled || stored === undefined || hasLocalEditsRef.current) return;
                 if (stored != null) {
                     setValueState(stored);
                 } else {
@@ -109,16 +140,24 @@ export function useMeetingJson(storageKey, initialFactory) {
         async (next) => {
             if (isLocked) return;
             const resolved = typeof next === 'function' ? next(valueRef.current) : next;
+            hasLocalEditsRef.current = true;
             setValueState(resolved);
             setSaving(true);
             setSaveError(null);
-            try {
+
+            const savePromise = enqueueMeetingSave(storageKey, async () => {
                 await ledgerRepository.saveMeetingEntry(monthId, storageKey, resolved);
                 dispatchMeetingUpdated();
+            });
+
+            try {
+                await savePromise;
             } catch (err) {
                 setSaveError(getErrorMessage(err));
             } finally {
-                setSaving(false);
+                if (meetingSaveQueues.get(storageKey) === savePromise) {
+                    setSaving(false);
+                }
             }
         },
         [isLocked, monthId, storageKey],

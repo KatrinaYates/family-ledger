@@ -6,7 +6,7 @@ import {
   StickyCard,
 } from '../content/NotebookPrimitives';
 import { CardGrid, PanelSurface, SectionBlock } from '../notebook';
-import { EditableBulletList } from '../meeting/MeetingFields';
+import { PersistedEditableBulletList } from '../meeting/MeetingFields';
 import { sectionFieldKey } from '../../utils/meetingKeys';
 import { SectionPageShell } from './SectionPageShell';
 
@@ -133,7 +133,7 @@ export function MonthOverviewPage({ data, month, section }) {
             <p className="panel-note month-snapshot-human-hint">
               Things the data cannot automatically understand — reimbursements, guests, intentional choices, life events.
             </p>
-            <EditableBulletList
+            <PersistedEditableBulletList
               storageKey={sectionFieldKey(month.id, 'month', 'human-context')}
               seedItems={[]}
             />

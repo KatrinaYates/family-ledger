@@ -824,7 +824,7 @@ export function ActionTable({
   showRemove = true,
   className = '',
 }) {
-  const getActionText = (row) => row.action ?? row.title ?? '';
+  const getActionText = (row) => row.title ?? row.action ?? '';
   const getRowId = (row, index) => row.id ?? getActionText(row) ?? `row-${index}`;
 
   const normalizeStatus = (status) => {
@@ -937,7 +937,20 @@ export function ActionTable({
   );
 }
 
-export function PromptField({ label, value, onChange, placeholder, rows = 3, className = '', readOnly = false }) {
+export function PromptField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  rows = 3,
+  className = '',
+  readOnly = false,
+  disabled = false,
+  saveError = null,
+  saving = false,
+}) {
+  const isReadOnly = readOnly || disabled;
+
   return (
     <label className={`prompt-field ${className}`.trim()}>
       <span className="prompt-field-label">{label}</span>
@@ -946,9 +959,14 @@ export function PromptField({ label, value, onChange, placeholder, rows = 3, cla
         onChange={(e) => onChange?.(e.target.value)}
         placeholder={placeholder}
         rows={rows}
-        readOnly={readOnly}
-        aria-readonly={readOnly}
+        readOnly={isReadOnly}
+        aria-readonly={isReadOnly}
+        disabled={saving && !isReadOnly}
+        aria-busy={saving || undefined}
       />
+      {saveError && (
+        <p className="field-save-error" role="alert">{saveError}</p>
+      )}
     </label>
   );
 }

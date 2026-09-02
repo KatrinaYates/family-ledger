@@ -1459,15 +1459,6 @@ main > .desk-scene {
   gap: 14px;
 }
 
-.month-section-page .snapshot-grid-main,
-.month-section-page .story-split-grid,
-.month-section-page .cfo-tier-grid {
-  flex: none;
-  min-height: auto;
-  overflow: visible;
-  align-items: start;
-}
-
 .month-section-page .snapshot-side,
 .month-section-page .snapshot-final-side {
   overflow: visible;
@@ -1800,7 +1791,6 @@ main > .desk-scene {
   text-align: right;
 }
 
-.snapshot-grid-main,
 .notebook-card-grid--main-sidebar {
   flex: 1;
   min-height: 0;
@@ -1811,7 +1801,6 @@ main > .desk-scene {
   align-items: stretch;
 }
 
-.snapshot-grid-main > *,
 .notebook-card-grid--main-sidebar > * {
   min-width: 0;
 }
@@ -2194,19 +2183,6 @@ main > .desk-scene {
 .scroll-body .notebook-list,
 .scroll-body .grouped-lists {
   margin-top: 0;
-}
-
-.story-split-grid {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--grid-gap);
-  overflow: hidden;
-}
-
-.story-split-grid .panel-stack {
-  height: 100%;
 }
 
 .snapshot-cash-grid,
@@ -2937,7 +2913,7 @@ main > .desk-scene {
   scrollbar-color: rgba(201, 185, 154, 0.9) transparent;
 }
 
-/* Story & Spending shared layouts — story-split-grid defined above with notebook-card-grid--2 equivalent */
+/* Story & Spending shared layouts */
 
 .story-income-full {
   flex: 1;
@@ -3130,29 +3106,11 @@ main > .desk-scene {
   gap: 14px;
 }
 
-.spending-block-intro {
-  margin: 0 0 12px;
-}
-
-.spending-split-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 14px;
-  align-items: start;
-  width: 100%;
-}
-
 /* Section shell — SectionBlock component */
-.section-block,
-.spending-block { /* alias — remove after page migration */
+.section-block {
   width: 100%;
   min-width: 0;
   max-width: var(--content-block-max-cqw, var(--content-block-max));
-}
-
-.spending-split-row .section-block,
-.spending-split-row .spending-block {
-  max-width: none;
 }
 
 /** Equal-width card grids — 2, 3, or 4 columns. Wrap any panel/card components. */
@@ -3183,17 +3141,19 @@ main > .desk-scene {
   min-width: 0;
 }
 
+.spending-block-intro {
+  margin: 0 0 12px;
+}
+
 /* Panel surface — PanelSurface component */
-.panel-surface,
-.spending-panel-surface { /* alias — remove after page migration */
+.panel-surface {
   padding: var(--panel-padding);
   display: flex;
   flex-direction: column;
   gap: var(--panel-gap);
 }
 
-.panel-surface > .panel-module__label,
-.spending-panel-surface > .spending-watch-module-label {
+.panel-surface > .panel-module__label {
   margin: 0;
 }
 
@@ -3562,8 +3522,7 @@ main > .desk-scene {
 }
 
 /* Panel module — PanelModule component */
-.panel-module,
-.spending-watch-module { /* alias — remove after page migration */
+.panel-module {
   display: grid;
   gap: var(--module-gap) var(--module-gap);
   align-items: start;
@@ -3571,20 +3530,17 @@ main > .desk-scene {
   border-bottom: 1px solid rgba(45, 53, 72, 0.08);
 }
 
-.panel-module:last-child,
-.spending-watch-module:last-child {
+.panel-module:last-child {
   border-bottom: none;
   padding-bottom: 0;
 }
 
-.panel-module--review,
-.spending-watch-module-review {
+.panel-module--review {
   grid-template-columns: 1fr;
   gap: 8px;
 }
 
-.panel-module__label,
-.spending-watch-module-label {
+.panel-module__label {
   display: block;
   margin: 0;
   font-size: max(var(--text-support-min), 12px);
@@ -3595,15 +3551,13 @@ main > .desk-scene {
   font-family: var(--font-heading);
 }
 
-.panel-module__body,
-.spending-watch-module-body {
+.panel-module__body {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.panel-module__value,
-.spending-watch-module-value {
+.panel-module__value {
   font-family: var(--font-data);
   font-size: max(var(--text-support-min), 15px);
   font-weight: 700;
@@ -3828,10 +3782,6 @@ main > .desk-scene {
 }
 
 @media (max-width: 900px) {
-  .spending-split-row {
-    grid-template-columns: 1fr;
-  }
-
   .spending-detail-row.notebook-card-grid--main-sidebar,
   .spending-secondary-row.notebook-card-grid--main-sidebar {
     grid-template-columns: 1fr;
@@ -3843,8 +3793,7 @@ main > .desk-scene {
     grid-template-columns: 1fr;
   }
 
-  .panel-module,
-  .spending-watch-module {
+  .panel-module {
     grid-template-columns: 1fr;
   }
 }
@@ -3864,7 +3813,6 @@ main > .desk-scene {
 }
 
 .future-page .section-block,
-.future-page .spending-block,
 .future-page .paper-surface,
 .future-page .future-footer {
   max-width: 100%;
@@ -4421,6 +4369,26 @@ main > .desk-scene {
 
 .notebook-kit-layout-demo {
   width: 100%;
+}
+
+.notebook-kit-layout-demo.snapshot-grid-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(0, 0.8fr);
+  gap: var(--grid-gap);
+  align-items: stretch;
+}
+
+.notebook-kit-layout-demo.story-split-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--grid-gap);
+}
+
+.notebook-kit-layout-demo.spending-split-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
 }
 
 .notebook-kit-lock-status-row {
@@ -5021,70 +4989,6 @@ textarea.editable-inline-input {
   min-height: 0;
 }
 
-.actions-page .sticky-card {
-  position: relative;
-  margin-bottom: 12px;
-  flex-shrink: 0;
-}
-
-.handoff-split {
-  margin-top: 10px;
-  flex: 1;
-  min-height: 0;
-}
-
-.handoff-page-1 .page-with-notes-body > .panel-stack {
-  height: auto;
-  flex: 0 0 auto;
-}
-
-.handoff-page-1 .page-with-notes-body {
-  display: grid;
-  grid-template-rows: auto minmax(120px, 28%) minmax(0, 1fr) minmax(100px, 24%);
-  gap: 10px;
-  overflow: hidden;
-}
-
-.handoff-summary-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  flex-shrink: 0;
-  min-height: 0;
-  align-items: stretch;
-}
-
-.handoff-page-1 .handoff-summary-row .panel-stack {
-  height: 100%;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.handoff-page-1 .handoff-summary-panel .panel-body {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  margin-top: 8px;
-}
-
-.handoff-page-1 .panel-note {
-  margin: 0;
-}
-
-.handoff-page-1 .handoff-summary-row .meeting-rundown-panel {
-  margin-top: 0;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.handoff-page-1 .handoff-summary-row .meeting-rundown-panel[open] {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-}
-
 .meeting-rundown-summary {
   display: flex;
   align-items: center;
@@ -5131,46 +5035,6 @@ textarea.editable-inline-input {
 .meeting-rundown-panel[open] .meeting-rundown-scroll {
   flex: 1;
   min-height: 0;
-}
-
-.handoff-page-1 .handoff-summary-row .meeting-rundown-panel[open] .meeting-rundown-scroll {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-}
-
-.handoff-page-1 .handoff-split {
-  margin-top: 0;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.handoff-page-2 .handoff-feedback-grid {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 14px;
-  overflow: hidden;
-}
-
-.handoff-feedback-panel {
-  min-height: 0;
-}
-
-.handoff-feedback-panel .prompt-field + .prompt-field {
-  margin-top: 12px;
-}
-
-.handoff-page-2 .sticky-card {
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.handoff-page-2 .sticky-card .inline-notes-area {
-  flex: 1;
-  min-height: 120px;
 }
 
 .meeting-rundown-toolbar {
@@ -5257,31 +5121,6 @@ textarea.editable-inline-input {
   font-style: italic;
 }
 
-.celebrate-page .prompt-field {
-  margin-top: 12px;
-}
-
-.celebrate-page .snapshot-side {
-  gap: 12px;
-}
-
-.actions-page-focus {
-  margin-bottom: 16px;
-  max-width: var(--content-block-max-cqw, var(--content-block-max));
-}
-
-.actions-page-focus .decorative-sticky-note {
-  max-width: 100%;
-}
-
-.celebrate-page .snapshot-side .decorative-sticky-note {
-  align-self: stretch;
-}
-
-.celebrate-page .snapshot-side .decorative-sticky-note.is-fill .sticky-note {
-  width: 100%;
-}
-
 .writing-area textarea {
   width: 100%;
   min-height: 190px;
@@ -5357,21 +5196,9 @@ textarea.editable-inline-input {
     overflow: visible;
   }
 
-  .handoff-page-1 .handoff-summary-row {
-    max-height: none;
-  }
-
-  .handoff-page-1 .meeting-rundown-panel {
-    flex: none;
-  }
-
-  .snapshot-grid-main,
   .snapshot-cash-grid,
   .snapshot-debt-grid,
-  .story-split-grid,
-  .story-ending-grid,
-  .handoff-summary-row,
-  .handoff-feedback-grid {
+  .story-ending-grid {
     flex: none;
     height: auto;
     min-height: auto;
@@ -5443,7 +5270,8 @@ textarea.editable-inline-input {
   .section-tab-label-short { display: inline; }
 
   .notebook.has-section-tabs .subchapter,
-  .notebook.has-section-tabs .working-page {
+  .notebook.has-section-tabs .working-page,
+  .notebook.has-section-tabs .month-chapter {
     padding-top: 52px;
   }
 
@@ -5595,11 +5423,6 @@ textarea.editable-inline-input {
   .subchapter-content,
   .notebook-kit-page .content-body {
     --content-block-max-cqw: 100cqw;
-  }
-
-  .spending-split-row .section-block,
-  .spending-split-row .spending-block {
-    max-width: var(--content-block-max-cqw, var(--content-block-max));
   }
 
   .topic-band,
@@ -6043,17 +5866,6 @@ textarea.editable-inline-input {
 .check-in-refreshed time {
   font-weight: 700;
   color: var(--ink);
-}
-
-.check-in-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  align-items: start;
-}
-
-.check-in-grid-ask-only {
-  grid-template-columns: minmax(0, 1fr);
 }
 
 .check-in-card {
@@ -6548,10 +6360,6 @@ textarea.editable-inline-input {
   .check-in-cash-summary {
     grid-template-columns: 1fr;
   }
-
-  .check-in-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 720px) {
@@ -6580,74 +6388,11 @@ textarea.editable-inline-input {
   }
 }
 
-/* CFO tier stack */
-.cfo-tier-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.cfo-tier-card {
-  padding: 16px 18px;
-}
-
-.cfo-tier-card-header {
-  margin-bottom: 12px;
-}
-
-.cfo-tier-label {
-  display: inline-block;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--deep);
-  background: #E1F2EE;
-  border-radius: 999px;
-  padding: 4px 10px;
-  margin-bottom: 8px;
-}
-
-.cfo-tier-title {
-  margin: 0;
-  font-size: clamp(22px, 2.2vw, 30px);
-  font-family: var(--font-heading);
-  color: #31515A;
-}
-
-.cfo-tier-grid {
-  align-items: start;
-}
-
-.cfo-tier-card .snapshot-panel,
-.cfo-tier-card .snapshot-large-panel {
-  overflow: visible;
-}
-
-/* Decisions section */
-.decisions-cfo-outcomes {
-  margin: 16px 0;
-}
-
 .section-inline-heading {
   margin: 0 0 10px;
   font-size: 18px;
   font-family: var(--font-heading);
   color: #31515A;
-}
-
-.decisions-outcome-card {
-  padding: 14px 16px;
-  margin-bottom: 10px;
-}
-
-.decisions-outcome-title {
-  margin: 0 0 8px;
-  font-size: 16px;
-}
-
-.decisions-prompt-grid {
-  margin-top: 12px;
 }
 
 /* Close month readiness */

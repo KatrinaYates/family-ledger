@@ -34,6 +34,12 @@ check_absent() {
 
 check_absent "No fl-july-* storage keys" 'fl-july-' src
 check_absent "No buildJulyPages" 'buildJulyPages' src
+check_absent "No enrichMeeting" 'enrichMeeting' src
+check_absent "No actions-page class" 'actions-page' src
+check_absent "No handoff-page-1 class" 'handoff-page-1' src
+check_absent "No handoff-page-2 class" 'handoff-page-2' src
+check_absent "No decisions-cfo-outcomes class" 'decisions-cfo-outcomes' src
+check_absent "No PersistedEditableDecisionList" 'PersistedEditableDecisionList' src
 check_absent "No loadJuly2026" 'loadJuly2026' src
 check_absent "No enrichJulyData" 'enrichJulyData' src
 check_absent "No july2026.local loader" 'july2026\.local' src

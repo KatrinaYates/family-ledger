@@ -1,7 +1,7 @@
 import React from 'react';
 import { PanelCard } from '../content/NotebookPrimitives';
 import { CardGrid, SectionBlock } from '../notebook';
-import { EditableBulletList } from '../meeting/MeetingFields';
+import { PersistedEditableBulletList } from '../meeting/MeetingFields';
 import { sectionFieldKey } from '../../utils/meetingKeys';
 import { MeetingRundown } from '../meeting/MeetingRundown';
 import { CarryForwardActions } from '../handoff/CarryForwardActions';
@@ -82,7 +82,7 @@ export function CloseMonthPage({ data, month, section }) {
       >
         <SectionBlock label="Review Before Closing" className="close-month-review">
           <CardGrid columns={2} className="close-month-summary-grid">
-            <PanelCard title={`${month.label} summary`} className="handoff-summary-panel">
+            <PanelCard title={`${month.label} summary`} className="close-summary-panel">
               <p className="panel-note">{close.summary}</p>
             </PanelCard>
             <MeetingRundown />
@@ -110,7 +110,7 @@ export function CloseMonthPage({ data, month, section }) {
         <SectionBlock label="Carry Into Next Month" className="close-month-carry-forward">
           <CardGrid columns={2} className="close-month-carry-grid">
             <PanelCard title="Notes to carry forward">
-              <EditableBulletList
+              <PersistedEditableBulletList
                 storageKey={sectionFieldKey(month.id, 'close', 'carry-forward')}
                 seedItems={carryForwardSeeds}
               />

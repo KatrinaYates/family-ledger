@@ -1,9 +1,7 @@
 import React from 'react';
-import { TopicBand } from '../content/NotebookPrimitives';
 import {
   EditableChecklist as EditableChecklistView,
   EditableBulletList as EditableBulletListView,
-  EditableDecisionList as EditableDecisionListView,
 } from '../notebook/EditableLists';
 import { useMeetingJson, useMeetingNotes } from '../../hooks/useMeetingField';
 import { useMonthContext } from '../../context/MonthContext';
@@ -115,51 +113,6 @@ export function EditableChecklist(props) {
   return <PersistedEditableChecklist {...props} />;
 }
 
-export function PersistedEditableDecisionList({ storageKey, outcomeStorageKey, seedDecisions = [] }) {
-  const { value: items, setValue: setItems, isLocked, saveError: listSaveError } = useMeetingJson(storageKey, () => seedChecklistItems(seedDecisions));
-  const outcomeKey = outcomeStorageKey ?? `${storageKey}-outcome`;
-  const { value: decision, setValue: setDecision, isLocked: isOutcomeLocked, saveError: outcomeSaveError } = useMeetingNotes(outcomeKey);
-  const readOnly = isLocked || isOutcomeLocked;
-  const saveError = listSaveError || outcomeSaveError;
-
-  const toggle = (id) => {
-    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, checked: !item.checked } : item)));
-  };
-
-  const addOption = () => {
-    setItems((prev) => [...prev, { id: newId('dec'), text: '', checked: false }]);
-  };
-
-  const updateText = (id, text) => {
-    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, text } : item)));
-  };
-
-  const removeOption = (id) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
-  };
-
-  return (
-    <>
-      <EditableDecisionListView
-        options={items}
-        outcome={decision}
-        readOnly={readOnly}
-        onToggle={toggle}
-        onUpdateText={updateText}
-        onAdd={addOption}
-        onRemove={removeOption}
-        onOutcomeChange={setDecision}
-      />
-      <FieldSaveError message={saveError} />
-    </>
-  );
-}
-
-/** @deprecated Use PersistedEditableDecisionList */
-export function EditableDecisionList(props) {
-  return <PersistedEditableDecisionList {...props} />;
-}
-
 export function PersistedEditableBulletList({ storageKey, seedItems = [], title }) {
   const { value: items, setValue: setItems, isLocked, saveError } = useMeetingJson(storageKey, () => seedBulletItems(seedItems));
 
@@ -187,19 +140,6 @@ export function PersistedEditableBulletList({ storageKey, seedItems = [], title 
       />
       <FieldSaveError message={saveError} />
     </>
-  );
-}
-
-/** @deprecated Use PersistedEditableBulletList */
-export function EditableBulletList(props) {
-  return <PersistedEditableBulletList {...props} />;
-}
-
-export function MeetingTopicBand({ storageKey, label, title, description, checks, icon, tone }) {
-  return (
-    <TopicBand label={label} title={title} description={description} icon={icon} tone={tone}>
-      <PersistedEditableChecklist storageKey={storageKey} seedItems={checks} allowEdit={false} />
-    </TopicBand>
   );
 }
 

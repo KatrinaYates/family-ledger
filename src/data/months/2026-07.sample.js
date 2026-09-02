@@ -670,38 +670,13 @@ export default {
       },
       "coverageNote": "Sample coverage note — demo data only."
     },
-    "prompts": [
-      {
-        "label": "What surprised us?",
-        "key": "surprised"
-      },
-      {
-        "label": "What felt good?",
-        "key": "feltGood"
-      },
-      {
-        "label": "What felt stressful?",
-        "key": "feltStressful"
-      }
-    ],
-    "sections": [
-      {
-        "label": "Decisions",
-        "key": "decisions"
-      },
-      {
-        "label": "Parking lot",
-        "key": "parkingLot"
-      }
-    ],
     "questions": [
       "Sample meeting question lorem ipsum dolor?",
       "Sample meeting question sit amet consectetur?",
       "Sample meeting question adipiscing elit sed?",
       "Sample meeting question do eiusmod tempor?",
       "Sample meeting question incididunt ut labore?"
-    ],
-    "insight": "Sample meeting insight paragraph — lorem ipsum dolor sit amet consectetur adipiscing elit. Demo only."
+    ]
   },
   "actions": {
     "items": [
@@ -754,7 +729,6 @@ export default {
   },
   "handoff": {
     "summary": "Sample handoff summary — lorem ipsum dolor sit amet consectetur adipiscing elit. All figures in this file are zero. Replace with 2026-07.local.js for real data.",
-    "decisionsMade": "",
     "carryForward": [
       "Sample carry forward one",
       "Sample carry forward two",
@@ -762,7 +736,6 @@ export default {
       "Sample carry forward four",
       "Sample carry forward five"
     ],
-    "openActionItems": "",
     "revisit": [
       "Sample revisit item one",
       "Sample revisit item two",

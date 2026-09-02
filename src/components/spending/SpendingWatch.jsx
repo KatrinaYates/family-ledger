@@ -95,7 +95,10 @@ function RecurringModule({ recurring }) {
 
 export function SpendingWatch({ spendingWatch, monthId }) {
   if (!spendingWatch) return null;
+  return <SpendingWatchBody spendingWatch={spendingWatch} monthId={monthId} />;
+}
 
+function SpendingWatchBody({ spendingWatch, monthId }) {
   const storageKey = sectionFieldKey(monthId, 'spending', 'watch-contexts');
   const seedFactory = () => (
     (spendingWatch.review?.items ?? []).map((item) => ({ id: item.id, context: '' }))

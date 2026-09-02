@@ -75,7 +75,10 @@ function NotableRow({ item, saved, onUpdate, isLocked }) {
 
 export function NotableSpending({ notableSpending, monthId }) {
   if (!notableSpending) return null;
+  return <NotableSpendingBody notableSpending={notableSpending} monthId={monthId} />;
+}
 
+function NotableSpendingBody({ notableSpending, monthId }) {
   const storageKey = sectionFieldKey(monthId, 'spending', 'notable-notes');
   const seedFactory = () => (
     (notableSpending.items ?? []).map((item) => ({
@@ -84,7 +87,7 @@ export function NotableSpending({ notableSpending, monthId }) {
       note: '',
     }))
   );
-  const { value: notes, setValue: setNotes, isLocked } = useMeetingJson(storageKey, seedFactory);
+  const { value: notes, setValue: setNotes, isLocked, saveError } = useMeetingJson(storageKey, seedFactory);
 
   const noteFor = (id) => notes.find((entry) => entry.id === id) ?? { classification: '', note: '' };
 
@@ -101,6 +104,7 @@ export function NotableSpending({ notableSpending, monthId }) {
   return (
     <SectionBlock label="Big Purchases & One-Time Spending" className="spending-notable">
       <PanelSurface>
+        {saveError && <p className="field-save-error" role="alert">{saveError}</p>}
         <p className="panel-note spending-block-intro">
           Large expenses that materially shaped the month, excluding normal recurring obligations.
         </p>

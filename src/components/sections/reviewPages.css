@@ -81,14 +81,8 @@
   padding: 18px 20px;
 }
 
-.cfo-recommendation-decisions {
-  margin-top: 4px;
-  padding-top: 20px;
-  border-top: 1px dashed rgba(45, 53, 72, 0.12);
-}
-
-.cfo-recommendation-decisions .section-inline-heading {
-  margin-bottom: 10px;
+.close-month-summary-grid .close-summary-panel .panel-note {
+  margin: 0;
 }
 
 .cfo-recommendation-card > .panel-note,

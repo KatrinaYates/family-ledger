@@ -10,8 +10,5 @@ export function enrichHandoff(handoff, meta) {
     summaryPage: {
       subtitle: `${label} at a glance — your meeting rundown, what to carry forward, and open items.`,
     },
-    feedbackPage: {
-      subtitle: 'Help future-us improve this ledger — what worked, what to change, and ideas for the next edition.',
-    },
   };
 }

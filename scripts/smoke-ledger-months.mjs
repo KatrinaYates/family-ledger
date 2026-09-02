@@ -81,6 +81,8 @@ try {
   assert(normalizePageId('2026-07-decisions') === '2026-07-retrospective', 'legacy decisions URL should redirect to retrospective');
   assert(normalizePageId('2026-07-actions') === '2026-07-retrospective', 'legacy actions URL should redirect to retrospective');
   assert(normalizePageId('july-decisions') === '2026-07-retrospective', 'legacy july-decisions URL should redirect to retrospective');
+  assert(normalizePageId('july-actions') === '2026-07-retrospective', 'legacy july-actions URL should redirect to retrospective');
+  assert(normalizePageId('future-july-decisions') === '2026-07-retrospective', 'future-july-decisions URL should redirect to retrospective');
   assert(
     !canRenderCfoVisualization({ type: 'balance_comparison', currentValue: 100 }),
     'balance_comparison chart should not render without projectedValue',

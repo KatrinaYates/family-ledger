@@ -6,6 +6,7 @@ import {
   SectionPageHeader,
   WarningBanner,
 } from '../content/NotebookPrimitives';
+import { CardGrid } from '../notebook';
 import { AskChatGPTCard } from './AskChatGPTCard';
 import { BillsFundingCard } from './BillsFundingCard';
 import { CashPositionCard } from './CashPositionCard';
@@ -298,7 +299,7 @@ export function FinancialCheckInPage() {
             <MetricKpiRow items={enriched.kpis} />
           )}
 
-          <div className="check-in-grid">
+          <CardGrid columns={2} className="check-in-card-grid">
             <CashPositionCard cash={enriched.cash} />
             <BillsFundingCard bills={enriched.bills} />
             <ProtectedCashCard
@@ -312,12 +313,12 @@ export function FinancialCheckInPage() {
             />
             <RecentActivityCard recentActivity={enriched.recentActivity} />
             <AskChatGPTCard enriched={enriched} />
-          </div>
+          </CardGrid>
         </>
       )}
 
       {!hasCheckIn && (
-        <div className="check-in-grid check-in-grid-ask-only">
+        <div className="check-in-ask-only">
           <AskChatGPTCard enriched={enriched} />
         </div>
       )}

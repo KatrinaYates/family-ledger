@@ -200,7 +200,7 @@ export default function App() {
     () => getMonthCatalogEntry(resolvedPage.monthId || activeMonth) || months[0],
     [resolvedPage.monthId, activeMonth],
   );
-  const activeSection = resolvedPage.sectionId || 'month';
+  const activeSection = resolvedPage.sectionId ?? null;
 
   const contextMonthId = resolvedPage.monthId || activeMonth;
   const { workflow } = useWorkflow(contextMonthId);
@@ -347,7 +347,7 @@ export default function App() {
   }, [contextMonthId, navigateTo]);
 
   const showMonthUtilities = Boolean(resolvedPage.monthId);
-  const showSections = resolvedPage.type === 'content';
+  const showSections = resolvedPage.type === 'content' || resolvedPage.type === 'month';
 
   if (
     monthsLoading ||

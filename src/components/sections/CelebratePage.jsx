@@ -48,12 +48,18 @@ export function CelebratePage({ data, month, section }) {
               value={familyRewardField.value}
               onChange={familyRewardField.setValue}
               placeholder="A small reward, family activity, or something fun..."
+              readOnly={familyRewardField.isLocked}
+              saveError={familyRewardField.saveError}
+              saving={familyRewardField.saving}
             />
             <PromptField
               label="What are we grateful for?"
               value={gratitudeField.value}
               onChange={gratitudeField.setValue}
               placeholder="A person, habit, opportunity, or moment from this month..."
+              readOnly={gratitudeField.isLocked}
+              saveError={gratitudeField.saveError}
+              saving={gratitudeField.saving}
             />
           </CardGrid>
         </SectionBlock>

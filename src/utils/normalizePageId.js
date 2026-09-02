@@ -27,9 +27,14 @@ export function normalizePageId(pageId) {
     if (!pageId) return pageId;
 
     if (pageId.startsWith('future-')) {
-        const legacyMonth = pageId.slice('future-'.length);
-        const modernMonthId = LEGACY_MONTH_IDS[legacyMonth] ?? legacyMonth;
-        return redirectLegacySection(modernMonthId);
+        const rest = pageId.slice('future-'.length);
+        for (const [name, id] of Object.entries(LEGACY_MONTH_IDS)) {
+            if (rest === name) return id;
+            if (rest.startsWith(`${name}-`)) {
+                return redirectLegacySection(`${id}-${rest.slice(name.length + 1)}`);
+            }
+        }
+        return redirectLegacySection(rest);
     }
 
     if (pageId === 'july') return '2026-07';

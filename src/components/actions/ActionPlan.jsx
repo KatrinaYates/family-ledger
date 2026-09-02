@@ -22,7 +22,9 @@ export function ActionPlan({ seedRows = [] }) {
   }, [seedIfEmpty, seedRows]);
 
   const handleUpdate = (id, field, value) => {
-    const patch = field === 'action' ? { title: value } : { [field]: value };
+    const patch = field === 'action'
+      ? { title: value, action: undefined }
+      : { [field]: value };
     updateAction(id, patch);
   };
 

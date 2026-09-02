@@ -1,6 +1,7 @@
 import React from 'react';
 import { StickyCard } from '../content/NotebookPrimitives';
 import { BarChart } from '../notebook/KitComponents';
+import { SectionBlock } from '../notebook';
 
 const GOAL_TONES = {
   'emergency-fund': 'safety',
@@ -97,13 +98,12 @@ export function FutureGoals({ goalsLabel, goals }) {
   if (!goals?.length) return null;
 
   return (
-    <section className="spending-block future-goals" aria-label={goalsLabel}>
-      <h2 className="section-heading">{goalsLabel}</h2>
+    <SectionBlock label={goalsLabel} className="future-goals">
       <div className="future-goals-grid">
         {goals.map((goal) => (
           <GoalCard key={goal.id} goal={goal} />
         ))}
       </div>
-    </section>
+    </SectionBlock>
   );
 }
