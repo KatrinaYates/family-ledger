@@ -65,7 +65,7 @@ export function CelebratePage({ data, month, section }) {
         </SectionBlock>
 
         {celebrate.page?.motto && (
-          <StickyCard label="Carry this with us" tone="family" fill prose>
+          <StickyCard label="Carry this with us" tone="family" fill prose layout="editorial">
             {celebrate.page.motto}
           </StickyCard>
         )}

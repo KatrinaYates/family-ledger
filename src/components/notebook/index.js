@@ -59,6 +59,7 @@ export {
   ActionTable,
   MonthLockPanel,
   NotebookButton,
+  ProseRail,
 } from '../content/NotebookPrimitives';
 
 export { NotebookKitPageWithCharts as NotebookKitPage } from './NotebookKitPageWithCharts.jsx';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { AmountList, CardGrid, PanelSurface, SectionBlock } from '../notebook';
+import { AmountList, CardGrid, PanelSurface, ProseRail, SectionBlock } from '../notebook';
 import { ProgressBar } from '../checkin/CheckInVisuals';
 import { DebtPayoffCalculator } from './DebtPayoffCalculator';
 import './future-financial-sections.css';
@@ -51,7 +51,11 @@ function SavingsSection({ savings }) {
               <h3>Kids savings</h3>
               {hasValue(kids.total) && <strong>{kids.total}</strong>}
             </div>
-            {kids.note && <p className="future-financial-note">{kids.note}</p>}
+            {kids.note && (
+              <ProseRail label="Kids savings">
+                <p className="future-financial-note">{kids.note}</p>
+              </ProseRail>
+            )}
             <CardGrid columns={2} className="future-savings-grid">
               {(kids.accounts ?? []).map((account) => (
                 <div className="future-savings-card" key={account.name}>
@@ -94,8 +98,14 @@ function EmergencyFundSection({ emergencyFund }) {
             <ProgressBar percent={percent} label={`${percent}% of emergency fund target`} tone="teal" ariaLabel={`Emergency fund ${emergencyFund.balance ?? emergencyFund.value} of ${emergencyFund.target}, ${percent}% funded`} />
           </div>
         )}
-        {emergencyFund.account && <p className="future-financial-note"><strong>Account:</strong> {emergencyFund.account}</p>}
-        {emergencyFund.description && <p className="future-financial-note">{emergencyFund.description}</p>}
+        {emergencyFund.description && (
+          <ProseRail label={emergencyFund.account ? `Account: ${emergencyFund.account}` : 'Proposal'}>
+            <p className="future-financial-note">{emergencyFund.description}</p>
+          </ProseRail>
+        )}
+        {emergencyFund.account && !emergencyFund.description && (
+          <p className="future-financial-note"><strong>Account:</strong> {emergencyFund.account}</p>
+        )}
       </PanelSurface>
     </SectionBlock>
   );
@@ -114,7 +124,11 @@ function RetirementSection({ retirement, monthLabel = 'Monthly' }) {
           <MoneyPair label={`Latest available ${monthLabel} balance`} value={retirement.balance} note={retirement.balanceAsOf} />
           <MoneyPair label={`Contributed in ${monthLabel}`} value={retirement.monthContributions} />
         </div>
-        {retirement.projectionNote && <p className="future-financial-note">{retirement.projectionNote}</p>}
+        {retirement.projectionNote && (
+          <ProseRail label="Projection note">
+            <p className="future-financial-note">{retirement.projectionNote}</p>
+          </ProseRail>
+        )}
         {showBalanceDetail && (
           <div className="future-financial-subsection">
             <h3>{monthLabel} balance detail</h3>
@@ -166,7 +180,11 @@ function DebtSection({ debt, payoffPlan }) {
           <MoneyPair label="Ending connected debt" value={debt?.total} />
           <MoneyPair label="Paid toward debt this month" value={debt?.paidThisMonth} />
         </div>
-        {debt?.insight && <p className="future-financial-note future-debt-insight">{debt.insight}</p>}
+        {debt?.insight && (
+          <ProseRail label="Debt insight" className="future-debt-insight">
+            <p className="future-financial-note">{debt.insight}</p>
+          </ProseRail>
+        )}
         <div className="future-debt-ledgers">
           <DebtAmountList title="Credit cards" items={debt?.creditCards ?? []} total={cardTotal > 0 ? formatTotal(cardTotal) : undefined} />
           <DebtAmountList title="Loans" items={debt?.loans ?? []} total={loanTotal > 0 ? formatTotal(loanTotal) : undefined} />

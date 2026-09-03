@@ -58,6 +58,8 @@
 
   /* Accessibility: no single content block wider than half the page (scanability / line length) */
   --content-block-max: 50%;
+  --text-measure-prose: 65ch;
+  --narrative-label-width: min(11rem, 30%);
   --kit-width-sticky-note: 280px;
   --shadow-sticky-note: 3px 5px 10px rgba(0, 0, 0, 0.11), 6px 10px 22px rgba(0, 0, 0, 0.08);
   --kit-width-sticky-card: 420px;
@@ -1415,25 +1417,34 @@ main > .desk-scene {
   font-weight: 700;
 }
 
-/* Content shell — page-level scroll for monthly sections + check-in */
+/* Content shell — margin line stays on the page; only inner content scrolls */
 .working-page.content-shell {
-  overflow-x: hidden;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.working-page.content-shell > .margin-line {
+  position: absolute;
+  left: 6.5%;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+  pointer-events: none;
 }
 
 .working-content.content-shell-inner {
   display: flex;
   flex-direction: column;
   position: relative;
-  inset: auto;
-  left: auto;
-  right: auto;
-  top: auto;
-  bottom: auto;
+  box-sizing: border-box;
+  flex: 1;
+  min-height: 0;
+  width: 90%;
   height: auto;
-  min-height: 100%;
-  overflow: visible;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .content-body {
@@ -2096,6 +2107,59 @@ main > .desk-scene {
   font-size: max(var(--text-support-min), 14px);
   line-height: 1.45;
   color: #4a5560;
+}
+
+/* Readable narrative — editorial split (label left, prose right) or capped measure */
+.is-editorial {
+  display: grid;
+  grid-template-columns: var(--narrative-label-width) minmax(0, 1fr);
+  gap: 12px 24px;
+  align-items: start;
+}
+
+.is-editorial > .editorial-label {
+  margin: 0;
+  min-width: 0;
+}
+
+.is-editorial > .editorial-body {
+  min-width: 0;
+  max-width: var(--text-measure-prose);
+}
+
+.is-editorial > .editorial-body > :first-child {
+  margin-top: 0;
+}
+
+.is-editorial > .editorial-body ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.is-editorial > .editorial-body li + li {
+  margin-top: 0.35rem;
+}
+
+.prose-rail {
+  margin-top: 12px;
+}
+
+.prose-rail:first-child {
+  margin-top: 0;
+}
+
+.readable-prose,
+.insight-row-support,
+.symbol-row p,
+.topic-band-desc,
+.check-in-card-lead {
+  max-width: var(--text-measure-prose);
+}
+
+@media (max-width: 720px) {
+  .is-editorial {
+    grid-template-columns: 1fr;
+  }
 }
 
 .snapshot-side {
@@ -5178,16 +5242,21 @@ textarea.editable-inline-input {
     -webkit-overflow-scrolling: touch;
   }
 
-  .working-content {
+  .working-content,
+  .working-content.content-shell-inner {
     position: relative;
     left: auto;
     right: auto;
     top: auto;
     bottom: auto;
+    min-height: 0;
     padding: 36px 44px 48px 56px;
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
-  .content-shell-inner,
   .content-body {
     overflow: visible;
     flex: none;
@@ -5839,30 +5908,6 @@ textarea.editable-inline-input {
 }
 
 /* Financial Check-In — live household position (not month-scoped) */
-.working-page.content-shell:has(.check-in-page) {
-  overflow-x: hidden;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.working-content.content-shell-inner:has(.check-in-page) {
-  position: relative;
-  inset: auto;
-  left: auto;
-  right: auto;
-  top: auto;
-  bottom: auto;
-  height: auto;
-  min-height: 100%;
-  overflow: visible;
-}
-
-.content-body:has(.check-in-page) {
-  flex: none;
-  min-height: auto;
-  overflow: visible;
-}
-
 .check-in-page {
   height: auto;
   min-height: min-content;

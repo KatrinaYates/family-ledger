@@ -29,7 +29,7 @@ export function SpendingOverview({ overview }) {
         <p className="panel-note spending-overview-footnote">{overview.footnote}</p>
       )}
       {overview.interpretation && (
-        <StickyCard label="What drove the change" tone="context" fill className="spending-overview-pulse">
+        <StickyCard label="What drove the change" tone="context" fill layout="editorial" className="spending-overview-pulse">
           <p>{overview.interpretation}</p>
         </StickyCard>
       )}

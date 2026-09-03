@@ -106,7 +106,7 @@ export function MonthOverviewPage({ data, month, section }) {
         {showHowItWent && (
           <SectionBlock label={howItWent.heading} className="month-snapshot-how">
             {howItWent.pulse && (
-              <StickyCard label="Overall financial pulse" tone="ready" fill>
+              <StickyCard label="Overall financial pulse" tone="ready" fill layout="editorial">
                 <p>{howItWent.pulse}</p>
               </StickyCard>
             )}

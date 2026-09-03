@@ -37,6 +37,7 @@ import {
   ExpandableContextNote,
   PromptField,
   PromptActionPanel,
+  ProseRail,
 } from '../content/NotebookPrimitives';
 import {
   KitSection,
@@ -679,6 +680,28 @@ export function NotebookKitPage() {
               <StickyCard variant="priority" label="Biggest win" tone="win">Paid an extra $200 toward the highest-rate card.</StickyCard>
               <StickyCard variant="priority" label="Needs attention" tone="focus">Dining out ran $180 over cap.</StickyCard>
             </div>
+          </KitVariant>
+        </KitSample>
+        <KitSample
+          name="Readable narrative"
+          usage="Full width for data; editorial split for paragraphs. StickyCard layout=&quot;editorial&quot; or ProseRail inside PanelSurface."
+        >
+          <KitVariant label="Avoid — fill without editorial (long line length)">
+            <StickyCard label="What drove the change" tone="context" fill>
+              <p>August comparable spending was up 35% from July. The increase was concentrated in travel, home repair, and higher shopping.</p>
+            </StickyCard>
+          </KitVariant>
+          <KitVariant label="Prefer — StickyCard fill + layout=&quot;editorial&quot;">
+            <StickyCard label="What drove the change" tone="context" fill layout="editorial">
+              <p>August comparable spending was up 35% from July. The increase was concentrated in travel, home repair, and higher shopping.</p>
+            </StickyCard>
+          </KitVariant>
+          <KitVariant label="Prefer — ProseRail in PanelSurface">
+            <PanelSurface>
+              <ProseRail label="Account: Ally Savings">
+                <p>Proposal: designate this account as the household emergency fund. Build to a starter buffer while high-interest debt is the priority.</p>
+              </ProseRail>
+            </PanelSurface>
           </KitVariant>
         </KitSample>
         <KitSample name="DecorativeStickyNote" usage="Sidebar/footer accents — washi tape auto-matches tone.">

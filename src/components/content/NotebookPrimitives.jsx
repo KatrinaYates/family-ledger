@@ -531,6 +531,7 @@ export function QuestionList({
 /**
  * Tinted in-page card — goals, pulse, priorities, talk together.
  * variant="default" uses compact label; variant="priority" uses section heading style.
+ * layout="editorial" — label left, paragraph right at readable measure (use with fill solo narratives).
  */
 export function StickyCard({
   label,
@@ -539,6 +540,7 @@ export function StickyCard({
   variant = 'default',
   fill = false,
   prose = false,
+  layout = 'stack',
   className = '',
 }) {
   if (variant === 'priority') {
@@ -552,21 +554,46 @@ export function StickyCard({
     ? <p className="sticky-card-body">{children}</p>
     : children;
 
+  const shellClassName = [
+    'paper-surface',
+    'sticky-card',
+    tone,
+    variant === 'priority' ? 'is-priority' : '',
+    fill ? 'is-fill' : '',
+    prose ? 'is-prose' : '',
+    layout === 'editorial' ? 'is-editorial' : '',
+    className,
+  ].filter(Boolean).join(' ');
+
+  if (layout === 'editorial') {
+    return (
+      <section className={shellClassName}>
+        <LabelTag className={`${labelClass} editorial-label`}>{label}</LabelTag>
+        <div className="editorial-body">{body}</div>
+      </section>
+    );
+  }
+
   return (
-    <section
-      className={[
-        'paper-surface',
-        'sticky-card',
-        tone,
-        variant === 'priority' ? 'is-priority' : '',
-        fill ? 'is-fill' : '',
-        prose ? 'is-prose' : '',
-        className,
-      ].filter(Boolean).join(' ')}
-    >
+    <section className={shellClassName}>
       <LabelTag className={labelClass}>{label}</LabelTag>
       {body}
     </section>
+  );
+}
+
+/**
+ * Editorial label + prose inside a PanelSurface — emergency fund notes, CFO explanations.
+ */
+export function ProseRail({ label, children, className = '' }) {
+  if (children == null || children === false) return null;
+  if (typeof children === 'string' && !children.trim()) return null;
+
+  return (
+    <div className={`prose-rail is-editorial ${className}`.trim()}>
+      {label && <div className="editorial-label future-financial-note-label">{label}</div>}
+      <div className="editorial-body readable-prose">{children}</div>
+    </div>
   );
 }
 

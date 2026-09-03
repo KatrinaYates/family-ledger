@@ -105,7 +105,7 @@ export function RetrospectivePage({ data, month, section }) {
 
         <SectionBlock label="What We're Doing Next" className="retrospective-actions">
           {actions?.monthlyFocus && (
-            <StickyCard label="This month's focus" tone="context" fill>
+            <StickyCard label="This month's focus" tone="context" fill layout="editorial">
               <p>{actions.monthlyFocus}</p>
             </StickyCard>
           )}

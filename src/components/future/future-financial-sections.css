@@ -6,6 +6,14 @@
 .future-money-pair strong { color: var(--ink); font-size: 1.18rem; }
 .future-money-pair small { color: #6b7482; line-height: 1.35; }
 .future-financial-note { margin: 0; color: #5f6878; line-height: 1.55; }
+.future-financial-note-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #53616c;
+  font-family: var(--font-data);
+}
 .future-financial-subsection { display: grid; gap: 10px; }
 .future-financial-subsection h3 { margin: 0; color: var(--ink); font-size: .98rem; }
 .future-financial-subheading-row { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; }
@@ -16,7 +24,7 @@
 .future-financial-account span { color: #6b7482; font-size: .82rem; }
 .future-financial-account-values { display: grid; gap: 2px; text-align: right; }
 .future-debt-kpis { grid-template-columns: repeat(2, minmax(220px, 360px)); justify-content: start; }
-.future-debt-insight { max-width: 880px; }
+.future-debt-insight { max-width: none; }
 .future-debt-ledgers { display: grid; grid-template-columns: repeat(2, minmax(300px, 560px)); gap: 16px; align-items: start; justify-content: start; }
 .future-debt-ledger-card { min-width: 0; padding: 16px 18px; border: 1px solid rgba(57,73,86,.1); border-radius: 16px; background: rgba(255,255,255,.64); }
 .future-debt-amount-list, .future-debt-payment-activity { min-width: 0; }

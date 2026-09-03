@@ -740,12 +740,8 @@
 
 
 @media (min-width: 1400px) {
-  .working-content {
+  .working-content:not(.content-shell-inner) {
     padding: 40px 52px 52px 64px;
-  }
-
-  .content-shell-inner .working-content {
-    padding: 36px 48px 48px 56px;
   }
 }
 

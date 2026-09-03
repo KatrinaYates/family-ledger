@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   DetailRows,
+  ProseRail,
   StickyCard,
   ToneChip,
   WarningBanner,
@@ -55,7 +56,11 @@ export function CfoRecommendationCard({ recommendation, featured = false }) {
           <ToneChip tone="neutral">Legacy format</ToneChip>
         </div>
         <h2 className="cfo-recommendation-title">{headline}</h2>
-        {action && <p className="panel-note">{action}</p>}
+        {action && (
+          <ProseRail label="Do this">
+            <p>{action}</p>
+          </ProseRail>
+        )}
         {(legacyWhy || legacyBenefit) && (
           <CardGrid columns={2} className="cfo-recommendation-detail-grid">
             {legacyWhy && (
@@ -135,9 +140,9 @@ export function CfoRecommendationCard({ recommendation, featured = false }) {
       )}
 
       {calculationLine && (
-        <p className="panel-note cfo-recommendation-calculation">
-          <strong>How this was estimated:</strong> {calculationLine}
-        </p>
+        <ProseRail label="How this was estimated" className="cfo-recommendation-calculation">
+          <p>{calculationLine}</p>
+        </ProseRail>
       )}
 
       {chart || (
@@ -147,15 +152,17 @@ export function CfoRecommendationCard({ recommendation, featured = false }) {
       )}
 
       {assumptions?.length > 0 && (
-        <ul className="cfo-recommendation-assumptions panel-note">
-          {assumptions.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
+        <ProseRail label="Assumptions" className="cfo-recommendation-assumptions">
+          <ul>
+            {assumptions.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </ProseRail>
       )}
 
       {suggestedFunds?.length > 0 && (
-        <p className="panel-note">
+        <p className="panel-note readable-prose">
           <strong>Possible funding:</strong> {suggestedFunds.join(' · ')}
         </p>
       )}

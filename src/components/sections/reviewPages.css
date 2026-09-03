@@ -86,6 +86,7 @@
 }
 
 .cfo-recommendation-card > .panel-note,
+.cfo-recommendation-card > .prose-rail,
 .cfo-recommendation-card > .warning-banner {
   margin-top: 20px;
 }
