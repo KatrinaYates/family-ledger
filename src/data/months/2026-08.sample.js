@@ -93,39 +93,70 @@ export default {
       "bigPurchases": []
     },
     "cfo": {
-      "priorities": [
+      "recommendations": [
         {
-          "number": 1,
-          "title": "Add a priority",
-          "why": "Describe why this matters for the household.",
-          "benefit": "What improves if you act on this?",
-          "difficulty": "Easy · Medium · Hard",
-          "note": "",
-          "suggestedFunds": []
-        },
-        {
-          "number": 2,
-          "title": "Add a priority",
-          "why": "Describe why this matters for the household.",
-          "benefit": "What improves if you act on this?",
-          "difficulty": "Easy · Medium · Hard",
-          "note": "",
-          "suggestedFunds": []
-        },
-        {
-          "number": 3,
-          "title": "Add a priority",
-          "why": "Describe why this matters for the household.",
-          "benefit": "What improves if you act on this?",
-          "difficulty": "Easy · Medium · Hard",
-          "note": "",
-          "suggestedFunds": []
+          "id": "sample-cfo-rec-1",
+          "rank": 1,
+          "type": "spending_pause",
+          "headline": "Pause one flexible category for a week",
+          "action": "Use the verified demo trend to redirect a sample $75 toward the current payoff target.",
+          "timeframe": "7 days",
+          "amountFreed": 75,
+          "target": {
+            "type": "debt",
+            "name": "Sample Card",
+            "currentBalance": 1200,
+            "projectedBalance": 1125
+          },
+          "evidence": [
+            {
+              "label": "Sample flexible spending",
+              "value": 75
+            }
+          ],
+          "calculationLine": "$75 avoided sample spending → $75 sample card payment",
+          "assumptions": [
+            "All values in this public record are fictional examples."
+          ],
+          "confidence": "sample",
+          "visualization": {
+            "type": "balance_comparison",
+            "currentValue": 1200,
+            "projectedValue": 1125,
+            "currentLabel": "Current sample balance",
+            "projectedLabel": "After sample payment"
+          }
         }
       ]
     },
     "future": {
       "goals": [],
       "upcoming": [],
+      "debtPayoffPlan": {
+        "strategy": "Sample snowball order",
+        "currentTarget": "Sample Card",
+        "queue": [
+          {
+            "name": "Sample Card",
+            "balance": 1200
+          }
+        ],
+        "planningSnapshot": {
+          "asOf": "2026-08-31",
+          "baselineMonthlyBudget": 250,
+          "baselineLabel": "Fictional repeatable monthly amount for the public sample.",
+          "debts": [
+            {
+              "id": "sample-card",
+              "name": "Sample Card",
+              "balance": 1200,
+              "apr": 18.5,
+              "minimum": 50,
+              "priority": 1
+            }
+          ]
+        }
+      },
       "retirement": {
         "balance": "—",
         "monthContributions": "—",
@@ -135,9 +166,28 @@ export default {
     "meeting": {
       "questions": []
     },
+    "retrospective": {
+      "subtitle": "A fictional example of the monthly reflection contract.",
+      "questionsToConsider": [
+        {
+          "id": "sample-least-value",
+          "question": "Which sample purchase gave us the least value?",
+          "context": "This is generic public demo content, not household analysis.",
+          "allowResponse": true
+        }
+      ]
+    },
     "actions": {
-      "items": [],
-      "monthlyFocus": ""
+      "items": [
+        {
+          "id": "sample-action-1",
+          "action": "Redirect the fictional $75 to the sample payoff target",
+          "owner": "Person A",
+          "dueDate": null,
+          "status": "not_started"
+        }
+      ],
+      "monthlyFocus": "Use the public sample recommendation as a contract example only."
     },
     "celebrate": {
       "biggestWin": "—",

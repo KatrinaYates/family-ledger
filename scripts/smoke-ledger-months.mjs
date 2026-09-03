@@ -17,6 +17,10 @@ import { canRenderCfoVisualization } from '../src/utils/cfoVisualization.js';
 import { getComparisonMonthLabels } from '../src/utils/monthLabels.js';
 import { getMonthCatalogEntry } from '../src/data/months.js';
 import {
+  buildSnapshotEndingPosition,
+  buildSnapshotGlanceKpis,
+} from '../src/utils/monthSnapshotLayout.js';
+import {
   ConflictError,
   LedgerNotFoundError,
   LockedMonthError,
@@ -93,6 +97,29 @@ try {
   );
   assert(MONTH_SECTIONS.cfo?.title === 'CFO Advice', 'CFO section title should be CFO Advice');
   assert(!Object.values(MONTH_SECTIONS).some((s) => /CFO Recommendations/i.test(s.title ?? '')), 'No CFO Recommendations title should remain');
+
+  const snapshotGlance = buildSnapshotGlanceKpis([
+    { label: 'Net worth change', value: '+$500' },
+    { label: 'Spending', value: '$4,000' },
+    { label: 'Income', value: '$5,000' },
+    { label: 'Debt change', value: '-$200' },
+    { label: 'Cash change', value: '+$300' },
+  ], { total: '$1,200' });
+  assert(
+    JSON.stringify(snapshotGlance.map((item) => item.label))
+      === JSON.stringify(['Income', 'Spending', 'Future progress']),
+    'Snapshot at a glance should render only Income, Spending, and Future progress in order',
+  );
+  const snapshotEnding = buildSnapshotEndingPosition([
+    { label: 'Debt', value: '$3,000' },
+    { label: 'Net worth', value: '$20,000' },
+    { label: 'Cash', value: '$10,000' },
+  ]);
+  assert(
+    JSON.stringify(snapshotEnding.map((item) => item.label))
+      === JSON.stringify(['Cash', 'Net worth']),
+    'Snapshot end-of-month row should render only Cash and Net worth in order',
+  );
 
   const samples = {
     '2026-07': sample202607,
@@ -268,8 +295,17 @@ try {
         'July structured CFO recommendation should include complete chart data',
       );
     }
-    if (monthId === '2026-08' || monthId === '2026-09') {
-      assert(view.cfo.recommendations[0]?.isLegacy, `${monthId} should adapt legacy CFO priorities into recommendations`);
+    if (monthId === '2026-08') {
+      assert(!view.cfo.recommendations[0]?.isLegacy, 'August should demonstrate the structured CFO contract');
+      assert(
+        view.future?.debtPayoffPlan?.planningSnapshot?.baselineMonthlyBudget === 250,
+        'August should demonstrate the debt planningSnapshot contract',
+      );
+      assert(samples[monthId].sourceData.actions.items[0]?.action, 'August action seeds should use the action field');
+      assert(samples[monthId].sourceData.actions.items[0]?.id, 'August action seeds should include a stable id');
+    }
+    if (monthId === '2026-09') {
+      assert(view.cfo.recommendations[0]?.isLegacy, 'September should preserve legacy CFO compatibility coverage');
     }
     assert(view.retrospective?.subtitle, `${monthId} retrospective section should be enriched`);
     assert(Array.isArray(view.retrospective?.questionsToConsider), `${monthId} retrospective.questionsToConsider should be an array`);

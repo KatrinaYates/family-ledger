@@ -44,6 +44,12 @@ The Supabase backend requires sign-in. The first signed-in user automatically cr
 
 Database schema is tracked in `supabase/migrations/`. Financial records themselves must never be committed.
 
+## Monthly generation
+
+The reusable ChatGPT runbook lives in [`docs/MONTHLY_LEDGER_RUN.md`](docs/MONTHLY_LEDGER_RUN.md). A scheduled task should read the current `main`-branch version of that file and follow it using the connected GitHub, Supabase, and Finances apps.
+
+The runbook creates the prior completed month as a draft Supabase record. That record makes the month tab appear dynamically; the monthly task does not edit application code. Any rendering or contract bug is handled as a separate engineering change.
+
 ## Deployment
 
 The public sample-data version deploys to GitHub Pages through GitHub Actions. It continues to use the local/sample backend unless Supabase environment variables and `VITE_LEDGER_BACKEND=supabase` are deliberately configured for the build.
