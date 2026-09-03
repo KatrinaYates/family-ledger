@@ -119,6 +119,15 @@ for sample in "${required_samples[@]}"; do
   fi
 done
 
+if [[ -f docs/MONTHLY_LEDGER_RUN.md ]] \
+  && grep -q 'TARGET_MONTH' docs/MONTHLY_LEDGER_RUN.md \
+  && grep -q 'GitHub is read-only' docs/MONTHLY_LEDGER_RUN.md; then
+  echo "OK: Monthly generation runbook is present and reusable"
+else
+  echo "FAIL: Missing or incomplete docs/MONTHLY_LEDGER_RUN.md"
+  fail=1
+fi
+
 if [[ ! -f src/data/months/2026-10.sample.js ]]; then
   echo "OK: October intentionally has no sample file (graceful failure test)"
 else

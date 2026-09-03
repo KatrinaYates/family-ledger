@@ -124,6 +124,12 @@ export function applyBlankSourceDefaults(sourceData = {}, monthId) {
             unexpected: [],
             changes: [],
             questions: [],
+            transactions: [],
+            patterns: [],
+            merchants: [],
+            merchantActivity: [],
+            recurring: [],
+            fees: [],
             ...spending,
         },
         cfo: {
@@ -137,6 +143,7 @@ export function applyBlankSourceDefaults(sourceData = {}, monthId) {
         future: {
             goals: [],
             upcoming: [],
+            debtPayoffPlan: null,
             kidsSavings: {
                 total: '—',
                 monthAdded: '—',

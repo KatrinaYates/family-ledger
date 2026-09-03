@@ -174,6 +174,35 @@
  */
 
 /**
+ * @typedef {Object} DebtPlanningRow
+ * @property {string} id
+ * @property {string} name
+ * @property {number} balance
+ * @property {number | null} apr
+ * @property {number} minimum
+ * @property {number} priority
+ */
+
+/**
+ * ChatGPT-authored inputs for the interactive payoff projection. The frontend
+ * models only these supplied values; it does not infer a debt budget or APR.
+ * @typedef {Object} DebtPlanningSnapshot
+ * @property {string} asOf
+ * @property {number} baselineMonthlyBudget
+ * @property {string} baselineLabel
+ * @property {DebtPlanningRow[]} debts
+ */
+
+/**
+ * @typedef {Object} ActionSeed
+ * @property {string} id
+ * @property {string} action
+ * @property {string} owner
+ * @property {string | null} dueDate
+ * @property {'not_started' | 'in_progress' | 'done' | 'deferred'} status
+ */
+
+/**
  * @typedef {Object} CfoRecommendationTarget
  * @property {string} [type]
  * @property {string} [name]

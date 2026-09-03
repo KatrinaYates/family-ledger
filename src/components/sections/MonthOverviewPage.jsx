@@ -8,14 +8,16 @@ import {
 import { CardGrid, PanelSurface, SectionBlock } from '../notebook';
 import { PersistedEditableBulletList } from '../meeting/MeetingFields';
 import { sectionFieldKey } from '../../utils/meetingKeys';
+import {
+  buildSnapshotEndingPosition,
+  buildSnapshotGlanceKpis,
+} from '../../utils/monthSnapshotLayout';
 import { SectionPageShell } from './SectionPageShell';
 
 const GLANCE_KPI_SYMBOLS = {
   Income: NOTEBOOK_SYMBOLS.cash,
   Spending: NOTEBOOK_SYMBOLS.focus,
-  'Cash change': NOTEBOOK_SYMBOLS.cash,
-  'Debt change': NOTEBOOK_SYMBOLS.focus,
-  'Net worth change': NOTEBOOK_SYMBOLS.growth,
+  'Future progress': NOTEBOOK_SYMBOLS.win,
 };
 
 function hasReviewValue(value) {
@@ -43,18 +45,11 @@ export function MonthOverviewPage({ data, month, section }) {
     humanContextLabel,
   } = monthView;
 
-  const glanceKpis = [
-    ...mapGlanceKpis(kpis),
-    ...(futureProgress?.total ? [{
-      icon: NOTEBOOK_SYMBOLS.win,
-      label: 'Future progress',
-      value: futureProgress.total,
-      chip: { text: 'This month', tone: 'protected' },
-    }] : []),
-  ];
+  const glanceKpis = mapGlanceKpis(buildSnapshotGlanceKpis(kpis, futureProgress));
+  const glanceEndingPosition = buildSnapshotEndingPosition(endingPosition);
   const monthLabel = month.label || data.meta?.month || 'this month';
 
-  const showGlance = glanceKpis.length > 0 || endingPosition.length > 0;
+  const showGlance = glanceKpis.length > 0 || glanceEndingPosition.length > 0;
   const whatMadeDifferent = data.spending?.overview?.interpretation
     || howItWent.whatMadeDifferent;
   const priorityCards = [
@@ -93,10 +88,10 @@ export function MonthOverviewPage({ data, month, section }) {
             {glanceKpis.length > 0 && (
               <MetricKpiRow items={glanceKpis} className="month-snapshot-kpi-row" />
             )}
-            {endingPosition.length > 0 && (
+            {glanceEndingPosition.length > 0 && (
               <StatPills
                 label={endingPositionLabel}
-                items={endingPosition}
+                items={glanceEndingPosition}
                 className="month-snapshot-ending-position"
               />
             )}
