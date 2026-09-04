@@ -50,6 +50,10 @@ The reusable ChatGPT runbook lives in [`docs/MONTHLY_LEDGER_RUN.md`](docs/MONTHL
 
 The runbook creates the prior completed month as a draft Supabase record. That record makes the month tab appear dynamically; the monthly task does not edit application code. Any rendering or contract bug is handled as a separate engineering change.
 
+## Financial Check-In refresh
+
+The current-position refresh prompt lives in [`docs/FINANCIAL_CHECK_IN_REFRESH.md`](docs/FINANCIAL_CHECK_IN_REFRESH.md). The Financial Check-In refresh button copies this file directly before opening ChatGPT, so the repository contains one canonical version of the prompt.
+
 ## Deployment
 
 The public sample-data version deploys to GitHub Pages through GitHub Actions. It continues to use the local/sample backend unless Supabase environment variables and `VITE_LEDGER_BACKEND=supabase` are deliberately configured for the build.
