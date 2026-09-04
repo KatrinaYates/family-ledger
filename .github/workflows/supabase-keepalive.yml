@@ -1,0 +1,29 @@
+name: Supabase Keepalive
+
+on:
+  schedule:
+    # Run twice a week so the database never approaches Supabase's inactivity window.
+    # GitHub Actions cron uses UTC.
+    - cron: "17 12 * * 1,4"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Ping Family Ledger database
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error \
+            --get \
+            --url "https://dslgivjpfyxplricxmxh.supabase.co/rest/v1/ledger_months" \
+            --header "apikey: sb_publishable_poFTbk-ddlnuUZPXar9TJQ__yb0qyIE" \
+            --data-urlencode "select=id" \
+            --data-urlencode "limit=1" \
+            > /dev/null
+          echo "Supabase keepalive succeeded."
