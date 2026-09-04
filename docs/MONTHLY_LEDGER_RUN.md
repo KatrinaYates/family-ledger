@@ -193,7 +193,7 @@ Do not repeat the same observation across multiple cards. Prioritize useful patt
 
 Include savings, emergency fund, kids savings, retirement, upcoming expenses, debt detail, payoff order, and future direction when verified data supports them.
 
-When a debt projection should render, provide `future.debtPayoffPlan.planningSnapshot` in the current contract, including:
+When any included debt has a balance greater than zero, a working debt payoff projection is required. Provide `future.debtPayoffPlan.planningSnapshot` in the current contract, including:
 
 ```text
 asOf
@@ -202,7 +202,20 @@ baselineLabel
 debts[]: id, name, balance, apr, minimum, priority
 ```
 
-`baselineMonthlyBudget` must be a realistic repeatable monthly debt budget. Do not blindly use all target-month debt payments when they include a windfall, reimbursement, balance transfer, or one-time catch-up payment. APR or minimum may be null when unavailable; disclose the limitation instead of guessing.
+The snapshot must include every active debt intended for the household's payoff plan. Use numeric balances, minimum or regular payments, and payoff priorities. APR may be null when unavailable; the UI will disclose that it is modeled at 0%. Never invent an APR.
+
+`baselineMonthlyBudget` must be a realistic, repeatable monthly debt budget that includes both:
+
+- Every known minimum or regular payment for the included debts.
+- The realistic extra amount available for the snowball.
+
+It must be greater than or equal to the sum of `max(0, minimum)` for all included debts. Never use `0` for an unknown minimum unless the source confirms that no payment is required. Use a verified recent minimum or regular payment when available; otherwise use `null` and disclose the limitation.
+
+Do not blindly use all target-month debt payments when they include a windfall, reimbursement, balance transfer, or one-time catch-up payment. Conversely, do not use only loan payments and omit credit-card minimums or the household's planned snowball amount.
+
+For example, if known minimum and regular payments total `$2,031.09` and the household can repeatably add `$468.91`, set `baselineMonthlyBudget` to `2500` and explain that composition in `baselineLabel`.
+
+Set `priority` to the household's intended payoff order and make `future.debtPayoffPlan.strategy` and `currentTarget` agree with it. Before insertion, validate the snapshot with the same rules as the frontend calculator. It is not valid if it produces a “monthly debt amount is below the included minimum payments” error, no projected payoff date, or no projected snowball schedule.
 
 ### CFO Advice
 
@@ -250,6 +263,10 @@ Do not write anything until the full candidate record passes all of these checks
 - Transfers are not counted as income or spending.
 - Future progress has no double-counting.
 - Gross debt payments are not labeled as net debt reduction.
+- When any included debt has a positive balance, `future.debtPayoffPlan.planningSnapshot` exists and includes every debt intended for the payoff plan.
+- The debt projection budget is at least the sum of all included minimum or regular payments and includes a clearly labeled, realistic snowball amount when one is available.
+- The debt projection successfully produces payoff summary metrics and a projected snowball schedule; calculator validation errors are fatal.
+- Debt priorities, payoff strategy, and current target agree.
 - CFO calculations reconcile to their evidence.
 - Charts contain all required numeric inputs or are omitted.
 - Retrospective questions and action seeds have stable IDs.
