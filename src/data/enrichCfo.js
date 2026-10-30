@@ -45,6 +45,19 @@ function normalizeRecommendation(rec, index) {
     type: rec.type ?? 'general',
     headline: rec.headline?.trim() || rec.title?.trim() || `Recommendation ${rank}`,
     action: rec.action?.trim() || '',
+    // Generated months may provide a single assumption as text; the CFO card
+    // renders assumptions as a list. Normalize both formats at this boundary.
+    assumptions: Array.isArray(rec.assumptions)
+      ? rec.assumptions.filter((item) => typeof item === 'string' && item.trim())
+      : typeof rec.assumptions === 'string' && rec.assumptions.trim()
+        ? [rec.assumptions.trim()]
+        : [],
+    evidence: Array.isArray(rec.evidence) ? rec.evidence : [],
+    suggestedFunds: Array.isArray(rec.suggestedFunds)
+      ? rec.suggestedFunds
+      : typeof rec.suggestedFunds === 'string' && rec.suggestedFunds.trim()
+        ? [rec.suggestedFunds.trim()]
+        : [],
     isLegacy: false,
   };
 }
